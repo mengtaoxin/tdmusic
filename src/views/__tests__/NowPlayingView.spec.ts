@@ -100,22 +100,21 @@ describe('NowPlayingView', () => {
     expect(root.classes()).toContain('no-touch-callout')
   })
 
-  it('shows clear upcoming as a tonal section action with an icon', async () => {
+  it('shows clear upcoming as a flat header action with an icon', async () => {
     const { wrapper } = await mountNowPlaying(4)
     await flushPromises()
 
     const clearBtn = wrapper.find('[data-testid="clear-upcoming"]')
     expect(clearBtn.exists()).toBe(true)
-    expect(clearBtn.classes()).toContain('v-btn--variant-tonal')
-    expect(clearBtn.classes()).toContain('text-secondary')
+    expect(clearBtn.classes()).toContain('v-btn--variant-flat')
+    expect(clearBtn.classes()).toContain('bg-secondary')
     expect(clearBtn.find('.v-icon').exists()).toBe(true)
 
     const queueHeading = wrapper.find('h2')
     expect(queueHeading.exists()).toBe(true)
     expect(queueHeading.text()).toContain('queue')
-    // Dedicated action row under the heading (not a shared header flex sibling).
-    expect(clearBtn.element.parentElement).not.toBe(queueHeading.element.parentElement)
-    expect(clearBtn.element.parentElement?.previousElementSibling).toBe(queueHeading.element)
+    // Same header row as the queue title (Logs-style clear action).
+    expect(clearBtn.element.parentElement).toBe(queueHeading.element.parentElement)
   })
 
   it('clears upcoming tracks from the queue', async () => {
