@@ -373,7 +373,7 @@ function childTitle(child: NavLink): string {
   margin-inline-start: 0.15rem;
   padding: 0.05rem 0.35rem;
   border-radius: 0.25rem;
-  font-size: 0.625rem;
+  font-size: 0.5rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   line-height: 1.2;
