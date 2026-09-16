@@ -98,7 +98,7 @@ const navItems: readonly NavItem[] = [
   { key: 'nav.more', icon: 'mdi-dots-horizontal', children: moreChildren },
 ]
 
-const moreChildPaths = moreChildren.map((item) => item.to)
+const moreChildPaths: readonly string[] = moreChildren.map((item) => item.to)
 
 const moreGroupActive = computed(() => moreChildPaths.includes(route.path))
 
