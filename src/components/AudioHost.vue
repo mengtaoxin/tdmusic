@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 
+import { appendAppLog } from '@/lib/appLogStore'
+import { prefetchUpcoming } from '@/lib/prefetchUpcoming'
 import { resolvePlayableUrl } from '@/lib/resolvePlayableUrl'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
@@ -10,6 +12,28 @@ const catalog = useCatalogStore()
 const player = usePlayerStore()
 
 let lastTimePersist = 0
+let consecutiveLoadFailures = 0
+const PREFETCH_COUNT = 3
+
+function resolveTrackForPrefetch(id: string) {
+  const track = catalog.trackById.get(id)
+  if (!track) return undefined
+  return { id: track.id, path: track.path }
+}
+
+function schedulePrefetch() {
+  void prefetchUpcoming(player.queue, player.currentIndex, {
+    count: PREFETCH_COUNT,
+    repeatMode: player.repeatMode,
+    shuffle: player.shuffle,
+    resolveTrack: resolveTrackForPrefetch,
+  })
+}
+
+function downloadFailureLog(track: { id: string; path: string }, error: unknown): string {
+  const detail = error instanceof Error ? error.message : String(error)
+  return `Failed to download track "${track.id}" from ${track.path}: ${detail}`
+}
 
 async function loadCurrent() {
   const audio = audioRef.value
@@ -21,9 +45,11 @@ async function loadCurrent() {
   try {
     const url = await resolvePlayableUrl(track.path, track.id)
     if (player.currentId !== id) return
+    consecutiveLoadFailures = 0
     audio.src = url
     audio.load()
     catalog.scheduleEnrichTrack(id)
+    schedulePrefetch()
     const seek = player.seekTo
     const onLoaded = () => {
       if (seek != null && Number.isFinite(seek)) {
@@ -38,8 +64,17 @@ async function loadCurrent() {
       audio.removeEventListener('loadedmetadata', onLoaded)
     }
     audio.addEventListener('loadedmetadata', onLoaded)
-  } catch {
-    player.pause()
+  } catch (error) {
+    if (player.currentId !== id) return
+    void appendAppLog(downloadFailureLog(track, error))
+    consecutiveLoadFailures += 1
+    const limit = Math.max(player.queue.length, 1)
+    if (consecutiveLoadFailures >= limit) {
+      consecutiveLoadFailures = 0
+      player.pause()
+      return
+    }
+    player.skip()
   }
 }
 
@@ -48,6 +83,14 @@ watch(
   () => {
     void loadCurrent()
   },
+)
+
+watch(
+  () => player.queue,
+  () => {
+    if (player.currentId) schedulePrefetch()
+  },
+  { deep: true },
 )
 
 watch(
@@ -102,6 +145,9 @@ function onPause() {
   const audio = audioRef.value
   // Natural end fires pause before ended; let onEnded own that transition.
   if (audio?.ended) return
+  // External interrupt (other app / OS) pauses the element without store.pause();
+  // clear pendingPlay so a later play() re-triggers the pendingPlay watcher.
+  player.pendingPlay = false
   player.playing = false
   player.flushPersist()
 }

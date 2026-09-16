@@ -142,11 +142,36 @@ describe('music cache', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
-  it('ensureTrackCached skips non-remote paths', async () => {
+  it('ensureTrackCached downloads site-absolute audio once', async () => {
+    const sourceUrl = '/sample-1.mp3'
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        headers: new Headers({ 'Content-Type': 'audio/mpeg' }),
+        body: null,
+        blob: async () => new Blob(['local-bytes'], { type: 'audio/mpeg' }),
+      }),
+    )
+
+    await ensureTrackCached(sourceUrl, 'local')
+    expect(await isTrackCached(sourceUrl)).toBe(true)
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledWith(sourceUrl)
+
+    await ensureTrackCached(sourceUrl, 'local')
+    expect(fetch).toHaveBeenCalledTimes(1)
+
+    const blob = await getCachedFile(sourceUrl)
+    expect(blob).not.toBeNull()
+    expect(await blob!.text()).toBe('local-bytes')
+  })
+
+  it('ensureTrackCached skips non-playable paths', async () => {
     vi.stubGlobal('fetch', vi.fn())
-    await ensureTrackCached('/sample-1.mp3')
+    await ensureTrackCached('sample-1.mp3')
     expect(fetch).not.toHaveBeenCalled()
-    expect(await isTrackCached('/sample-1.mp3')).toBe(false)
+    expect(await isTrackCached('sample-1.mp3')).toBe(false)
   })
 
   it('clearAllMusicCaches removes records', async () => {

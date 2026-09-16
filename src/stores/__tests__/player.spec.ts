@@ -52,4 +52,36 @@ describe('playerStore', () => {
     store.next()
     expect(store.currentId).toBe('a')
   })
+
+  it('skip advances past current track even when repeat is one', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'c'])
+    await vi.runAllTimersAsync()
+    store.repeatMode = 'one'
+    store.skip()
+    expect(store.currentId).toBe('b')
+    expect(store.pendingPlay).toBe(true)
+  })
+
+  it('next advances to the next queue track even when repeat is one', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'c'])
+    await vi.runAllTimersAsync()
+    store.repeatMode = 'one'
+    store.next()
+    expect(store.currentId).toBe('b')
+    expect(store.playing).toBe(true)
+    expect(store.pendingPlay).toBe(true)
+  })
+
+  it('prev goes to the previous queue track even when repeat is one', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'c'])
+    await vi.runAllTimersAsync()
+    store.repeatMode = 'one'
+    store.goToIndex(1, true)
+    store.prev()
+    expect(store.currentId).toBe('a')
+    expect(store.playing).toBe(true)
+  })
 })

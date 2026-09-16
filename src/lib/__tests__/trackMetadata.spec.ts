@@ -72,7 +72,7 @@ describe('ensureTrackMetadata', () => {
     expect(parser).toHaveBeenCalledTimes(1)
   })
 
-  it('with network:false does not fetch site-absolute audio', async () => {
+  it('with network:false does not fetch uncached site-absolute audio', async () => {
     const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
       .mockResolvedValue(new Response(new Blob(['audio']), { status: 200 }))
@@ -83,6 +83,25 @@ describe('ensureTrackMetadata', () => {
     expect(result).toBeNull()
     expect(fetchSpy).not.toHaveBeenCalled()
     expect(parser).not.toHaveBeenCalled()
+  })
+
+  it('with network:false reads site-absolute audio from IndexedDB when cached', async () => {
+    const sourceUrl = '/sample.mp3'
+    await putFiles(sourceUrl, [{ relativePath: AUDIO_FILE_KEY, blob: new Blob(['audio']) }])
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+    const parser = vi
+      .fn<() => Promise<{ title: string; artist: string; album: string }>>()
+      .mockResolvedValue({
+        title: 'Cached Local',
+        artist: 'A',
+        album: 'B',
+      })
+
+    const result = await ensureTrackMetadata(sourceUrl, { network: false, parser })
+
+    expect(result?.title).toBe('Cached Local')
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(parser).toHaveBeenCalledTimes(1)
   })
 
   it('with network:true fetches site-absolute audio for parsing', async () => {

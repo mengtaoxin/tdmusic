@@ -7,8 +7,11 @@ export default {
     albumList: 'Album List',
     nowPlaying: 'Now Playing',
     search: 'Search',
+    more: 'More',
+    language: 'Language',
     settings: 'Settings',
     about: 'About',
+    logs: 'Logs',
     openMenu: 'Open menu',
   },
   home: {
@@ -26,7 +29,7 @@ export default {
     configError: 'Config error: {message}',
   },
   playlist: {
-    fromConfig: 'From configs.json playlists',
+    empty: 'No playlists yet. Add a playlists array in your config.',
     trackCount: '{count} tracks',
     notFound: 'Playlist not found.',
   },
@@ -96,9 +99,13 @@ export default {
     noteUnknown:
       'Missing artist/album become Unknown artist / Unknown album; tracks still group under artist → albums → tracks.',
     notePaths:
-      'http(s):// paths can be cached in IndexedDB; site-absolute paths (/…) play directly without caching.',
+      'http(s):// and site-absolute (/…) paths are cached in IndexedDB on play.',
   },
   about: {
     github: 'GitHub',
+  },
+  logs: {
+    clear: 'Clear logs',
+    empty: 'No logs yet.',
   },
 }

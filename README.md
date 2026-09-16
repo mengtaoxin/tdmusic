@@ -1,49 +1,72 @@
 # tdmusic
 
-Vue 3 SPA with Vite, TypeScript 6, Vitest, Playwright, and Vuetify (Material Design).
+[中文说明](docs/README.zh.md)
+
+A browser music player that reads your library from a JSON catalog. No backend: tracks are fetched on play, cached in IndexedDB, and browsed by playlist, artist, album, or search. UI is English / 中文.
+
+## Features
+
+- Catalog-driven library via `configs.json` (override URL in Settings)
+- Playback with queue, shuffle, and repeat; state survives reloads
+- Offline-friendly audio + cover cache in IndexedDB (prefetch upcoming tracks)
+- ID3 enrichment from cached audio when config metadata is incomplete
+- Browse: Music List, Playlists, Artists, Albums, Search
+- In-app Config Guides and Logs
+
+## Requirements
+
+- Node.js `^22.18.0` or `>=24.12.0` (see `package.json` `engines`)
+
+## Quick start
+
+```sh
+./scripts/install-dependency.sh
+./scripts/dev-start.sh
+```
+
+Open [http://localhost:3000](http://localhost:3000). Stop with `./scripts/dev-stop.sh`.
+
+Day-to-day workflows use `./scripts/*` rather than raw `npm run` (see [docs/commands.md](docs/commands.md)).
+
+| Script | Purpose |
+| ------ | ------- |
+| `./scripts/install-dependency.sh` | Install dependencies |
+| `./scripts/dev-start.sh` / `dev-stop.sh` | Start / stop the Vite dev server |
+| `./scripts/build.sh` | Production build |
+| `./scripts/format-and-lint.sh` | Format + lint |
+| `./scripts/test.sh` | Full test suite (unit + e2e) |
+
+Run a single test file:
+
+```sh
+./scripts/test.sh --src/__tests__/App.spec.ts
+./scripts/test.sh e2e/vue.spec.ts
+```
+
+## Catalog
+
+Default catalog: [`public/configs.json`](public/configs.json) served at `/configs.json`.
+
+Each `music-list` entry needs `id` and `path` (`http(s)://` or site-absolute `/…`). Optional `title`, `artist`, `album`, and `cover` override extracted tags. Playlists reference tracks by `id`.
+
+Field-by-field help is in the app under **More → Settings → Config Guides**, and in [docs/project-specific-docs.md](docs/project-specific-docs.md).
 
 ## Stack
 
-- Vue 3 + Vue Router (SPA)
-- Vite
-- TypeScript 6.x
-- Vuetify 4 (Material Design) + MDI icons + Roboto
-- Vitest (unit) + Playwright (e2e)
+Vue 3 · Vite · TypeScript · Pinia · Vue Router · vue-i18n · Vuetify 4 · Vitest · Playwright
 
-## Setup
+## Docs
 
-```sh
-npm install
-```
+| Doc | Contents |
+| --- | -------- |
+| [docs/README.zh.md](docs/README.zh.md) | Chinese README |
+| [docs/file-structure.md](docs/file-structure.md) | Repository layout |
+| [docs/tech-stack.md](docs/tech-stack.md) | Versions and libraries |
+| [docs/commands.md](docs/commands.md) | Script conventions |
+| [docs/conventions.md](docs/conventions.md) | Coding conventions |
+| [docs/testing.md](docs/testing.md) | Test layers and naming |
+| [docs/project-specific-docs.md](docs/project-specific-docs.md) | Catalog, cache, playback behavior |
 
-### Development
+## License
 
-```sh
-npm run dev
-```
-
-### Production build
-
-```sh
-npm run build
-```
-
-### Unit tests
-
-```sh
-npm run test:unit
-```
-
-### End-to-end tests
-
-```sh
-npx playwright install
-npm run test:e2e
-```
-
-### Lint & format
-
-```sh
-npm run lint
-npm run format
-```
+Private / unpublished (`package.json` `"private": true`).

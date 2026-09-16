@@ -7,7 +7,7 @@ import {
   type TrackCacheMeta,
 } from './cacheStore'
 import { ensureQuota } from './cacheEviction'
-import { isRemotePath } from './paths'
+import { isPlayablePath } from './paths'
 
 export type CacheProgress = {
   phase: 'download' | 'done'
@@ -90,13 +90,13 @@ async function downloadAndStore(
   }
 }
 
-/** Cache remote http(s) audio. No-op for non-remote paths. */
+/** Cache playable audio (http(s) or site-absolute). No-op for other paths. */
 export async function ensureTrackCached(
   sourceUrl: string,
   id?: string,
   onProgress?: (progress: CacheProgress) => void,
 ): Promise<void> {
-  if (!isRemotePath(sourceUrl)) return
+  if (!isPlayablePath(sourceUrl)) return
 
   if (await isTrackCached(sourceUrl)) {
     onProgress?.({ phase: 'done', loaded: 0, total: 0 })

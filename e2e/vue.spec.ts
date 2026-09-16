@@ -5,6 +5,30 @@ test('visits the app root url', async ({ page }) => {
   await expect(page.getByRole('main').getByText('tdmusic', { exact: true })).toBeVisible()
 })
 
+test('desktop nav menu toggles match link button font size', async ({ page }) => {
+  await page.setViewportSize({ width: 1400, height: 800 })
+  await page.goto('/')
+  await expect(page.getByTestId('desktop-nav')).toBeVisible()
+
+  const sizes = await page.evaluate(() => {
+    const nav = document.querySelector('[data-testid="desktop-nav"]')
+    if (!nav) return null
+    const albums = nav.querySelector('a[href="/albums"]')
+    const more = nav.querySelector('[data-testid="nav-more-toggle"]')
+    const language = nav.querySelector('[data-testid="nav-locale-toggle"]')
+    if (!albums || !more || !language) return null
+    return {
+      albums: getComputedStyle(albums).fontSize,
+      more: getComputedStyle(more).fontSize,
+      language: getComputedStyle(language).fontSize,
+    }
+  })
+
+  expect(sizes).not.toBeNull()
+  expect(sizes!.more).toBe(sizes!.albums)
+  expect(sizes!.language).toBe(sizes!.albums)
+})
+
 test('reserves scrollbar gutter on the right by default', async ({ page }) => {
   await page.goto('/')
   const gutter = await page.evaluate(() => getComputedStyle(document.documentElement).scrollbarGutter)

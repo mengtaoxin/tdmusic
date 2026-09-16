@@ -16,9 +16,13 @@ onMounted(() => {
 <template>
   <v-container class="page" fluid>
     <h1 class="text-h5 mb-2">{{ t('nav.playlist') }}</h1>
-    <p class="text-medium-emphasis mb-4">{{ t('playlist.fromConfig') }}</p>
 
-    <v-list bg-color="transparent">
+    <p v-if="catalog.playlists.length === 0" class="text-medium-emphasis mb-4">
+      {{ t('playlist.empty') }}
+      <RouterLink to="/config-guides">{{ t('settings.configGuidesLink') }}</RouterLink>
+    </p>
+
+    <v-list v-else bg-color="transparent">
       <v-list-item
         v-for="(playlist, index) in catalog.playlists"
         :key="`${playlist.title}-${index}`"

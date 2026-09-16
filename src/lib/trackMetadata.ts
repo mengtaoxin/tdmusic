@@ -10,7 +10,7 @@ import {
   putCoverFile,
   putExtractedTrackMeta,
 } from './musicCache'
-import { isRemotePath } from './paths'
+import { isPlayablePath, isRemotePath } from './paths'
 
 export type ExtractedMetaFields = {
   title?: string
@@ -51,9 +51,14 @@ async function resolveAudioBlob(
   path: string,
   options?: { network?: boolean },
 ): Promise<Blob | null> {
-  if (isRemotePath(path)) {
-    return getCachedFile(path)
-  }
+  if (!isPlayablePath(path)) return null
+
+  const cached = await getCachedFile(path)
+  if (cached) return cached
+
+  // Remote audio is only read from IndexedDB (downloaded on play).
+  if (isRemotePath(path)) return null
+
   if (options?.network === false) return null
   try {
     const response = await fetch(path)
@@ -83,7 +88,7 @@ export async function ensureTrackMetadata(
   options?: {
     force?: boolean
     parser?: MetadataParser
-    /** When false, skip network fetch for site-absolute paths (cached extract/blob only). */
+    /** When false, skip network fetch for uncached site-absolute paths (cached extract/blob only). */
     network?: boolean
   },
 ): Promise<ParsedAudioMeta | null> {

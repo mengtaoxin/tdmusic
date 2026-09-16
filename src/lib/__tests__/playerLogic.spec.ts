@@ -7,6 +7,7 @@ import {
   parsePlayerState,
   prevIndex,
   serializePlayerState,
+  upcomingQueueIds,
 } from '../playerLogic'
 
 describe('nextIndex / prevIndex', () => {
@@ -27,6 +28,49 @@ describe('nextIndex / prevIndex', () => {
   it('picks another index when shuffle', () => {
     const rnd = vi.fn<() => number>().mockReturnValue(0.9)
     expect(nextIndex(0, 3, { repeatMode: 'off', shuffle: true, random: rnd })).toBe(2)
+  })
+})
+
+describe('upcomingQueueIds', () => {
+  const queue = ['a', 'b', 'c', 'd', 'e']
+
+  it('takes the next count ids linearly when shuffle off', () => {
+    expect(
+      upcomingQueueIds(queue, 1, { count: 3, repeatMode: 'off', shuffle: false }),
+    ).toEqual(['c', 'd', 'e'])
+  })
+
+  it('stops at end when repeat off and fewer than count remain', () => {
+    expect(
+      upcomingQueueIds(queue, 3, { count: 3, repeatMode: 'off', shuffle: false }),
+    ).toEqual(['e'])
+  })
+
+  it('wraps with repeat all and skips current', () => {
+    expect(
+      upcomingQueueIds(queue, 3, { count: 3, repeatMode: 'all', shuffle: false }),
+    ).toEqual(['e', 'a', 'b'])
+  })
+
+  it('returns empty for repeat one', () => {
+    expect(
+      upcomingQueueIds(queue, 1, { count: 3, repeatMode: 'one', shuffle: false }),
+    ).toEqual([])
+  })
+
+  it('picks distinct other ids when shuffle', () => {
+    // Math.floor(r * 5): 0.1→0 (current, skip), 0.5→2, 0.7→3, 0.9→4
+    const values = [0.1, 0.5, 0.7, 0.9]
+    const rnd = vi.fn<() => number>().mockImplementation(() => values.shift() ?? 0)
+    expect(
+      upcomingQueueIds(queue, 0, { count: 3, repeatMode: 'off', shuffle: true, random: rnd }),
+    ).toEqual(['c', 'd', 'e'])
+  })
+
+  it('returns empty for empty queue or invalid index', () => {
+    expect(upcomingQueueIds([], 0, { count: 3, repeatMode: 'off', shuffle: false })).toEqual([])
+    expect(upcomingQueueIds(queue, -1, { count: 3, repeatMode: 'off', shuffle: false })).toEqual([])
+    expect(upcomingQueueIds(queue, 99, { count: 3, repeatMode: 'off', shuffle: false })).toEqual([])
   })
 })
 

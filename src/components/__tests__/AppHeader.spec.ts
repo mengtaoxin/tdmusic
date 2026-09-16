@@ -68,40 +68,45 @@ async function measureNavLayout() {
   await flushPromises()
 }
 
-const englishMenus = [
-  'Home',
+const englishTopMenus = [
+  'Now Playing',
   'Music List',
   'Playlist',
   'Artist List',
   'Album List',
-  'Now Playing',
-  'Search',
-  'Settings',
-  'About',
+  'More',
 ]
 
-const navIconsByPath: Record<string, string> = {
-  '/': 'mdi-home',
+const englishDesktopExtraMenus = ['Language']
+
+const englishMoreSubMenus = ['Search', 'Settings', 'About', 'Logs']
+
+const topNavIconsByPath: Record<string, string> = {
+  '/now-playing': 'mdi-play-circle',
   '/music': 'mdi-music-box-multiple',
   '/playlists': 'mdi-playlist-music',
   '/artists': 'mdi-account-music',
   '/albums': 'mdi-album',
-  '/now-playing': 'mdi-play-circle',
+}
+
+const moreSubNavIconsByPath: Record<string, string> = {
   '/search': 'mdi-magnify',
   '/settings': 'mdi-cog',
   '/about': 'mdi-information-outline',
+  '/logs': 'mdi-text-box-outline',
 }
 
 const navRoutes = [
   { path: '/', name: 'home', component: { template: '<div />' } },
+  { path: '/now-playing', name: 'now-playing', component: { template: '<div />' } },
   { path: '/music', name: 'music', component: { template: '<div />' } },
   { path: '/playlists', name: 'playlists', component: { template: '<div />' } },
   { path: '/artists', name: 'artists', component: { template: '<div />' } },
   { path: '/albums', name: 'albums', component: { template: '<div />' } },
-  { path: '/now-playing', name: 'now-playing', component: { template: '<div />' } },
   { path: '/search', name: 'search', component: { template: '<div />' } },
   { path: '/settings', name: 'settings', component: { template: '<div />' } },
   { path: '/about', name: 'about', component: { template: '<div />' } },
+  { path: '/logs', name: 'logs', component: { template: '<div />' } },
 ]
 
 async function mountHeader() {
@@ -158,6 +163,40 @@ describe('AppHeader', () => {
     wrapper.unmount()
   })
 
+  it('links the brand title to the home page', async () => {
+    const { wrapper } = await mountHeader()
+
+    const brandLink = wrapper.find('[data-testid="brand-title"]')
+    expect(brandLink.exists()).toBe(true)
+    expect(brandLink.element.tagName).toBe('A')
+    expect(brandLink.attributes('href')).toBe('/')
+
+    wrapper.unmount()
+  })
+
+  it('omits Home from desktop nav and the drawer', async () => {
+    const { wrapper } = await mountHeader()
+    applyLayoutWidths(wrapper, { toolbarWidth: 1200, brandWidth: 120, navContentWidth: 800 })
+    await measureNavLayout()
+
+    const desktopNav = wrapper.find('[data-testid="desktop-nav"]')
+    expect(desktopNav.text()).not.toContain('Home')
+    expect(desktopNav.find('a[href="/"]').exists()).toBe(false)
+
+    applyLayoutWidths(wrapper, { toolbarWidth: 400, brandWidth: 120, navContentWidth: 800 })
+    await measureNavLayout()
+    await wrapper.find('[data-testid="nav-menu-toggle"]').trigger('click')
+    await nextTick()
+    await flushPromises()
+
+    const drawerRoot = document.querySelector('[data-testid="nav-drawer"]')
+    expect(drawerRoot).toBeTruthy()
+    expect(drawerRoot!.querySelector('a[href="/"]')).toBeNull()
+    expect(drawerRoot!.textContent).not.toContain('Home')
+
+    wrapper.unmount()
+  })
+
   it('places the brand title before the menu toggle when nav is collapsed', async () => {
     const { wrapper } = await mountHeader()
     applyLayoutWidths(wrapper, { toolbarWidth: 400, brandWidth: 120, navContentWidth: 800 })
@@ -166,6 +205,27 @@ describe('AppHeader', () => {
     const brand = wrapper.find('.brand').element
     const toggle = wrapper.find('[data-testid="nav-menu-toggle"]').element
     expect(brand.compareDocumentPosition(toggle) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+
+    wrapper.unmount()
+  })
+
+  it('keeps brand title, hamburger, and desktop nav on the same vertical centerline', async () => {
+    const { wrapper } = await mountHeader()
+    applyLayoutWidths(wrapper, { toolbarWidth: 1200, brandWidth: 120, navContentWidth: 800 })
+    await measureNavLayout()
+
+    const brandMark = wrapper.find('[data-testid="brand-title"]')
+    const desktopNav = wrapper.find('[data-testid="desktop-nav"]')
+    expect(brandMark.exists()).toBe(true)
+    expect(brandMark.classes()).toContain('header-centerline')
+    expect(desktopNav.classes()).toContain('header-centerline')
+
+    applyLayoutWidths(wrapper, { toolbarWidth: 400, brandWidth: 120, navContentWidth: 800 })
+    await measureNavLayout()
+
+    const toggle = wrapper.find('[data-testid="nav-menu-toggle"]')
+    expect(toggle.exists()).toBe(true)
+    expect(toggle.classes()).toContain('header-centerline')
 
     wrapper.unmount()
   })
@@ -180,9 +240,21 @@ describe('AppHeader', () => {
     const desktopNav = wrapper.find('[data-testid="desktop-nav"]')
     expect(desktopNav.exists()).toBe(true)
     expect(desktopNav.attributes('aria-hidden')).not.toBe('true')
-    for (const label of englishMenus) {
+    for (const label of englishTopMenus) {
       expect(desktopNav.text()).toContain(label)
     }
+    for (const label of englishDesktopExtraMenus) {
+      expect(desktopNav.text()).toContain(label)
+    }
+    for (const label of englishMoreSubMenus) {
+      expect(desktopNav.text()).not.toContain(label)
+    }
+
+    const topLabels = [...desktopNav.element.querySelectorAll('a, button')]
+      .map((el) => el.textContent?.trim())
+      .filter(Boolean)
+    expect(topLabels.indexOf('Now Playing')).toBe(0)
+    expect(topLabels.indexOf('Language')).toBeGreaterThan(topLabels.indexOf('More'))
 
     applyLayoutWidths(wrapper, { toolbarWidth: 700, brandWidth: 120, navContentWidth: 800 })
     await measureNavLayout()
@@ -195,12 +267,103 @@ describe('AppHeader', () => {
     wrapper.unmount()
   })
 
-  it('keeps language options in the nav drawer instead of a separate app-bar control', async () => {
-    const { wrapper } = await mountHeader()
+  it('nests Search, Settings, About, and Logs under More in desktop nav and the drawer', async () => {
+    const { wrapper, router } = await mountHeader()
+    applyLayoutWidths(wrapper, { toolbarWidth: 1200, brandWidth: 120, navContentWidth: 800 })
+    await measureNavLayout()
+
+    const moreToggle = wrapper.find('[data-testid="nav-more-toggle"]')
+    expect(moreToggle.exists()).toBe(true)
+    expect(moreToggle.text()).toContain('More')
+    expect(moreToggle.find('.mdi-dots-horizontal').exists()).toBe(true)
+
+    await moreToggle.trigger('click')
+    await nextTick()
+    await flushPromises()
+
+    const moreMenu = document.querySelector('[data-testid="nav-more-menu"]')
+    expect(moreMenu).toBeTruthy()
+    for (const label of englishMoreSubMenus) {
+      expect(moreMenu!.textContent).toContain(label)
+    }
+    for (const [path, icon] of Object.entries(moreSubNavIconsByPath)) {
+      const link = moreMenu!.querySelector(`a[href="${path}"]`)
+      expect(link).toBeTruthy()
+      expect(link!.querySelector(`.${icon}`)).toBeTruthy()
+    }
+
+    const logsLink = moreMenu!.querySelector('a[href="/logs"]')
+    expect(logsLink).toBeTruthy()
+    await router.push('/logs')
+    await nextTick()
+    await flushPromises()
+    expect(router.currentRoute.value.path).toBe('/logs')
+
     applyLayoutWidths(wrapper, { toolbarWidth: 400, brandWidth: 120, navContentWidth: 800 })
     await measureNavLayout()
 
-    expect(wrapper.find('[data-testid="locale-select"]').exists()).toBe(false)
+    await wrapper.find('[data-testid="nav-menu-toggle"]').trigger('click')
+    await nextTick()
+    await flushPromises()
+
+    const drawerRoot = document.querySelector('[data-testid="nav-drawer"]')
+    expect(drawerRoot).toBeTruthy()
+    expect(drawerRoot!.textContent).toContain('More')
+    for (const label of englishMoreSubMenus) {
+      expect(drawerRoot!.textContent).toContain(label)
+    }
+    for (const [path, icon] of Object.entries(moreSubNavIconsByPath)) {
+      const link = drawerRoot!.querySelector(`a[href="${path}"]`)
+      expect(link).toBeTruthy()
+      expect(link!.querySelector(`.${icon}`)).toBeTruthy()
+    }
+
+    wrapper.unmount()
+  })
+
+  it('switches language from a desktop-nav dropdown that matches regular menu sizing', async () => {
+    const { wrapper } = await mountHeader()
+    applyLayoutWidths(wrapper, { toolbarWidth: 1200, brandWidth: 120, navContentWidth: 800 })
+    await measureNavLayout()
+
+    const desktopNav = wrapper.find('[data-testid="desktop-nav"]')
+    const localeToggle = desktopNav.find('[data-testid="nav-locale-toggle"]')
+    expect(localeToggle.exists()).toBe(true)
+    expect(localeToggle.text()).toContain('Language')
+    expect(localeToggle.find('.mdi-translate').exists()).toBe(true)
+    expect(localeToggle.classes()).toContain('v-btn--size-small')
+
+    const moreToggle = desktopNav.find('[data-testid="nav-more-toggle"]')
+    expect(moreToggle.classes()).toContain('v-btn--size-small')
+
+    await localeToggle.trigger('click')
+    await nextTick()
+    await flushPromises()
+
+    const localeMenu = document.querySelector('[data-testid="nav-locale-menu"]')
+    expect(localeMenu).toBeTruthy()
+    expect(localeMenu!.textContent).toContain('English')
+    expect(localeMenu!.textContent).toContain('中文')
+
+    const zhOption = localeMenu!.querySelector('[data-testid="locale-option-zh"]')
+    expect(zhOption).toBeTruthy()
+    expect(zhOption!.querySelector('.mdi-translate')).toBeTruthy()
+    zhOption!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    await nextTick()
+    await flushPromises()
+
+    expect(localStorage.getItem('tdmusic.locale')).toBe('zh')
+    expect(desktopNav.text()).toContain('语言')
+    expect(desktopNav.text()).toContain('正在播放')
+    expect(desktopNav.text()).not.toContain('首页')
+
+    wrapper.unmount()
+  })
+
+  it('keeps language options in the nav drawer when collapsed', async () => {
+    const { wrapper } = await mountHeader()
+    applyLayoutWidths(wrapper, { toolbarWidth: 400, brandWidth: 120, navContentWidth: 800 })
+    await measureNavLayout()
 
     const toggle = wrapper.find('[data-testid="nav-menu-toggle"]')
     await toggle.trigger('click')
@@ -222,7 +385,8 @@ describe('AppHeader', () => {
     await flushPromises()
 
     expect(localStorage.getItem('tdmusic.locale')).toBe('zh')
-    expect(drawerRoot!.textContent).toContain('首页')
+    expect(drawerRoot!.textContent).toContain('正在播放')
+    expect(drawerRoot!.textContent).not.toContain('首页')
 
     wrapper.unmount()
   })
@@ -233,11 +397,15 @@ describe('AppHeader', () => {
     await measureNavLayout()
 
     const desktopNav = wrapper.find('[data-testid="desktop-nav"]')
-    for (const [path, icon] of Object.entries(navIconsByPath)) {
+    for (const [path, icon] of Object.entries(topNavIconsByPath)) {
       const link = desktopNav.find(`a[href="${path}"]`)
       expect(link.exists()).toBe(true)
       expect(link.find(`.${icon}`).exists()).toBe(true)
     }
+    expect(desktopNav.find('[data-testid="nav-more-toggle"] .mdi-dots-horizontal').exists()).toBe(
+      true,
+    )
+    expect(desktopNav.find('[data-testid="nav-locale-toggle"] .mdi-translate').exists()).toBe(true)
 
     applyLayoutWidths(wrapper, { toolbarWidth: 400, brandWidth: 120, navContentWidth: 800 })
     await measureNavLayout()
@@ -249,11 +417,12 @@ describe('AppHeader', () => {
     const drawerRoot = document.querySelector('[data-testid="nav-drawer"]')
     expect(drawerRoot).toBeTruthy()
 
-    for (const [path, icon] of Object.entries(navIconsByPath)) {
+    for (const [path, icon] of Object.entries(topNavIconsByPath)) {
       const link = drawerRoot!.querySelector(`a[href="${path}"]`)
       expect(link).toBeTruthy()
       expect(link!.querySelector(`.${icon}`)).toBeTruthy()
     }
+    expect(drawerRoot!.querySelector('.mdi-dots-horizontal')).toBeTruthy()
 
     for (const locale of ['en', 'zh'] as const) {
       const option = drawerRoot!.querySelector(`[data-testid="locale-option-${locale}"]`)
@@ -281,7 +450,7 @@ describe('AppHeader', () => {
     expect(drawerRoot).toBeTruthy()
     expect(drawerRoot!.className).toMatch(/v-navigation-drawer--active/)
 
-    for (const label of englishMenus) {
+    for (const label of [...englishTopMenus, ...englishMoreSubMenus]) {
       expect(drawerRoot!.textContent).toContain(label)
     }
 

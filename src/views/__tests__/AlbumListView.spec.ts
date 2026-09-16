@@ -4,6 +4,7 @@ import { createI18n } from 'vue-i18n'
 import { createPinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
+import CoverImg from '@/components/CoverImg.vue'
 import TrackListItem from '@/components/TrackListItem.vue'
 import vuetify from '@/plugins/vuetify'
 import en from '@/locales/en'
@@ -11,20 +12,25 @@ import zh from '@/locales/zh'
 import { useCatalogStore, type DisplayTrack } from '@/stores/catalog'
 import AlbumListView from '../AlbumListView.vue'
 
-function makeTrack(id: string, album: string): DisplayTrack {
+function makeTrack(
+  id: string,
+  album: string,
+  extras: Partial<DisplayTrack> = {},
+): DisplayTrack {
   return {
     id,
     path: `/music/${id}.mp3`,
     displayTitle: id,
     displayArtist: 'Artist',
     displayAlbum: album,
+    ...extras,
   }
 }
 
-async function mountAlbumList() {
+async function mountAlbumList(tracks?: DisplayTrack[]) {
   const pinia = createPinia()
   const catalog = useCatalogStore(pinia)
-  catalog.tracks = [
+  catalog.tracks = tracks ?? [
     makeTrack('t1', 'Album One'),
     makeTrack('t2', 'Album One'),
     makeTrack('t3', 'Album Two'),
@@ -66,5 +72,21 @@ describe('AlbumListView', () => {
     expect(albumTwo.exists()).toBe(true)
     expect(albumOne.text()).toContain('Album One')
     expect(albumTwo.text()).toContain('Album Two')
+  })
+
+  it('shows the first track cover on each album tile', async () => {
+    const wrapper = await mountAlbumList([
+      makeTrack('t1', 'Album One'),
+      makeTrack('t2', 'Album One', { displayCover: 'https://example.com/one.jpg' }),
+      makeTrack('t3', 'Album Two'),
+    ])
+    await flushPromises()
+
+    const covers = wrapper.findAllComponents(CoverImg)
+    expect(covers).toHaveLength(1)
+    expect(covers[0]!.props('src')).toBe('https://example.com/one.jpg')
+
+    const albumTwo = wrapper.find('a[href="/albums/Album%20Two"]')
+    expect(albumTwo.findComponent(CoverImg).exists()).toBe(false)
   })
 })

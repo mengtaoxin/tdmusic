@@ -158,17 +158,24 @@ export const usePlayerStore = defineStore('player', () => {
     flushPersist()
   }
 
+  /** Manual next / failure skip: advance past current; repeat-one still leaves the track. */
   function next() {
     const index = currentIndex.value
+    const modeForAdvance = repeatMode.value === 'one' ? 'off' : repeatMode.value
     const nextIdx = nextIndex(index, queue.value.length, {
-      repeatMode: repeatMode.value,
+      repeatMode: modeForAdvance,
       shuffle: shuffle.value,
     })
-    if (nextIdx == null) {
+    if (nextIdx == null || nextIdx === index) {
       pause()
       return
     }
     goToIndex(nextIdx, true)
+  }
+
+  /** Advance past the current track (e.g. download failure). Same as next. */
+  function skip() {
+    next()
   }
 
   function prev() {
@@ -177,8 +184,9 @@ export const usePlayerStore = defineStore('player', () => {
       return
     }
     const index = currentIndex.value
+    const modeForAdvance = repeatMode.value === 'one' ? 'off' : repeatMode.value
     const prevIdx = prevIndex(index, queue.value.length, {
-      repeatMode: repeatMode.value,
+      repeatMode: modeForAdvance,
     })
     if (prevIdx == null) {
       seek(0)
@@ -227,6 +235,7 @@ export const usePlayerStore = defineStore('player', () => {
     setCurrentTime,
     seek,
     next,
+    skip,
     prev,
     toggleRepeat,
     toggleShuffle,

@@ -37,6 +37,54 @@ export function prevIndex(
   return options.repeatMode === 'all' ? queueLength - 1 : null
 }
 
+/** Upcoming queue ids to prefetch (does not include current). */
+export function upcomingQueueIds(
+  queue: string[],
+  currentIndex: number,
+  options: {
+    count: number
+    repeatMode: RepeatMode
+    shuffle: boolean
+    random?: () => number
+  },
+): string[] {
+  const { count, repeatMode, shuffle } = options
+  if (count <= 0 || queue.length === 0) return []
+  if (currentIndex < 0 || currentIndex >= queue.length) return []
+  if (repeatMode === 'one') return []
+
+  if (shuffle) {
+    const rnd = options.random ?? Math.random
+    const picked = new Set<number>([currentIndex])
+    const result: string[] = []
+    const maxAttempts = queue.length * 8
+    let attempts = 0
+    while (result.length < count && picked.size < queue.length && attempts < maxAttempts) {
+      attempts += 1
+      const next = Math.floor(rnd() * queue.length)
+      if (picked.has(next)) continue
+      picked.add(next)
+      const id = queue[next]
+      if (id != null) result.push(id)
+    }
+    return result
+  }
+
+  const result: string[] = []
+  let i = currentIndex + 1
+  while (result.length < count) {
+    if (i >= queue.length) {
+      if (repeatMode !== 'all') break
+      i = 0
+    }
+    if (i === currentIndex) break
+    const id = queue[i]
+    if (id != null) result.push(id)
+    i += 1
+  }
+  return result
+}
+
 export type QueueChunkCallback = (chunk: string[]) => void
 
 /** Synchronously take first id at startIndex; async append the rest in chunks. */

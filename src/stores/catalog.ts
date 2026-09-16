@@ -88,7 +88,7 @@ export const useCatalogStore = defineStore('catalog', () => {
     }
   }
 
-  /** After play download, re-enrich one track (may fetch site-absolute audio for ID3). */
+  /** After play download, re-enrich one track (may use cached audio for ID3). */
   function scheduleEnrichTrack(id: string) {
     const track = tracks.value.find((t) => t.id === id)
     if (!track) return

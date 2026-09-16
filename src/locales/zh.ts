@@ -7,8 +7,11 @@ export default {
     albumList: '专辑列表',
     nowPlaying: '正在播放',
     search: '搜索',
+    more: '更多',
+    language: '语言',
     settings: '设置',
     about: '关于',
+    logs: '日志',
     openMenu: '打开菜单',
   },
   home: {
@@ -26,7 +29,7 @@ export default {
     configError: '配置错误：{message}',
   },
   playlist: {
-    fromConfig: '来自 configs.json 的播放列表',
+    empty: '暂无播放列表。请在配置中添加 playlists 数组。',
     trackCount: '{count} 首',
     notFound: '未找到该播放列表。',
   },
@@ -91,9 +94,13 @@ export default {
     notesTitle: '补充说明',
     noteFallback: '标题回退顺序：配置 → ID3 → path 文件名（解码后的无扩展名 basename）→ id。',
     noteUnknown: '缺少歌手/专辑时显示为未知歌手 / 未知专辑；曲目仍会按歌手 → 专辑 → 曲目分组。',
-    notePaths: 'http(s):// 路径可写入 IndexedDB 缓存；站点绝对路径（/…）直接播放，不缓存。',
+    notePaths: 'http(s):// 与站点绝对路径（/…）在播放时都会写入 IndexedDB 缓存。',
   },
   about: {
     github: 'GitHub',
+  },
+  logs: {
+    clear: '清空日志',
+    empty: '暂无日志。',
   },
 }
