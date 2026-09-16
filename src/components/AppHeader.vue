@@ -11,19 +11,29 @@ const { t, locale } = useI18n()
 const route = useRoute()
 const drawerOpen = ref(false)
 const compactNav = ref(true)
-const moreMenuOpen = ref(false)
-const localeMenuOpen = ref(false)
+const openMenus = ref<Record<string, boolean>>({})
 
 const appBarRef = ref<{ $el?: HTMLElement } | null>(null)
 const desktopNavRef = ref<HTMLElement | null>(null)
 let resizeObserver: ResizeObserver | null = null
 
-type NavLink = { to: string; key: string; icon: string }
-type NavGroup = { key: string; icon: string; children: readonly NavLink[] }
-type NavItem = NavLink | NavGroup
+type NavRouteLink = { to: string; key: string; icon: string }
+type NavExternalLink = { href: string; key: string; icon: string }
+type NavLocaleLink = { locale: 'en' | 'zh'; key: string; icon: string }
+type NavLink = NavRouteLink | NavExternalLink | NavLocaleLink
+type NavGroup = { key: string; icon: string; children: readonly NavLink[]; menuTestId: string }
+type NavItem = NavRouteLink | NavGroup
 
 function isNavGroup(item: NavItem): item is NavGroup {
   return 'children' in item
+}
+
+function isExternalNavLink(item: NavLink): item is NavExternalLink {
+  return 'href' in item
+}
+
+function isLocaleNavLink(item: NavLink): item is NavLocaleLink {
+  return 'locale' in item
 }
 
 function updateCompactNav() {
@@ -68,8 +78,7 @@ watch(
   () => route.fullPath,
   () => {
     drawerOpen.value = false
-    moreMenuOpen.value = false
-    localeMenuOpen.value = false
+    openMenus.value = {}
   },
 )
 
@@ -82,12 +91,21 @@ onBeforeUnmount(() => {
   resizeObserver = null
 })
 
-const moreChildren = [
+const GITHUB_ISSUES_URL = 'https://github.com/mengtaoxin/tdmusic/issues'
+
+const moreChildren: readonly NavLink[] = [
   { to: '/search', key: 'nav.search', icon: 'mdi-magnify' },
   { to: '/settings', key: 'nav.settings', icon: 'mdi-cog' },
+  { to: '/config-guides', key: 'nav.configGuides', icon: 'mdi-file-document-outline' },
   { to: '/about', key: 'nav.about', icon: 'mdi-information-outline' },
   { to: '/logs', key: 'nav.logs', icon: 'mdi-text-box-outline' },
-] as const
+  { href: GITHUB_ISSUES_URL, key: 'nav.feedback', icon: 'mdi-message-text-outline' },
+]
+
+const localeChildren: readonly NavLocaleLink[] = [
+  { locale: 'en', key: 'locale.en', icon: 'mdi-translate' },
+  { locale: 'zh', key: 'locale.zh', icon: 'mdi-translate' },
+]
 
 const navItems: readonly NavItem[] = [
   { to: '/now-playing', key: 'nav.nowPlaying', icon: 'mdi-play-circle' },
@@ -95,17 +113,77 @@ const navItems: readonly NavItem[] = [
   { to: '/playlists', key: 'nav.playlist', icon: 'mdi-playlist-music' },
   { to: '/artists', key: 'nav.artistList', icon: 'mdi-account-music' },
   { to: '/albums', key: 'nav.albumList', icon: 'mdi-album' },
-  { key: 'nav.more', icon: 'mdi-dots-horizontal', children: moreChildren },
+  { key: 'nav.more', icon: 'mdi-dots-horizontal', children: moreChildren, menuTestId: 'nav-more' },
+  {
+    key: 'nav.language',
+    icon: 'mdi-translate',
+    children: localeChildren,
+    menuTestId: 'nav-locale',
+  },
 ]
 
-const moreChildPaths: readonly string[] = moreChildren.map((item) => item.to)
+const moreChildPaths: readonly string[] = moreChildren.flatMap((item) =>
+  isExternalNavLink(item) || isLocaleNavLink(item) ? [] : [item.to],
+)
 
 const moreGroupActive = computed(() => moreChildPaths.includes(route.path))
 
-const localeItems = computed(() => [
-  { title: t('locale.en'), value: 'en', icon: 'mdi-translate' },
-  { title: t('locale.zh'), value: 'zh', icon: 'mdi-translate' },
-])
+function groupActive(item: NavGroup): boolean {
+  if (item.key === 'nav.more') return moreGroupActive.value
+  if (item.key === 'nav.language') return false
+  return false
+}
+
+function setLocale(value: 'en' | 'zh') {
+  locale.value = value
+}
+
+function childBindings(child: NavLink) {
+  if (isLocaleNavLink(child)) {
+    return {
+      'data-testid': `locale-option-${child.locale}`,
+      active: locale.value === child.locale,
+      onClick: () => {
+        setLocale(child.locale)
+        drawerOpen.value = false
+      },
+    }
+  }
+  if (isExternalNavLink(child)) {
+    return {
+      href: child.href,
+      target: '_blank',
+      rel: 'noopener noreferrer',
+      onClick: () => {
+        drawerOpen.value = false
+      },
+    }
+  }
+  return {
+    to: child.to,
+    onClick: () => {
+      drawerOpen.value = false
+    },
+  }
+}
+
+function desktopChildBindings(child: NavLink) {
+  if (isLocaleNavLink(child)) {
+    return {
+      'data-testid': `locale-option-${child.locale}`,
+      active: locale.value === child.locale,
+      onClick: () => setLocale(child.locale),
+    }
+  }
+  if (isExternalNavLink(child)) {
+    return { href: child.href, target: '_blank', rel: 'noopener noreferrer' }
+  }
+  return { to: child.to }
+}
+
+function childTitle(child: NavLink): string {
+  return t(child.key)
+}
 </script>
 
 <template>
@@ -125,16 +203,15 @@ const localeItems = computed(() => [
               v-bind="activatorProps"
               :title="t(item.key)"
               :prepend-icon="item.icon"
-              :active="moreGroupActive"
+              :active="groupActive(item)"
             />
           </template>
           <v-list-item
             v-for="child in item.children"
             :key="child.key"
-            :to="child.to"
-            :title="t(child.key)"
+            v-bind="childBindings(child)"
+            :title="childTitle(child)"
             :prepend-icon="child.icon"
-            @click="drawerOpen = false"
           />
         </v-list-group>
         <v-list-item
@@ -145,16 +222,6 @@ const localeItems = computed(() => [
           @click="drawerOpen = false"
         />
       </template>
-      <v-divider class="my-2" />
-      <v-list-item
-        v-for="item in localeItems"
-        :key="item.value"
-        :data-testid="`locale-option-${item.value}`"
-        :title="item.title"
-        :prepend-icon="item.icon"
-        :active="locale === item.value"
-        @click="locale = item.value"
-      />
     </v-list>
   </v-navigation-drawer>
 
@@ -170,6 +237,7 @@ const localeItems = computed(() => [
           alt=""
         />
         tdmusic
+        <span data-testid="brand-beta" class="brand-beta">{{ t('nav.beta') }}</span>
       </RouterLink>
     </v-app-bar-title>
 
@@ -196,29 +264,33 @@ const localeItems = computed(() => [
         <template v-for="item in navItems" :key="item.key">
           <v-menu
             v-if="isNavGroup(item)"
-            v-model="moreMenuOpen"
+            v-model="openMenus[item.key]"
             location="bottom end"
             :close-on-content-click="true"
           >
             <template #activator="{ props: activatorProps }">
               <v-btn
                 v-bind="activatorProps"
-                data-testid="nav-more-toggle"
+                :data-testid="`${item.menuTestId}-toggle`"
                 :prepend-icon="item.icon"
                 variant="text"
                 size="small"
-                :active="moreGroupActive"
+                :active="groupActive(item)"
                 :tabindex="compactNav ? -1 : undefined"
               >
                 {{ t(item.key) }}
               </v-btn>
             </template>
-            <v-list density="compact" data-testid="nav-more-menu" min-width="160">
+            <v-list
+              density="compact"
+              :data-testid="`${item.menuTestId}-menu`"
+              min-width="160"
+            >
               <v-list-item
                 v-for="child in item.children"
                 :key="child.key"
-                :to="child.to"
-                :title="t(child.key)"
+                v-bind="desktopChildBindings(child)"
+                :title="childTitle(child)"
                 :prepend-icon="child.icon"
               />
             </v-list>
@@ -234,35 +306,6 @@ const localeItems = computed(() => [
             {{ t(item.key) }}
           </v-btn>
         </template>
-        <v-menu
-          v-model="localeMenuOpen"
-          location="bottom end"
-          :close-on-content-click="true"
-        >
-          <template #activator="{ props: activatorProps }">
-            <v-btn
-              v-bind="activatorProps"
-              data-testid="nav-locale-toggle"
-              prepend-icon="mdi-translate"
-              variant="text"
-              size="small"
-              :tabindex="compactNav ? -1 : undefined"
-            >
-              {{ t('nav.language') }}
-            </v-btn>
-          </template>
-          <v-list density="compact" data-testid="nav-locale-menu" min-width="160">
-            <v-list-item
-              v-for="item in localeItems"
-              :key="item.value"
-              :data-testid="`locale-option-${item.value}`"
-              :title="item.title"
-              :prepend-icon="item.icon"
-              :active="locale === item.value"
-              @click="locale = item.value"
-            />
-          </v-list>
-        </v-menu>
       </nav>
     </template>
   </v-app-bar>
@@ -320,6 +363,23 @@ const localeItems = computed(() => [
 .brand-icon {
   display: block;
   border-radius: var(--v-radius-md);
+  flex-shrink: 0;
+}
+
+.brand-beta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-inline-start: 0.15rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: rgb(var(--v-theme-on-secondary));
+  background: rgba(var(--v-theme-secondary), 0.85);
   flex-shrink: 0;
 }
 

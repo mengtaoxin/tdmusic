@@ -1,35 +1,26 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
+import TrackList from '@/components/TrackList.vue'
 import { decodeRouteParam, findArtistGroup } from '@/lib/artistRoutes'
 import { localizeArtistName } from '@/lib/displayLabels'
-import TrackListItem from '@/components/TrackListItem.vue'
-import { useCatalogStore, type DisplayTrack } from '@/stores/catalog'
-import { usePlayerStore } from '@/stores/player'
+import { useTrackListPlayback } from '@/lib/useTrackListPlayback'
+import type { DisplayTrack } from '@/stores/catalog'
 
 const { t } = useI18n()
 const route = useRoute()
-const catalog = useCatalogStore()
-const player = usePlayerStore()
 
 const artistName = computed(() => decodeRouteParam(String(route.params.name ?? '')))
+
+const { catalog, player, playAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(() =>
+  tracks.value.map((track) => track.id),
+)
 
 const artist = computed(() => findArtistGroup(catalog.artists, artistName.value))
 
 const tracks = computed(() => artist.value?.tracks ?? ([] as DisplayTrack[]))
-
-onMounted(() => {
-  if (!catalog.tracks.length && !catalog.loading) void catalog.load()
-})
-
-function playAt(index: number) {
-  player.playFrom(
-    index,
-    tracks.value.map((track) => track.id),
-  )
-}
 </script>
 
 <template>
@@ -45,14 +36,13 @@ function playAt(index: number) {
 
     <v-progress-linear v-if="catalog.loading" indeterminate class="mb-4" />
 
-    <v-list v-else bg-color="transparent">
-      <TrackListItem
-        v-for="(track, index) in tracks"
-        :key="track.id"
-        :track="track"
-        :active="player.currentId === track.id"
-        @select="playAt(index)"
-      />
-    </v-list>
+    <TrackList
+      v-else
+      :tracks="tracks"
+      :current-id="player.currentId"
+      @select="playAt"
+      @play-next="playNextTrack"
+      @add-to-queue="addTrackToQueue"
+    />
   </v-container>
 </template>

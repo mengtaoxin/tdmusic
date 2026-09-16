@@ -38,11 +38,13 @@ test('reserves scrollbar gutter on the right by default', async ({ page }) => {
 test('settings links to config guides', async ({ page }) => {
   await page.goto('/settings')
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
-  await page.getByRole('link', { name: 'Config Guides' }).click()
+  await page.getByRole('main').getByRole('link', { name: 'configs.json guideline' }).click()
   await expect(page).toHaveURL(/\/config-guides/)
-  await expect(page.getByRole('heading', { name: 'Config Guides' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'configs.json guideline' })).toBeVisible()
   await expect(page.getByText('/configs.json', { exact: false }).first()).toBeVisible()
   await expect(page.getByRole('heading', { name: 'music-list' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Ask an AI to generate configs.json' })).toBeVisible()
+  await expect(page.getByTestId('copy-llm-prompt')).toBeVisible()
 })
 
 test('music list shows catalog tracks', async ({ page }) => {

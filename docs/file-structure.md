@@ -12,8 +12,8 @@ Repository layout for tdmusic. Library versions: [tech-stack.md](tech-stack.md).
 ├── src/
 │   ├── __tests__/                Vitest setup + specs
 │   ├── assets/
-│   ├── components/               Shared UI (AppHeader, AudioHost, footer, …)
-│   ├── lib/                      Pure helpers (catalog, cache, player logic, metadata)
+│   ├── components/               Shared UI (AppHeader, AudioHost, TrackList, footer, …)
+│   ├── lib/                      Pure helpers (catalog, cache, player/playback session, metadata)
 │   ├── locales/                  vue-i18n message modules (en, zh)
 │   ├── plugins/                  App plugins (Vuetify, i18n)
 │   ├── router/

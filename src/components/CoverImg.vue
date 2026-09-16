@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, toRef } from 'vue'
+import { computed, ref, toRef } from 'vue'
 
 import { useLazyLoad } from '@/lib/useLazyLoad'
 
@@ -20,11 +20,22 @@ const props = withDefaults(
 
 const root = ref<HTMLElement | null>(null)
 const visible = useLazyLoad(root, toRef(props, 'eager'))
+
+const rootStyle = computed(() =>
+  props.aspectRatio != null ? { aspectRatio: String(props.aspectRatio) } : undefined,
+)
 </script>
 
 <template>
-  <div ref="root" class="cover-img">
-    <v-img v-if="visible" :src="src" :alt="alt" :cover="cover" :aspect-ratio="aspectRatio" eager />
+  <div ref="root" class="cover-img no-touch-callout" :style="rootStyle" @contextmenu.prevent>
+    <img
+      v-if="visible"
+      class="cover-img__media"
+      :class="{ 'cover-img__media--cover': cover }"
+      :src="src"
+      :alt="alt ?? ''"
+      draggable="false"
+    />
   </div>
 </template>
 
@@ -32,5 +43,26 @@ const visible = useLazyLoad(root, toRef(props, 'eager'))
 .cover-img {
   width: 100%;
   height: 100%;
+  overflow: hidden;
+}
+
+.no-touch-callout {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.cover-img__media {
+  display: block;
+  width: 100%;
+  height: 100%;
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.cover-img__media--cover {
+  object-fit: cover;
 }
 </style>

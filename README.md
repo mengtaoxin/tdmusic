@@ -11,11 +11,11 @@ A browser music player that reads your library from a JSON catalog. No backend: 
 - Offline-friendly audio + cover cache in IndexedDB (prefetch upcoming tracks)
 - ID3 enrichment from cached audio when config metadata is incomplete
 - Browse: Music List, Playlists, Artists, Albums, Search
-- In-app Config Guides and Logs
+- In-app configs.json guideline and Logs
 
 ## Requirements
 
-- Node.js `^22.18.0` or `>=24.12.0` (see `package.json` `engines`)
+- Node.js `^22.18.0` or `^24.12.0` (see `package.json` `engines`)
 
 ## Quick start
 
@@ -36,11 +36,12 @@ Day-to-day workflows use `./scripts/*` rather than raw `npm run` (see [docs/comm
 | `./scripts/format-and-lint.sh` | Format + lint |
 | `./scripts/test.sh` | Full test suite (unit + e2e) |
 
-Run a single test file:
+Run a single test file (e2e defaults to Chromium; add browsers with `--platform`):
 
 ```sh
-./scripts/test.sh --src/__tests__/App.spec.ts
-./scripts/test.sh e2e/vue.spec.ts
+./scripts/test.sh --file src/__tests__/App.spec.ts
+./scripts/test.sh --file e2e/vue.spec.ts
+./scripts/test.sh --platform chrome,firefox,webkit
 ```
 
 ## Catalog
@@ -49,7 +50,7 @@ Default catalog: [`public/configs.json`](public/configs.json) served at `/config
 
 Each `music-list` entry needs `id` and `path` (`http(s)://` or site-absolute `/…`). Optional `title`, `artist`, `album`, and `cover` override extracted tags. Playlists reference tracks by `id`.
 
-Field-by-field help is in the app under **More → Settings → Config Guides**, and in [docs/project-specific-docs.md](docs/project-specific-docs.md).
+Field-by-field help is in the app under **More → configs.json guideline**, and in [docs/project-specific-docs.md](docs/project-specific-docs.md).
 
 ## Stack
 

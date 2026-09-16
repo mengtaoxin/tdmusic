@@ -3,23 +3,12 @@ export type RepeatMode = 'off' | 'all' | 'one'
 export function nextIndex(
   currentIndex: number,
   queueLength: number,
-  options: { repeatMode: RepeatMode; shuffle: boolean; random?: () => number },
+  options: { repeatMode: RepeatMode; shuffle?: boolean },
 ): number | null {
   if (queueLength <= 0) return null
   if (options.repeatMode === 'one') return currentIndex
 
-  if (options.shuffle) {
-    if (queueLength === 1) {
-      return options.repeatMode === 'all' ? 0 : null
-    }
-    const rnd = options.random ?? Math.random
-    let next = currentIndex
-    while (next === currentIndex) {
-      next = Math.floor(rnd() * queueLength)
-    }
-    return next
-  }
-
+  // Shuffle reorders the queue up front; next always walks that order linearly.
   const next = currentIndex + 1
   if (next < queueLength) return next
   return options.repeatMode === 'all' ? 0 : null
@@ -37,6 +26,65 @@ export function prevIndex(
   return options.repeatMode === 'all' ? queueLength - 1 : null
 }
 
+/** Fisher–Yates shuffle of a copy. */
+export function shuffleIds(ids: string[], random: () => number = Math.random): string[] {
+  const a = [...ids]
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1))
+    const tmp = a[i]!
+    a[i] = a[j]!
+    a[j] = tmp
+  }
+  return a
+}
+
+/** Keep prefix through currentIndex; shuffle only the upcoming tail (Spotify-style). */
+export function shuffleUpcoming(
+  queue: string[],
+  currentIndex: number,
+  random: () => number = Math.random,
+): string[] {
+  if (currentIndex < 0 || currentIndex >= queue.length) return [...queue]
+  const head = queue.slice(0, currentIndex + 1)
+  const rest = queue.slice(currentIndex + 1)
+  return head.concat(shuffleIds(rest, random))
+}
+
+/** Insert id immediately after currentIndex (append if index is last/invalid). */
+export function insertAfterCurrent(queue: string[], currentIndex: number, id: string): string[] {
+  if (currentIndex < 0 || currentIndex >= queue.length) {
+    return queue.concat(id)
+  }
+  const next = [...queue]
+  next.splice(currentIndex + 1, 0, id)
+  return next
+}
+
+/** Append id at the end of the queue. */
+export function appendToQueue(queue: string[], id: string): string[] {
+  return queue.concat(id)
+}
+
+/** Remove one index; report whether that index was the current track. */
+export function removeAtIndex(
+  queue: string[],
+  index: number,
+  currentIndex: number,
+): { queue: string[]; removedCurrent: boolean } {
+  if (index < 0 || index >= queue.length) {
+    return { queue: [...queue], removedCurrent: false }
+  }
+  const next = queue.slice(0, index).concat(queue.slice(index + 1))
+  return { queue: next, removedCurrent: index === currentIndex }
+}
+
+/** Keep 0..currentIndex inclusive; drop the upcoming tail. */
+export function clearUpcoming(queue: string[], currentIndex: number): string[] {
+  if (currentIndex < 0) return []
+  if (currentIndex >= queue.length) return [...queue]
+  return queue.slice(0, currentIndex + 1)
+}
+
 /** Upcoming queue ids to prefetch (does not include current). */
 export function upcomingQueueIds(
   queue: string[],
@@ -44,31 +92,14 @@ export function upcomingQueueIds(
   options: {
     count: number
     repeatMode: RepeatMode
-    shuffle: boolean
-    random?: () => number
+    /** @deprecated Ignored — shuffle is applied to the queue order itself. */
+    shuffle?: boolean
   },
 ): string[] {
-  const { count, repeatMode, shuffle } = options
+  const { count, repeatMode } = options
   if (count <= 0 || queue.length === 0) return []
   if (currentIndex < 0 || currentIndex >= queue.length) return []
   if (repeatMode === 'one') return []
-
-  if (shuffle) {
-    const rnd = options.random ?? Math.random
-    const picked = new Set<number>([currentIndex])
-    const result: string[] = []
-    const maxAttempts = queue.length * 8
-    let attempts = 0
-    while (result.length < count && picked.size < queue.length && attempts < maxAttempts) {
-      attempts += 1
-      const next = Math.floor(rnd() * queue.length)
-      if (picked.has(next)) continue
-      picked.add(next)
-      const id = queue[next]
-      if (id != null) result.push(id)
-    }
-    return result
-  }
 
   const result: string[] = []
   let i = currentIndex + 1
@@ -87,7 +118,7 @@ export function upcomingQueueIds(
 
 export type QueueChunkCallback = (chunk: string[]) => void
 
-/** Synchronously take first id at startIndex; async append the rest in chunks. */
+/** Play sourceIds[startIndex] immediately; fill the full list from 0 (prefix sync, rest chunked). */
 export function buildQueueFrom(
   sourceIds: string[],
   startIndex: number,
@@ -110,6 +141,10 @@ export function buildQueueFrom(
 
   const head = sourceIds[startIndex]!
   options.onHead(head)
+
+  // Deliver prefix through the play head synchronously so Previous works immediately.
+  const prefix = sourceIds.slice(0, startIndex + 1)
+  if (prefix.length) options.onChunk(prefix)
 
   let offset = startIndex + 1
 
@@ -136,6 +171,8 @@ export function buildQueueFrom(
 
 export type PersistedPlayerState = {
   queue: string[]
+  /** Unshuffled order for restoring when shuffle turns off. */
+  originalQueue: string[]
   currentId: string | null
   currentTime: number
   repeatMode: RepeatMode
@@ -155,8 +192,13 @@ export function parsePlayerState(raw: string | null): PersistedPlayerState | nul
     const data = JSON.parse(raw) as Partial<PersistedPlayerState> & { v?: unknown }
     if (data.v != null && data.v !== PLAYER_STATE_VERSION) return null
     if (!Array.isArray(data.queue)) return null
+    const queue = data.queue.filter((id): id is string => typeof id === 'string')
+    const originalQueue = Array.isArray(data.originalQueue)
+      ? data.originalQueue.filter((id): id is string => typeof id === 'string')
+      : [...queue]
     return {
-      queue: data.queue.filter((id): id is string => typeof id === 'string'),
+      queue,
+      originalQueue,
       currentId: typeof data.currentId === 'string' ? data.currentId : null,
       currentTime: typeof data.currentTime === 'number' ? data.currentTime : 0,
       repeatMode:
@@ -178,6 +220,9 @@ export function hydratePlayerState(
   const queue = persisted.queue.filter((id) => knownIds.has(id))
   if (queue.length === 0) return null
 
+  const originalQueue = persisted.originalQueue.filter((id) => knownIds.has(id))
+  const restoredOriginal = originalQueue.length > 0 ? originalQueue : [...queue]
+
   let currentId = persisted.currentId
   if (!currentId || !queue.includes(currentId)) {
     currentId = queue[0]!
@@ -185,6 +230,7 @@ export function hydratePlayerState(
 
   return {
     queue,
+    originalQueue: restoredOriginal,
     currentId,
     currentTime: Math.max(0, persisted.currentTime),
     repeatMode: persisted.repeatMode,

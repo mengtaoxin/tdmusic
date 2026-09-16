@@ -59,9 +59,7 @@ describe('PlaylistView', () => {
   })
 
   it('lists playlists without the configs.json subtitle', async () => {
-    const wrapper = await mountPlaylistView([
-      { title: 'My Playlist1', trackIds: ['t1'] },
-    ])
+    const wrapper = await mountPlaylistView([{ title: 'My Playlist1', trackIds: ['t1'] }])
     await flushPromises()
 
     expect(wrapper.text()).not.toContain('From configs.json playlists')

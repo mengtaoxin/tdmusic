@@ -65,4 +65,27 @@ describe('CoverImg', () => {
     expect(wrapper.find(`img[src="${COVER}"]`).exists()).toBe(true)
     wrapper.unmount()
   })
+
+  it('blocks long-press save / drag on cover images', async () => {
+    const wrapper = mount(CoverImg, {
+      props: { src: COVER, eager: true },
+      global: { plugins: [vuetify] },
+      attachTo: document.body,
+    })
+    await nextTick()
+    await nextTick()
+    await nextTick()
+
+    const root = wrapper.find('.cover-img')
+    expect(root.exists()).toBe(true)
+    expect(root.classes()).toContain('no-touch-callout')
+
+    const img = wrapper.find(`img[src="${COVER}"]`)
+    expect(img.exists()).toBe(true)
+    expect(img.attributes('draggable')).toBe('false')
+
+    await wrapper.find('.cover-img').trigger('contextmenu')
+
+    wrapper.unmount()
+  })
 })

@@ -20,15 +20,7 @@ const englishMenus = [
   'Language',
 ]
 
-const chineseMenus = [
-  '正在播放',
-  '音乐列表',
-  '播放列表',
-  '歌手列表',
-  '专辑列表',
-  '更多',
-  '语言',
-]
+const chineseMenus = ['正在播放', '音乐列表', '播放列表', '歌手列表', '专辑列表', '更多', '语言']
 
 function createTestI18n() {
   return createI18n({

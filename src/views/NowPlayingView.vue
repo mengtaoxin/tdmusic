@@ -7,6 +7,7 @@ import TrackListItem from '@/components/TrackListItem.vue'
 import { artistAlbumPath, artistAlbumsPath } from '@/lib/artistRoutes'
 import { localizeAlbumName, localizeArtistName } from '@/lib/displayLabels'
 import { useCatalogStore } from '@/stores/catalog'
+import { ensureCatalogLoaded } from '@/stores/catalogBootstrap'
 import { usePlayerStore } from '@/stores/player'
 
 const { t } = useI18n()
@@ -43,7 +44,7 @@ const repeatIcon = computed(() => {
 })
 
 onMounted(() => {
-  if (!catalog.tracks.length && !catalog.loading) void catalog.load()
+  void ensureCatalogLoaded()
 })
 
 function formatTime(sec: number) {
@@ -62,12 +63,18 @@ function onSeek(value: number | number[]) {
 function playQueueItem(index: number) {
   player.goToIndex(index, true)
 }
+
+function removeQueueItem(index: number) {
+  player.removeAt(index)
+}
+
+function clearUpcoming() {
+  player.clearUpcoming()
+}
 </script>
 
 <template>
-  <v-container class="page-narrow" fluid>
-    <h1 class="text-h5 mb-4">{{ t('nav.nowPlaying') }}</h1>
-
+  <v-container data-testid="now-playing-page" class="page-narrow no-touch-callout" fluid>
     <div v-if="current" class="player-hero mb-8">
       <div class="cover-wrap mb-4">
         <CoverImg
@@ -140,7 +147,18 @@ function playQueueItem(index: number) {
       {{ t('player.empty') }}
     </v-alert>
 
-    <h2 class="text-h6 mb-2">{{ t('player.queue') }}</h2>
+    <div class="d-flex align-center justify-space-between mb-2">
+      <h2 class="text-h6 mb-0">{{ t('player.queue') }}</h2>
+      <v-btn
+        v-if="queueTracks.length > 1"
+        data-testid="clear-upcoming"
+        variant="text"
+        size="small"
+        @click="clearUpcoming"
+      >
+        {{ t('player.clearUpcoming') }}
+      </v-btn>
+    </div>
     <v-virtual-scroll
       :items="queueTracks"
       item-key="id"
@@ -152,7 +170,9 @@ function playQueueItem(index: number) {
         <TrackListItem
           :track="track"
           :active="player.currentId === track.id"
+          actions="queue"
           @select="playQueueItem(index)"
+          @remove="removeQueueItem(index)"
         />
       </template>
     </v-virtual-scroll>
@@ -160,6 +180,12 @@ function playQueueItem(index: number) {
 </template>
 
 <style scoped>
+.no-touch-callout {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
 .player-hero {
   text-align: center;
 }

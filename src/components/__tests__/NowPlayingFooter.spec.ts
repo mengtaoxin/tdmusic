@@ -22,15 +22,23 @@ function makeTrack(): DisplayTrack {
   }
 }
 
-async function mountFooter(opts?: { currentTime?: number; duration?: number }) {
+async function mountFooter(opts?: { currentTime?: number; duration?: number; queue?: string[] }) {
   const pinia = createPinia()
   const catalog = useCatalogStore(pinia)
   const track = makeTrack()
-  catalog.tracks = [track]
+  const track2: DisplayTrack = {
+    id: 't2',
+    path: '/music/t2.mp3',
+    displayTitle: 'Song Two',
+    displayArtist: 'Artist One',
+    displayAlbum: 'Album One',
+  }
+  catalog.tracks = [track, track2]
   catalog.loading = false
 
   const player = usePlayerStore(pinia)
-  player.queue = [track.id]
+  player.queue = opts?.queue ?? [track.id, track2.id]
+  player.originalQueue = [...player.queue]
   player.currentId = track.id
   player.currentTime = opts?.currentTime ?? 30
   player.duration = opts?.duration ?? 120
@@ -52,7 +60,7 @@ async function mountFooter(opts?: { currentTime?: number; duration?: number }) {
   await router.push('/')
   await router.isReady()
 
-  return mount(
+  const wrapper = mount(
     {
       components: { NowPlayingFooter, VApp },
       template: '<VApp><NowPlayingFooter /></VApp>',
@@ -61,16 +69,43 @@ async function mountFooter(opts?: { currentTime?: number; duration?: number }) {
       global: { plugins: [pinia, router, vuetify, i18n] },
     },
   )
+  return { wrapper, player, router }
 }
 
 describe('NowPlayingFooter', () => {
   it('shows playback progress along the top of the footer', async () => {
-    const wrapper = await mountFooter({ currentTime: 30, duration: 120 })
+    const { wrapper } = await mountFooter({ currentTime: 30, duration: 120 })
     await flushPromises()
 
     const progress = wrapper.find('[data-testid="footer-progress"]')
     expect(progress.exists()).toBe(true)
     expect(progress.classes()).toContain('footer-progress')
     expect(Number(progress.attributes('aria-valuenow'))).toBe(25)
+  })
+
+  it('seeks when the footer progress control changes', async () => {
+    const { wrapper, player } = await mountFooter({ currentTime: 30, duration: 100 })
+    await flushPromises()
+
+    const progress = wrapper.findComponent({ name: 'VProgressLinear' })
+    expect(progress.exists()).toBe(true)
+    progress.vm.$emit('update:modelValue', 50)
+    await flushPromises()
+
+    expect(player.currentTime).toBe(50)
+    expect(player.seekTo).toBe(50)
+  })
+
+  it('has previous and next controls that advance the queue', async () => {
+    const { wrapper, player } = await mountFooter()
+    await flushPromises()
+
+    const nextBtn = wrapper.find('[data-testid="footer-next"]')
+    const prevBtn = wrapper.find('[data-testid="footer-prev"]')
+    expect(nextBtn.exists()).toBe(true)
+    expect(prevBtn.exists()).toBe(true)
+
+    await nextBtn.trigger('click')
+    expect(player.currentId).toBe('t2')
   })
 })

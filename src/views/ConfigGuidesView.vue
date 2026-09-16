@@ -1,7 +1,36 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
+import { configLlmPromptForLocale } from '@/lib/configLlmPrompt'
+
+const { t, locale } = useI18n()
+const llmPrompt = computed(() => configLlmPromptForLocale(String(locale.value)))
+const copied = ref(false)
+let copiedTimer: ReturnType<typeof setTimeout> | undefined
+
+async function copyLlmPrompt() {
+  const text = llmPrompt.value
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch {
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.setAttribute('readonly', '')
+    ta.style.position = 'fixed'
+    ta.style.left = '-9999px'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+  }
+  copied.value = true
+  if (copiedTimer !== undefined) clearTimeout(copiedTimer)
+  copiedTimer = setTimeout(() => {
+    copied.value = false
+    copiedTimer = undefined
+  }, 2000)
+}
 </script>
 
 <template>
@@ -55,13 +84,33 @@ const { t } = useI18n()
 }</code></pre>
     </section>
 
-    <section class="guide">
+    <section class="guide mb-6">
       <h2 class="text-subtitle-1 mb-2">{{ t('configGuides.notesTitle') }}</h2>
       <ul class="notes text-body-2 pl-5">
         <li class="mb-1">{{ t('configGuides.noteFallback') }}</li>
         <li class="mb-1">{{ t('configGuides.noteUnknown') }}</li>
         <li class="mb-1">{{ t('configGuides.notePaths') }}</li>
       </ul>
+    </section>
+
+    <section class="guide">
+      <div class="d-flex align-center flex-wrap ga-2 mb-2">
+        <h2 class="text-subtitle-1 ma-0">{{ t('configGuides.llmTitle') }}</h2>
+        <v-btn
+          data-testid="copy-llm-prompt"
+          size="small"
+          variant="tonal"
+          prepend-icon="mdi-content-copy"
+          @click="copyLlmPrompt"
+        >
+          {{ copied ? t('configGuides.llmCopied') : t('configGuides.llmCopy') }}
+        </v-btn>
+      </div>
+      <p class="text-body-2 mb-3">{{ t('configGuides.llmBody') }}</p>
+      <pre
+        data-testid="config-llm-prompt"
+        class="example text-body-2 py-3 px-4"
+      ><code>{{ llmPrompt }}</code></pre>
     </section>
   </v-container>
 </template>
@@ -86,6 +135,6 @@ const { t } = useI18n()
 
 .example code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  white-space: pre;
+  white-space: pre-wrap;
 }
 </style>

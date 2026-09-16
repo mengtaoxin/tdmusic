@@ -5,12 +5,13 @@ import { useI18n } from 'vue-i18n'
 import { artistAlbumsPath } from '@/lib/artistRoutes'
 import { localizeArtistName } from '@/lib/displayLabels'
 import { useCatalogStore } from '@/stores/catalog'
+import { ensureCatalogLoaded } from '@/stores/catalogBootstrap'
 
 const { t } = useI18n()
 const catalog = useCatalogStore()
 
 onMounted(() => {
-  if (!catalog.tracks.length && !catalog.loading) void catalog.load()
+  void ensureCatalogLoaded()
 })
 </script>
 

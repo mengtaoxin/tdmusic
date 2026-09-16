@@ -16,10 +16,9 @@ Prefer the scripts above over raw `npm run <script>` (e.g. do not run `npm run d
 
 ## test.sh
 
-Default runs the full suite (unit + e2e). An optional first argument selects a single file (leading `--` on the filter is optional). Paths under `e2e/` run Playwright; otherwise Vitest. Do not invoke Vitest or Playwright via `npm run` / `npx`.
+Default (no flags): full suite (unit + e2e). Named flags only (`--key value` or `--key=value`); order does not matter. Do not invoke Vitest or Playwright via `npm run` / `npx`.
 
-```sh
-./scripts/test.sh
-./scripts/test.sh --src/__tests__/App.spec.ts
-./scripts/test.sh e2e/vue.spec.ts
-```
+| Flag | Value | Default | Notes |
+| ---- | ----- | ------- | ----- |
+| `--file` | path to a spec | _(omit = all)_ | Under `e2e/` → Playwright; otherwise Vitest |
+| `--platform` | comma-separated browsers | `chromium` | `chrome`/`chromium`, `firefox`, `webkit`/`safari`; e2e only; runs in parallel (`fullyParallel`) |

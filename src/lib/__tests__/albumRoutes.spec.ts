@@ -36,11 +36,7 @@ describe('firstAlbumCoverSrc', () => {
 
   it('skips tracks without a cover', () => {
     expect(
-      firstAlbumCoverSrc([
-        {},
-        { displayCover: '' },
-        { displayCover: 'https://example.com/c.jpg' },
-      ]),
+      firstAlbumCoverSrc([{}, { displayCover: '' }, { displayCover: 'https://example.com/c.jpg' }]),
     ).toBe('https://example.com/c.jpg')
   })
 

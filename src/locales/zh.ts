@@ -10,9 +10,12 @@ export default {
     more: '更多',
     language: '语言',
     settings: '设置',
+    configGuides: 'configs.json 指南',
     about: '关于',
     logs: '日志',
+    feedback: '反馈',
     openMenu: '打开菜单',
+    beta: 'Beta',
   },
   home: {
     title: '欢迎使用 tdmusic',
@@ -32,6 +35,8 @@ export default {
     empty: '暂无播放列表。请在配置中添加 playlists 数组。',
     trackCount: '{count} 首',
     notFound: '未找到该播放列表。',
+    playAll: '顺序播放全部',
+    shuffleAll: '随机播放全部',
   },
   artist: {
     allMusic: '该歌手的全部音乐',
@@ -48,6 +53,10 @@ export default {
     unknownAlbum: '未知专辑',
     empty: '暂无播放。请从音乐列表选择一首歌。',
     queue: '正在播放列表',
+    playNext: '下一首播放',
+    addToQueue: '添加到队列',
+    removeFromQueue: '从队列移除',
+    clearUpcoming: '清除后续',
   },
   search: {
     placeholder: '搜索歌曲、歌手、专辑',
@@ -59,7 +68,7 @@ export default {
   settings: {
     configUrl: '配置地址',
     configUrlHint: '应用从这里加载音乐目录。留空则使用默认地址。',
-    configGuidesLink: '配置说明',
+    configGuidesLink: 'configs.json 指南',
     save: '保存',
     reload: '重新加载配置',
     reloadHint: '按当前配置地址重新拉取音乐目录。',
@@ -73,7 +82,7 @@ export default {
     cacheCleared: '已清除全部音乐缓存。',
   },
   configGuides: {
-    title: '配置说明',
+    title: 'configs.json 指南',
     intro: '应用从 JSON 配置文件（通常是 configs.json）加载音乐目录。本页说明该文件的写法。',
     whereTitle: '从哪里加载',
     whereBody:
@@ -95,6 +104,11 @@ export default {
     noteFallback: '标题回退顺序：配置 → ID3 → path 文件名（解码后的无扩展名 basename）→ id。',
     noteUnknown: '缺少歌手/专辑时显示为未知歌手 / 未知专辑；曲目仍会按歌手 → 专辑 → 曲目分组。',
     notePaths: 'http(s):// 与站点绝对路径（/…）在播放时都会写入 IndexedDB 缓存。',
+    llmTitle: '让大模型生成 configs.json',
+    llmBody:
+      '把下面的提示词复制到 ChatGPT、Claude 等大模型，再附上你的音频文件列表（URL 或路径）。把返回的 JSON 写入 configs.json（或放到可访问地址，并在设置里填写配置地址）。',
+    llmCopy: '复制提示词',
+    llmCopied: '已复制',
   },
   about: {
     github: 'GitHub',

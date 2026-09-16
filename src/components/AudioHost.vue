@@ -2,6 +2,8 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 
 import { appendAppLog } from '@/lib/appLogStore'
+import { syncMediaSession } from '@/lib/mediaSession'
+import { createPlaybackSession } from '@/lib/playbackSession'
 import { prefetchUpcoming } from '@/lib/prefetchUpcoming'
 import { resolvePlayableUrl } from '@/lib/resolvePlayableUrl'
 import { useCatalogStore } from '@/stores/catalog'
@@ -12,8 +14,9 @@ const catalog = useCatalogStore()
 const player = usePlayerStore()
 
 let lastTimePersist = 0
-let consecutiveLoadFailures = 0
+let lastMediaSessionSync = 0
 const PREFETCH_COUNT = 3
+const MEDIA_SESSION_SYNC_MS = 1000
 
 function resolveTrackForPrefetch(id: string) {
   const track = catalog.trackById.get(id)
@@ -27,61 +30,60 @@ function schedulePrefetch() {
     repeatMode: player.repeatMode,
     shuffle: player.shuffle,
     resolveTrack: resolveTrackForPrefetch,
+    onTrackCached: (id) => catalog.scheduleEnrichTrack(id),
   })
 }
 
-function downloadFailureLog(track: { id: string; path: string }, error: unknown): string {
-  const detail = error instanceof Error ? error.message : String(error)
-  return `Failed to download track "${track.id}" from ${track.path}: ${detail}`
-}
-
-async function loadCurrent() {
-  const audio = audioRef.value
-  const id = player.currentId
-  if (!audio || !id) return
-  const track = catalog.trackById.get(id)
-  if (!track) return
-
-  try {
-    const url = await resolvePlayableUrl(track.path, track.id)
-    if (player.currentId !== id) return
-    consecutiveLoadFailures = 0
-    audio.src = url
-    audio.load()
-    catalog.scheduleEnrichTrack(id)
-    schedulePrefetch()
-    const seek = player.seekTo
-    const onLoaded = () => {
-      if (seek != null && Number.isFinite(seek)) {
-        audio.currentTime = seek
-      }
+const session = createPlaybackSession(
+  () => audioRef.value,
+  {
+    getCurrentId: () => player.currentId,
+    getQueueLength: () => player.queue.length,
+    getSeekTo: () => player.seekTo,
+    getPendingPlay: () => player.pendingPlay,
+    clearSeekTo: () => {
       player.seekTo = null
-      if (player.pendingPlay) {
-        void audio.play().catch(() => {
-          player.pause()
-        })
-      }
-      audio.removeEventListener('loadedmetadata', onLoaded)
-    }
-    audio.addEventListener('loadedmetadata', onLoaded)
-  } catch (error) {
-    if (player.currentId !== id) return
-    void appendAppLog(downloadFailureLog(track, error))
-    consecutiveLoadFailures += 1
-    const limit = Math.max(player.queue.length, 1)
-    if (consecutiveLoadFailures >= limit) {
-      consecutiveLoadFailures = 0
-      player.pause()
-      return
-    }
-    player.skip()
-  }
+    },
+    pause: () => player.pause(),
+    skip: () => player.skip(),
+    getTrack: (id) => {
+      const track = catalog.trackById.get(id)
+      if (!track) return undefined
+      return { id: track.id, path: track.path }
+    },
+  },
+  {
+    resolvePlayableUrl,
+    appendAppLog: (message) => {
+      void appendAppLog(message)
+    },
+    scheduleEnrichTrack: (id) => catalog.scheduleEnrichTrack(id),
+    schedulePrefetch,
+  },
+)
+
+function updateMediaSession() {
+  const track = player.currentId ? catalog.trackById.get(player.currentId) : undefined
+  syncMediaSession(track, player)
 }
 
 watch(
   () => player.loadToken,
   () => {
-    void loadCurrent()
+    void session.loadCurrent()
+  },
+)
+
+watch(
+  () =>
+    [
+      player.currentId,
+      player.playing,
+      player.currentId ? catalog.trackById.get(player.currentId)?.displayTitle : null,
+      player.currentId ? catalog.trackById.get(player.currentId)?.displayCover : null,
+    ] as const,
+  () => {
+    updateMediaSession()
   },
 )
 
@@ -131,6 +133,10 @@ function onTimeUpdate() {
   player.currentTime = audio.currentTime
   player.duration = audio.duration || 0
   const now = Date.now()
+  if (now - lastMediaSessionSync >= MEDIA_SESSION_SYNC_MS) {
+    lastMediaSessionSync = now
+    updateMediaSession()
+  }
   if (now - lastTimePersist > 2000) {
     lastTimePersist = now
     player.flushPersist()
@@ -175,6 +181,7 @@ onMounted(() => {
   if (audio) audio.loop = player.repeatMode === 'one'
   document.addEventListener('visibilitychange', onVisibilityFlush)
   window.addEventListener('pagehide', onVisibilityFlush)
+  updateMediaSession()
 })
 
 onUnmounted(() => {

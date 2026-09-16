@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import TrackListItem from '@/components/TrackListItem.vue'
+import { useTrackListPlayback } from '@/lib/useTrackListPlayback'
 import { capVirtualListHeight, virtualListNeedsScroll } from '@/lib/virtualListHeight'
-import { useCatalogStore } from '@/stores/catalog'
-import { usePlayerStore } from '@/stores/player'
 
 const { t } = useI18n()
-const catalog = useCatalogStore()
-const player = usePlayerStore()
 
 const TRACK_ROW_HEIGHT = 64
 
@@ -17,7 +14,9 @@ const listHost = ref<HTMLElement | null>(null)
 const hostHeight = ref(0)
 let resizeObserver: ResizeObserver | null = null
 
-const ids = computed(() => catalog.tracks.map((track) => track.id))
+const { catalog, player, playAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(() =>
+  catalog.tracks.map((track) => track.id),
+)
 
 const listHeight = computed(() =>
   capVirtualListHeight(catalog.tracks.length, TRACK_ROW_HEIGHT, hostHeight.value),
@@ -45,20 +44,10 @@ watch(
   { flush: 'post' },
 )
 
-onMounted(() => {
-  if (!catalog.tracks.length && !catalog.loading) {
-    void catalog.load()
-  }
-})
-
 onBeforeUnmount(() => {
   resizeObserver?.disconnect()
   resizeObserver = null
 })
-
-function playAt(index: number) {
-  player.playFrom(index, ids.value)
-}
 </script>
 
 <template>
@@ -96,6 +85,8 @@ function playAt(index: number) {
             :track="track"
             :active="player.currentId === track.id"
             @select="playAt(index)"
+            @play-next="playNextTrack(track.id)"
+            @add-to-queue="addTrackToQueue(track.id)"
           />
         </template>
       </v-virtual-scroll>

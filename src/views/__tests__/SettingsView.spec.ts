@@ -71,20 +71,20 @@ describe('SettingsView', () => {
     expect(text).toContain('清除已缓存的音频与元数据，不会清空正在播放队列。')
   })
 
-  it('links to Config Guides', () => {
+  it('links to configs.json guideline', () => {
     const wrapper = mountSettings('en')
     const link = wrapper.find('a[href="/config-guides"]')
 
     expect(link.exists()).toBe(true)
-    expect(link.text()).toContain('Config Guides')
+    expect(link.text()).toContain('configs.json guideline')
   })
 
-  it('shows a Chinese Config Guides link label', () => {
+  it('shows a Chinese configs.json guideline link label', () => {
     const wrapper = mountSettings('zh')
     const link = wrapper.find('a[href="/config-guides"]')
 
     expect(link.exists()).toBe(true)
-    expect(link.text()).toContain('配置说明')
+    expect(link.text()).toContain('configs.json 指南')
   })
 
   it('shows a bottom snackbar after save instead of an inline alert', async () => {

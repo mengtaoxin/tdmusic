@@ -136,4 +136,220 @@ describe('AudioHost', () => {
 
     wrapper.unmount()
   })
+
+  it('registers Media Session metadata and action handlers for the current track', async () => {
+    const setActionHandler =
+      vi.fn<(action: MediaSessionAction, handler: MediaSessionActionHandler | null) => void>()
+    const setPositionState = vi.fn<(state?: MediaPositionState) => void>()
+    const mediaSession = {
+      metadata: null as MediaMetadata | null,
+      playbackState: 'none' as MediaSessionPlaybackState,
+      setActionHandler,
+      setPositionState,
+    }
+    Object.defineProperty(navigator, 'mediaSession', {
+      configurable: true,
+      value: mediaSession,
+    })
+    vi.stubGlobal(
+      'MediaMetadata',
+      class {
+        title: string
+        artist: string
+        album: string
+        artwork: MediaImage[]
+        constructor(init: MediaMetadataInit) {
+          this.title = init.title ?? ''
+          this.artist = init.artist ?? ''
+          this.album = init.album ?? ''
+          this.artwork = init.artwork ?? []
+        }
+      },
+    )
+
+    const pinia = createPinia()
+    const catalog = useCatalogStore(pinia)
+    catalog.tracks = [
+      {
+        id: 't1',
+        path: '/music/t1.mp3',
+        displayTitle: 'Song One',
+        displayArtist: 'Artist One',
+        displayAlbum: 'Album One',
+        displayCover: 'blob:cover',
+      },
+    ]
+
+    vi.spyOn(resolvePlayableUrlMod, 'resolvePlayableUrl').mockResolvedValue('blob:audio')
+    vi.spyOn(prefetchUpcomingMod, 'prefetchUpcoming').mockResolvedValue(undefined)
+
+    const wrapper = mount(AudioHost, {
+      global: { plugins: [pinia] },
+    })
+    const player = usePlayerStore(pinia)
+    const audio = wrapper.get('[data-testid="global-audio"]').element as HTMLAudioElement
+    vi.spyOn(audio, 'play').mockResolvedValue(undefined)
+    vi.spyOn(audio, 'load').mockImplementation(() => undefined)
+
+    player.queue = ['t1']
+    player.currentId = 't1'
+    player.pendingPlay = true
+    player.playing = true
+    player.duration = 120
+    player.loadToken += 1
+    await nextTick()
+    await flushPromises()
+    await flushPromises()
+
+    expect(mediaSession.metadata).toBeTruthy()
+    expect(mediaSession.metadata?.title).toBe('Song One')
+    expect(mediaSession.metadata?.artist).toBe('Artist One')
+    expect(mediaSession.metadata?.album).toBe('Album One')
+    expect(setActionHandler).toHaveBeenCalledWith('play', expect.any(Function))
+    expect(setActionHandler).toHaveBeenCalledWith('pause', expect.any(Function))
+    expect(setActionHandler).toHaveBeenCalledWith('previoustrack', expect.any(Function))
+    expect(setActionHandler).toHaveBeenCalledWith('nexttrack', expect.any(Function))
+    expect(setActionHandler).toHaveBeenCalledWith('seekto', expect.any(Function))
+
+    const playHandler = setActionHandler.mock.calls.find((c) => c[0] === 'play')?.[1] as () => void
+    const nextHandler = setActionHandler.mock.calls.find(
+      (c) => c[0] === 'nexttrack',
+    )?.[1] as () => void
+    player.pause()
+    playHandler()
+    expect(player.playing).toBe(true)
+
+    player.queue = ['t1', 't2']
+    catalog.tracks.push({
+      id: 't2',
+      path: '/t2.mp3',
+      displayTitle: 'Two',
+      displayArtist: 'A',
+      displayAlbum: 'B',
+    })
+    nextHandler()
+    expect(player.currentId).toBe('t2')
+
+    expect(mediaSession.playbackState).toBe('playing')
+    expect(setPositionState).toHaveBeenCalledWith(
+      expect.objectContaining({
+        duration: 120,
+        playbackRate: 1,
+      }),
+    )
+
+    wrapper.unmount()
+  })
+
+  it('updates Media Session position state on timeupdate', async () => {
+    const setPositionState = vi.fn<(state?: MediaPositionState) => void>()
+    Object.defineProperty(navigator, 'mediaSession', {
+      configurable: true,
+      value: {
+        metadata: null,
+        playbackState: 'none',
+        setActionHandler:
+          vi.fn<(action: MediaSessionAction, handler: MediaSessionActionHandler | null) => void>(),
+        setPositionState,
+      },
+    })
+    vi.stubGlobal(
+      'MediaMetadata',
+      class {
+        constructor(init: MediaMetadataInit) {
+          Object.assign(this, init)
+        }
+      },
+    )
+
+    const pinia = createPinia()
+    const catalog = useCatalogStore(pinia)
+    catalog.tracks = [
+      {
+        id: 't1',
+        path: '/music/t1.mp3',
+        displayTitle: 'Song One',
+        displayArtist: 'Artist One',
+        displayAlbum: 'Album One',
+      },
+    ]
+
+    const wrapper = mount(AudioHost, {
+      global: { plugins: [pinia] },
+    })
+    const player = usePlayerStore(pinia)
+    const audio = wrapper.get('[data-testid="global-audio"]').element as HTMLAudioElement
+
+    player.queue = ['t1']
+    player.currentId = 't1'
+    player.playing = true
+    player.duration = 100
+    player.currentTime = 0
+    await nextTick()
+
+    setPositionState.mockClear()
+    Object.defineProperty(audio, 'currentTime', { configurable: true, value: 42 })
+    Object.defineProperty(audio, 'duration', { configurable: true, value: 100 })
+    audio.dispatchEvent(new Event('timeupdate'))
+    await nextTick()
+
+    expect(setPositionState).toHaveBeenCalledWith({
+      duration: 100,
+      playbackRate: 1,
+      position: 42,
+    })
+
+    wrapper.unmount()
+  })
+
+  it('schedules enrich for prefetched tracks via onTrackCached', async () => {
+    const pinia = createPinia()
+    const catalog = useCatalogStore(pinia)
+    catalog.tracks = [
+      {
+        id: 't1',
+        path: 'https://example.com/t1.mp3',
+        displayTitle: 'One',
+        displayArtist: 'A',
+        displayAlbum: 'B',
+      },
+      {
+        id: 't2',
+        path: 'https://example.com/t2.mp3',
+        displayTitle: 'Two',
+        displayArtist: 'A',
+        displayAlbum: 'B',
+      },
+    ]
+
+    vi.spyOn(resolvePlayableUrlMod, 'resolvePlayableUrl').mockResolvedValue('blob:audio')
+    const prefetchSpy = vi
+      .spyOn(prefetchUpcomingMod, 'prefetchUpcoming')
+      .mockResolvedValue(undefined)
+    const enrichSpy = vi.spyOn(catalog, 'scheduleEnrichTrack').mockImplementation(() => {})
+
+    const wrapper = mount(AudioHost, {
+      global: { plugins: [pinia] },
+    })
+    const player = usePlayerStore(pinia)
+    const audio = wrapper.get('[data-testid="global-audio"]').element as HTMLAudioElement
+    vi.spyOn(audio, 'play').mockResolvedValue(undefined)
+    vi.spyOn(audio, 'load').mockImplementation(() => undefined)
+
+    player.queue = ['t1', 't2']
+    player.currentId = 't1'
+    player.pendingPlay = true
+    player.loadToken += 1
+    await nextTick()
+    await flushPromises()
+    await flushPromises()
+
+    expect(prefetchSpy).toHaveBeenCalled()
+    const options = prefetchSpy.mock.calls.at(-1)?.[2]
+    expect(options?.onTrackCached).toEqual(expect.any(Function))
+    options!.onTrackCached!('t2')
+    expect(enrichSpy).toHaveBeenCalledWith('t2')
+
+    wrapper.unmount()
+  })
 })

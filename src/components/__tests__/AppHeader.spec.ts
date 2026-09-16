@@ -79,7 +79,16 @@ const englishTopMenus = [
 
 const englishDesktopExtraMenus = ['Language']
 
-const englishMoreSubMenus = ['Search', 'Settings', 'About', 'Logs']
+const GITHUB_ISSUES_URL = 'https://github.com/mengtaoxin/tdmusic/issues'
+
+const englishMoreSubMenus = [
+  'Search',
+  'Settings',
+  'configs.json guideline',
+  'About',
+  'Logs',
+  'Feedback',
+]
 
 const topNavIconsByPath: Record<string, string> = {
   '/now-playing': 'mdi-play-circle',
@@ -92,6 +101,7 @@ const topNavIconsByPath: Record<string, string> = {
 const moreSubNavIconsByPath: Record<string, string> = {
   '/search': 'mdi-magnify',
   '/settings': 'mdi-cog',
+  '/config-guides': 'mdi-file-document-outline',
   '/about': 'mdi-information-outline',
   '/logs': 'mdi-text-box-outline',
 }
@@ -105,6 +115,7 @@ const navRoutes = [
   { path: '/albums', name: 'albums', component: { template: '<div />' } },
   { path: '/search', name: 'search', component: { template: '<div />' } },
   { path: '/settings', name: 'settings', component: { template: '<div />' } },
+  { path: '/config-guides', name: 'config-guides', component: { template: '<div />' } },
   { path: '/about', name: 'about', component: { template: '<div />' } },
   { path: '/logs', name: 'logs', component: { template: '<div />' } },
 ]
@@ -170,6 +181,21 @@ describe('AppHeader', () => {
     expect(brandLink.exists()).toBe(true)
     expect(brandLink.element.tagName).toBe('A')
     expect(brandLink.attributes('href')).toBe('/')
+
+    wrapper.unmount()
+  })
+
+  it('shows a beta badge next to the brand title', async () => {
+    const { wrapper } = await mountHeader()
+
+    const brand = wrapper.find('.brand')
+    const beta = wrapper.find('[data-testid="brand-beta"]')
+    expect(beta.exists()).toBe(true)
+    expect(beta.text()).toBe('Beta')
+    expect(
+      brand.element.contains(beta.element) &&
+        brand.text().indexOf('tdmusic') < brand.text().indexOf('Beta'),
+    ).toBe(true)
 
     wrapper.unmount()
   })
@@ -267,7 +293,7 @@ describe('AppHeader', () => {
     wrapper.unmount()
   })
 
-  it('nests Search, Settings, About, and Logs under More in desktop nav and the drawer', async () => {
+  it('nests Search, Settings, configs.json guideline, About, Logs, and Feedback under More in desktop nav and the drawer', async () => {
     const { wrapper, router } = await mountHeader()
     applyLayoutWidths(wrapper, { toolbarWidth: 1200, brandWidth: 120, navContentWidth: 800 })
     await measureNavLayout()
@@ -291,6 +317,12 @@ describe('AppHeader', () => {
       expect(link).toBeTruthy()
       expect(link!.querySelector(`.${icon}`)).toBeTruthy()
     }
+
+    const feedbackLink = moreMenu!.querySelector(`a[href="${GITHUB_ISSUES_URL}"]`)
+    expect(feedbackLink).toBeTruthy()
+    expect(feedbackLink!.getAttribute('target')).toBe('_blank')
+    expect(feedbackLink!.getAttribute('rel')).toContain('noopener')
+    expect(feedbackLink!.querySelector('.mdi-message-text-outline')).toBeTruthy()
 
     const logsLink = moreMenu!.querySelector('a[href="/logs"]')
     expect(logsLink).toBeTruthy()
@@ -317,6 +349,11 @@ describe('AppHeader', () => {
       expect(link).toBeTruthy()
       expect(link!.querySelector(`.${icon}`)).toBeTruthy()
     }
+
+    const drawerFeedback = drawerRoot!.querySelector(`a[href="${GITHUB_ISSUES_URL}"]`)
+    expect(drawerFeedback).toBeTruthy()
+    expect(drawerFeedback!.getAttribute('target')).toBe('_blank')
+    expect(drawerFeedback!.querySelector('.mdi-message-text-outline')).toBeTruthy()
 
     wrapper.unmount()
   })
@@ -360,7 +397,7 @@ describe('AppHeader', () => {
     wrapper.unmount()
   })
 
-  it('keeps language options in the nav drawer when collapsed', async () => {
+  it('nests English and 中文 under a Language group in the drawer like More', async () => {
     const { wrapper } = await mountHeader()
     applyLayoutWidths(wrapper, { toolbarWidth: 400, brandWidth: 120, navContentWidth: 800 })
     await measureNavLayout()
@@ -373,19 +410,28 @@ describe('AppHeader', () => {
     const drawerRoot = document.querySelector('[data-testid="nav-drawer"]')
     expect(drawerRoot).toBeTruthy()
     expect(drawerRoot!.className).toMatch(/v-navigation-drawer--active/)
+    expect(drawerRoot!.textContent).toContain('Language')
     expect(drawerRoot!.textContent).toContain('English')
     expect(drawerRoot!.textContent).toContain('中文')
+    // Same group pattern as More: no lone divider section of flat locale rows.
+    expect(drawerRoot!.querySelector('hr.v-divider, .v-divider')).toBeNull()
 
-    const zhOption = [...drawerRoot!.querySelectorAll('[data-testid^="locale-option-"]')].find(
-      (el) => el.getAttribute('data-testid') === 'locale-option-zh',
+    const languageGroup = [...drawerRoot!.querySelectorAll('.v-list-group')].find((el) =>
+      el.textContent?.includes('Language'),
     )
+    expect(languageGroup).toBeTruthy()
+    expect(languageGroup!.querySelector('.mdi-translate')).toBeTruthy()
+
+    const zhOption = languageGroup!.querySelector('[data-testid="locale-option-zh"]')
     expect(zhOption).toBeTruthy()
+    expect(zhOption!.querySelector('.mdi-translate')).toBeTruthy()
     zhOption!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     await nextTick()
     await flushPromises()
 
     expect(localStorage.getItem('tdmusic.locale')).toBe('zh')
     expect(drawerRoot!.textContent).toContain('正在播放')
+    expect(drawerRoot!.textContent).toContain('语言')
     expect(drawerRoot!.textContent).not.toContain('首页')
 
     wrapper.unmount()
@@ -424,8 +470,12 @@ describe('AppHeader', () => {
     }
     expect(drawerRoot!.querySelector('.mdi-dots-horizontal')).toBeTruthy()
 
+    const languageGroup = [...drawerRoot!.querySelectorAll('.v-list-group')].find((el) =>
+      el.textContent?.includes('Language'),
+    )
+    expect(languageGroup).toBeTruthy()
     for (const locale of ['en', 'zh'] as const) {
-      const option = drawerRoot!.querySelector(`[data-testid="locale-option-${locale}"]`)
+      const option = languageGroup!.querySelector(`[data-testid="locale-option-${locale}"]`)
       expect(option).toBeTruthy()
       expect(option!.querySelector('.mdi-translate')).toBeTruthy()
     }
@@ -450,7 +500,7 @@ describe('AppHeader', () => {
     expect(drawerRoot).toBeTruthy()
     expect(drawerRoot!.className).toMatch(/v-navigation-drawer--active/)
 
-    for (const label of [...englishTopMenus, ...englishMoreSubMenus]) {
+    for (const label of [...englishTopMenus, 'Language', ...englishMoreSubMenus]) {
       expect(drawerRoot!.textContent).toContain(label)
     }
 

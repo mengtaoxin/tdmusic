@@ -14,6 +14,8 @@ export async function prefetchUpcoming(
     shuffle: boolean
     random?: () => number
     resolveTrack: (id: string) => PrefetchTrackRef | undefined
+    /** Called after a track is successfully cached (e.g. to re-enrich covers). */
+    onTrackCached?: (id: string) => void
   },
 ): Promise<void> {
   const ids = upcomingQueueIds(queue, currentIndex, {
@@ -29,6 +31,7 @@ export async function prefetchUpcoming(
       if (!track || !isPlayablePath(track.path)) return
       try {
         await ensureTrackCached(track.path, track.id)
+        options.onTrackCached?.(id)
       } catch {
         // best-effort prefetch
       }

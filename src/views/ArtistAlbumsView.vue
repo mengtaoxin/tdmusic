@@ -12,6 +12,7 @@ import {
 } from '@/lib/artistRoutes'
 import { localizeAlbumName, localizeArtistName } from '@/lib/displayLabels'
 import { useCatalogStore } from '@/stores/catalog'
+import { ensureCatalogLoaded } from '@/stores/catalogBootstrap'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -27,7 +28,7 @@ const albums = computed(() => {
 })
 
 onMounted(() => {
-  if (!catalog.tracks.length && !catalog.loading) void catalog.load()
+  void ensureCatalogLoaded()
 })
 </script>
 

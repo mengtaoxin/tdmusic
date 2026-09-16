@@ -6,6 +6,7 @@ import CoverImg from '@/components/CoverImg.vue'
 import { albumPath, firstAlbumCoverSrc } from '@/lib/albumRoutes'
 import { localizeAlbumName } from '@/lib/displayLabels'
 import { useCatalogStore } from '@/stores/catalog'
+import { ensureCatalogLoaded } from '@/stores/catalogBootstrap'
 
 const { t } = useI18n()
 const catalog = useCatalogStore()
@@ -19,7 +20,7 @@ const albumTiles = computed(() =>
 )
 
 onMounted(() => {
-  if (!catalog.tracks.length && !catalog.loading) void catalog.load()
+  void ensureCatalogLoaded()
 })
 </script>
 

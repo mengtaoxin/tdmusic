@@ -11,16 +11,17 @@ describe('playerStore', () => {
     vi.useFakeTimers()
   })
 
-  it('playFrom sets head immediately and fills queue in chunks', async () => {
+  it('playFrom sets head immediately and fills the full source list in chunks', async () => {
     const store = usePlayerStore()
     const ids = ['a', 'b', 'c', 'd']
     store.playFrom(1, ids)
-    expect(store.queue).toEqual(['b'])
     expect(store.currentId).toBe('b')
     expect(store.playing).toBe(true)
+    expect(store.queue).toEqual(['a', 'b'])
 
     await vi.runAllTimersAsync()
-    expect(store.queue).toEqual(['b', 'c', 'd'])
+    expect(store.queue).toEqual(['a', 'b', 'c', 'd'])
+    expect(store.originalQueue).toEqual(['a', 'b', 'c', 'd'])
   })
 
   it('persists and hydrates playback point', async () => {
@@ -83,5 +84,129 @@ describe('playerStore', () => {
     store.prev()
     expect(store.currentId).toBe('a')
     expect(store.playing).toBe(true)
+  })
+
+  it('toggleShuffle reorders upcoming tracks and restores original order', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'c', 'd', 'e'])
+    await vi.runAllTimersAsync()
+    store.goToIndex(1, true)
+    expect(store.queue).toEqual(['a', 'b', 'c', 'd', 'e'])
+
+    const values = [0, 0]
+    const rnd = vi.spyOn(Math, 'random').mockImplementation(() => values.shift() ?? 0)
+    store.toggleShuffle()
+    expect(store.shuffle).toBe(true)
+    expect(store.currentId).toBe('b')
+    expect(store.queue).toEqual(['a', 'b', 'd', 'e', 'c'])
+
+    store.toggleShuffle()
+    expect(store.shuffle).toBe(false)
+    expect(store.currentId).toBe('b')
+    expect(store.queue).toEqual(['a', 'b', 'c', 'd', 'e'])
+    rnd.mockRestore()
+  })
+
+  it('playFrom with shuffle on builds a shuffled upcoming queue', async () => {
+    const store = usePlayerStore()
+    store.shuffle = true
+    const values = [0, 0]
+    const rnd = vi.spyOn(Math, 'random').mockImplementation(() => values.shift() ?? 0)
+    store.playFrom(0, ['a', 'b', 'c', 'd'])
+    await vi.runAllTimersAsync()
+    expect(store.currentId).toBe('a')
+    expect(store.queue).toEqual(['a', 'c', 'd', 'b'])
+    rnd.mockRestore()
+  })
+
+  it('next walks the shuffled queue in order', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'c', 'd'])
+    await vi.runAllTimersAsync()
+    const values = [0, 0]
+    const rnd = vi.spyOn(Math, 'random').mockImplementation(() => values.shift() ?? 0)
+    store.toggleShuffle()
+    expect(store.queue).toEqual(['a', 'c', 'd', 'b'])
+    store.next()
+    expect(store.currentId).toBe('c')
+    store.next()
+    expect(store.currentId).toBe('d')
+    rnd.mockRestore()
+  })
+
+  it('playNext inserts after current and syncs originalQueue', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'c'])
+    await vi.runAllTimersAsync()
+    store.playNext('x')
+    expect(store.queue).toEqual(['a', 'x', 'b', 'c'])
+    expect(store.originalQueue).toEqual(['a', 'x', 'b', 'c'])
+    expect(store.currentId).toBe('a')
+  })
+
+  it('addToQueue appends to the end', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b'])
+    await vi.runAllTimersAsync()
+    store.addToQueue('z')
+    expect(store.queue).toEqual(['a', 'b', 'z'])
+    expect(store.originalQueue).toEqual(['a', 'b', 'z'])
+  })
+
+  it('playNext on empty queue starts playback with that track', () => {
+    const store = usePlayerStore()
+    store.playNext('solo')
+    expect(store.queue).toEqual(['solo'])
+    expect(store.currentId).toBe('solo')
+    expect(store.playing).toBe(true)
+  })
+
+  it('addToQueue on empty queue starts playback with that track', () => {
+    const store = usePlayerStore()
+    store.addToQueue('solo')
+    expect(store.queue).toEqual(['solo'])
+    expect(store.currentId).toBe('solo')
+    expect(store.playing).toBe(true)
+  })
+
+  it('removeAt drops a non-current track', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'c'])
+    await vi.runAllTimersAsync()
+    store.removeAt(1)
+    expect(store.queue).toEqual(['a', 'c'])
+    expect(store.originalQueue).toEqual(['a', 'c'])
+    expect(store.currentId).toBe('a')
+  })
+
+  it('removeAt on current advances then drops the old track', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'c'])
+    await vi.runAllTimersAsync()
+    store.removeAt(0)
+    expect(store.currentId).toBe('b')
+    expect(store.queue).toEqual(['b', 'c'])
+    expect(store.playing).toBe(true)
+  })
+
+  it('removeAt on the only track clears and pauses', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a'])
+    await vi.runAllTimersAsync()
+    store.removeAt(0)
+    expect(store.queue).toEqual([])
+    expect(store.currentId).toBeNull()
+    expect(store.playing).toBe(false)
+  })
+
+  it('clearUpcoming keeps current and drops the tail', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'c', 'd'])
+    await vi.runAllTimersAsync()
+    store.goToIndex(1, true)
+    store.clearUpcoming()
+    expect(store.queue).toEqual(['a', 'b'])
+    expect(store.originalQueue).toEqual(['a', 'b'])
+    expect(store.currentId).toBe('b')
   })
 })

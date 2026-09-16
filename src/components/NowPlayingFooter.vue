@@ -27,6 +27,21 @@ const progress = computed(() => {
 function openNowPlaying() {
   void router.push({ name: 'now-playing' })
 }
+
+function onSeek(value: number | number[]) {
+  const pct = Array.isArray(value) ? value[0]! : value
+  if (!player.duration) return
+  player.seek((pct / 100) * player.duration)
+}
+
+function onProgressClick(event: MouseEvent) {
+  const el = event.currentTarget as HTMLElement | null
+  if (!el || !player.duration) return
+  const rect = el.getBoundingClientRect()
+  if (rect.width <= 0) return
+  const pct = Math.min(100, Math.max(0, ((event.clientX - rect.left) / rect.width) * 100))
+  onSeek(pct)
+}
 </script>
 
 <template>
@@ -40,8 +55,10 @@ function openNowPlaying() {
       color="secondary"
       bg-color="transparent"
       aria-label="playback progress"
+      @click.stop="onProgressClick"
+      @update:model-value="onSeek"
     />
-    <div class="footer-inner d-flex align-center ga-3 px-2" @click="openNowPlaying">
+    <div class="footer-inner d-flex align-center ga-2 px-2" @click="openNowPlaying">
       <v-avatar rounded="lg" size="48" class="cover">
         <CoverImg v-if="current?.displayCover" :src="current.displayCover" />
         <v-icon v-else icon="mdi-music-note" />
@@ -53,9 +70,21 @@ function openNowPlaying() {
         </div>
       </div>
       <v-btn
+        data-testid="footer-prev"
+        icon="mdi-skip-previous"
+        variant="text"
+        @click.stop="player.prev()"
+      />
+      <v-btn
         :icon="player.playing ? 'mdi-pause' : 'mdi-play'"
         variant="text"
         @click.stop="player.togglePlay()"
+      />
+      <v-btn
+        data-testid="footer-next"
+        icon="mdi-skip-next"
+        variant="text"
+        @click.stop="player.next()"
       />
     </div>
   </v-footer>
@@ -83,6 +112,7 @@ function openNowPlaying() {
   left: 0;
   right: 0;
   z-index: 1;
+  cursor: pointer;
 }
 
 .footer-inner {

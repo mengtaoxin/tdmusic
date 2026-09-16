@@ -1,25 +1,22 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import TrackListItem from '@/components/TrackListItem.vue'
 import { localizeAlbumName, localizeArtistName } from '@/lib/displayLabels'
 import { pushSearchHistory, readSearchHistory } from '@/lib/searchHistory'
-import { useCatalogStore } from '@/stores/catalog'
-import { usePlayerStore } from '@/stores/player'
+import { useTrackListPlayback } from '@/lib/useTrackListPlayback'
 
 const { t } = useI18n()
-const catalog = useCatalogStore()
-const player = usePlayerStore()
 const query = ref('')
 const history = ref<string[]>(readSearchHistory())
 
+const { catalog, playById, playNextTrack, addTrackToQueue } = useTrackListPlayback(() =>
+  catalog.tracks.map((track) => track.id),
+)
+
 const results = computed(() => catalog.search(query.value))
 const showHistory = computed(() => !query.value.trim() && history.value.length > 0)
-
-onMounted(() => {
-  if (!catalog.tracks.length && !catalog.loading) void catalog.load()
-})
 
 function commitHistory() {
   const next = pushSearchHistory(query.value)
@@ -35,12 +32,6 @@ function onSearchKeydown(event: KeyboardEvent) {
   if (event.key !== 'Enter') return
   event.preventDefault()
   commitHistory()
-}
-
-function playTrack(id: string) {
-  const ids = catalog.tracks.map((track) => track.id)
-  const index = ids.indexOf(id)
-  if (index >= 0) player.playFrom(index, ids)
 }
 </script>
 
@@ -78,7 +69,9 @@ function playTrack(id: string) {
           v-for="track in results.tracks"
           :key="track.id"
           :track="track"
-          @select="playTrack(track.id)"
+          @select="playById(track.id)"
+          @play-next="playNextTrack(track.id)"
+          @add-to-queue="addTrackToQueue(track.id)"
         />
       </v-list>
 

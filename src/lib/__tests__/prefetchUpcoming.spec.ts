@@ -56,8 +56,7 @@ describe('prefetchUpcoming', () => {
         count: 3,
         repeatMode: 'off',
         shuffle: false,
-        resolveTrack: (id) =>
-          id === 'b' ? { id, path: 'https://example.com/b.mp3' } : undefined,
+        resolveTrack: (id) => (id === 'b' ? { id, path: 'https://example.com/b.mp3' } : undefined),
       }),
     ).resolves.toBeUndefined()
   })
@@ -71,5 +70,43 @@ describe('prefetchUpcoming', () => {
       resolveTrack: (id) => ({ id, path: `https://example.com/${id}.mp3` }),
     })
     expect(ensure).not.toHaveBeenCalled()
+  })
+
+  it('invokes onTrackCached after each successful ensureTrackCached', async () => {
+    const ensure = vi.spyOn(musicCache, 'ensureTrackCached').mockResolvedValue(undefined)
+    const onTrackCached = vi.fn<(id: string) => void>()
+
+    await prefetchUpcoming(['a', 'b', 'c', 'd'], 0, {
+      count: 3,
+      repeatMode: 'off',
+      shuffle: false,
+      resolveTrack: (id) => ({ id, path: `https://example.com/${id}.mp3` }),
+      onTrackCached,
+    })
+
+    expect(ensure).toHaveBeenCalledTimes(3)
+    expect(onTrackCached).toHaveBeenCalledTimes(3)
+    expect(onTrackCached).toHaveBeenCalledWith('b')
+    expect(onTrackCached).toHaveBeenCalledWith('c')
+    expect(onTrackCached).toHaveBeenCalledWith('d')
+  })
+
+  it('does not invoke onTrackCached when ensure fails or track is skipped', async () => {
+    vi.spyOn(musicCache, 'ensureTrackCached').mockRejectedValue(new Error('network'))
+    const onTrackCached = vi.fn<(id: string) => void>()
+
+    await prefetchUpcoming(['a', 'b', 'c'], 0, {
+      count: 3,
+      repeatMode: 'off',
+      shuffle: false,
+      resolveTrack: (id) => {
+        if (id === 'b') return { id, path: 'relative.mp3' }
+        if (id === 'c') return { id, path: 'https://example.com/c.mp3' }
+        return undefined
+      },
+      onTrackCached,
+    })
+
+    expect(onTrackCached).not.toHaveBeenCalled()
   })
 })

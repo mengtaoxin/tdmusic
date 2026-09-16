@@ -8,8 +8,24 @@ import {
   resetCacheDbForTests,
 } from '@/lib/cacheStore'
 import { useCatalogStore, type DisplayTrack } from '@/stores/catalog'
-import { clearMusicCachesAndRefresh, loadCatalogAndHydratePlayer } from '@/stores/catalogBootstrap'
+import {
+  clearMusicCachesAndRefresh,
+  ensureCatalogLoaded,
+  loadCatalogAndHydratePlayer,
+} from '@/stores/catalogBootstrap'
 import { usePlayerStore } from '@/stores/player'
+
+function sampleTracks(): DisplayTrack[] {
+  return [
+    {
+      id: 'a',
+      path: '/a.mp3',
+      displayTitle: 'A',
+      displayArtist: 'Unknown artist',
+      displayAlbum: 'Unknown album',
+    },
+  ] as DisplayTrack[]
+}
 
 describe('catalogBootstrap', () => {
   beforeEach(async () => {
@@ -21,15 +37,7 @@ describe('catalogBootstrap', () => {
     const catalog = useCatalogStore()
     const player = usePlayerStore()
     const load = vi.spyOn(catalog, 'load').mockImplementation(async () => {
-      catalog.tracks = [
-        {
-          id: 'a',
-          path: '/a.mp3',
-          displayTitle: 'A',
-          displayArtist: 'Unknown artist',
-          displayAlbum: 'Unknown album',
-        },
-      ] as DisplayTrack[]
+      catalog.tracks = sampleTracks()
     })
     const hydrate = vi.spyOn(player, 'hydrate').mockReturnValue(true)
 
@@ -37,6 +45,55 @@ describe('catalogBootstrap', () => {
 
     expect(load).toHaveBeenCalledOnce()
     expect(hydrate).toHaveBeenCalledWith(new Set(['a']))
+  })
+
+  it('ensureCatalogLoaded loads and hydrates when the catalog is empty', async () => {
+    const catalog = useCatalogStore()
+    const player = usePlayerStore()
+    const load = vi.spyOn(catalog, 'load').mockImplementation(async () => {
+      catalog.tracks = sampleTracks()
+    })
+    const hydrate = vi.spyOn(player, 'hydrate').mockReturnValue(true)
+
+    await ensureCatalogLoaded()
+
+    expect(load).toHaveBeenCalledOnce()
+    expect(hydrate).toHaveBeenCalledWith(new Set(['a']))
+  })
+
+  it('ensureCatalogLoaded is a no-op when tracks are already present', async () => {
+    const catalog = useCatalogStore()
+    const player = usePlayerStore()
+    catalog.tracks = sampleTracks()
+    const load = vi.spyOn(catalog, 'load')
+    const hydrate = vi.spyOn(player, 'hydrate')
+
+    await ensureCatalogLoaded()
+
+    expect(load).not.toHaveBeenCalled()
+    expect(hydrate).not.toHaveBeenCalled()
+  })
+
+  it('ensureCatalogLoaded joins an in-flight loadCatalogAndHydratePlayer', async () => {
+    const catalog = useCatalogStore()
+    const player = usePlayerStore()
+    let finishLoad!: () => void
+    const loadGate = new Promise<void>((resolve) => {
+      finishLoad = resolve
+    })
+    const load = vi.spyOn(catalog, 'load').mockImplementation(async () => {
+      await loadGate
+      catalog.tracks = sampleTracks()
+    })
+    const hydrate = vi.spyOn(player, 'hydrate').mockReturnValue(true)
+
+    const first = loadCatalogAndHydratePlayer()
+    const second = ensureCatalogLoaded()
+    finishLoad()
+    await Promise.all([first, second])
+
+    expect(load).toHaveBeenCalledOnce()
+    expect(hydrate).toHaveBeenCalledOnce()
   })
 
   it('clearMusicCachesAndRefresh clears IDB and resets extracted display fields', async () => {

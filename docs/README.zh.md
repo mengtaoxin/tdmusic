@@ -11,11 +11,11 @@
 - 音轨与封面写入 IndexedDB，并预取即将播放的曲目
 - 配置元数据不全时，从已缓存音频补充 ID3 信息
 - 浏览：音乐列表、播放列表、歌手、专辑、搜索
-- 应用内配置指南与日志
+- 应用内 configs.json 指南与日志
 
 ## 环境要求
 
-- Node.js `^22.18.0` 或 `>=24.12.0`（见 `package.json` 的 `engines`）
+- Node.js `^22.18.0` 或 `^24.12.0`（见 `package.json` 的 `engines`）
 
 ## 快速开始
 
@@ -36,11 +36,12 @@
 | `./scripts/format-and-lint.sh` | 格式化 + 检查 |
 | `./scripts/test.sh` | 完整测试（单元 + e2e） |
 
-只跑单个测试文件：
+只跑单个测试文件（e2e 默认仅 Chromium；用 `--platform` 追加浏览器）：
 
 ```sh
-./scripts/test.sh --src/__tests__/App.spec.ts
-./scripts/test.sh e2e/vue.spec.ts
+./scripts/test.sh --file src/__tests__/App.spec.ts
+./scripts/test.sh --file e2e/vue.spec.ts
+./scripts/test.sh --platform chrome,firefox,webkit
 ```
 
 ## 曲库配置
@@ -49,7 +50,7 @@
 
 `music-list` 每项必须有 `id` 与 `path`（`http(s)://` 或站点绝对路径 `/…`）。可选的 `title`、`artist`、`album`、`cover` 会覆盖解析出的标签。播放列表通过 `id` 引用曲目。
 
-字段说明见应用内 **更多 → 设置 → 配置指南**，以及 [project-specific-docs.md](project-specific-docs.md)。
+字段说明见应用内 **更多 → configs.json 指南**，以及 [project-specific-docs.md](project-specific-docs.md)。
 
 ## 技术栈
 

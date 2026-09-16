@@ -10,9 +10,12 @@ export default {
     more: 'More',
     language: 'Language',
     settings: 'Settings',
+    configGuides: 'configs.json guideline',
     about: 'About',
     logs: 'Logs',
+    feedback: 'Feedback',
     openMenu: 'Open menu',
+    beta: 'Beta',
   },
   home: {
     title: 'Welcome to tdmusic',
@@ -32,6 +35,8 @@ export default {
     empty: 'No playlists yet. Add a playlists array in your config.',
     trackCount: '{count} tracks',
     notFound: 'Playlist not found.',
+    playAll: 'Play all',
+    shuffleAll: 'Shuffle all',
   },
   artist: {
     allMusic: 'All music by this artist',
@@ -48,6 +53,10 @@ export default {
     unknownAlbum: 'Unknown album',
     empty: 'Nothing playing yet. Pick a track from Music List.',
     queue: 'Now playing queue',
+    playNext: 'Play next',
+    addToQueue: 'Add to queue',
+    removeFromQueue: 'Remove from queue',
+    clearUpcoming: 'Clear upcoming',
   },
   search: {
     placeholder: 'Search tracks, artists, albums',
@@ -59,14 +68,13 @@ export default {
   settings: {
     configUrl: 'Config URL',
     configUrlHint: 'Where the app loads the music catalog from. Leave empty for the default.',
-    configGuidesLink: 'Config Guides',
+    configGuidesLink: 'configs.json guideline',
     save: 'Save',
     reload: 'Reload catalog',
     reloadHint: 'Fetch the catalog again from the current config URL.',
     clearCache: 'Clear all cache',
     clearCacheHint: 'Remove cached audio and extracted metadata. Does not clear the play queue.',
-    clearCacheConfirm:
-      'Clear all cached audio and extracted metadata? This cannot be undone.',
+    clearCacheConfirm: 'Clear all cached audio and extracted metadata? This cannot be undone.',
     cancel: 'Cancel',
     confirm: 'Confirm',
     saved: 'Settings saved and catalog reloaded.',
@@ -74,7 +82,7 @@ export default {
     cacheCleared: 'All music cache cleared.',
   },
   configGuides: {
-    title: 'Config Guides',
+    title: 'configs.json guideline',
     intro:
       'The app loads its music catalog from a JSON file (usually configs.json). This page explains the shape of that file.',
     whereTitle: 'Where it loads from',
@@ -98,8 +106,12 @@ export default {
       'Title fallback order: config → ID3 → filename from path (decoded basename without extension) → id.',
     noteUnknown:
       'Missing artist/album become Unknown artist / Unknown album; tracks still group under artist → albums → tracks.',
-    notePaths:
-      'http(s):// and site-absolute (/…) paths are cached in IndexedDB on play.',
+    notePaths: 'http(s):// and site-absolute (/…) paths are cached in IndexedDB on play.',
+    llmTitle: 'Ask an AI to generate configs.json',
+    llmBody:
+      'Paste the prompt below into ChatGPT, Claude, or another model, then append your audio file list (URLs or paths). Copy the returned JSON into configs.json (or host it and set the Config URL in Settings).',
+    llmCopy: 'Copy prompt',
+    llmCopied: 'Copied',
   },
   about: {
     github: 'GitHub',

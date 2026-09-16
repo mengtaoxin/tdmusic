@@ -2,12 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 
-import {
-  appendAppLog,
-  clearAppLogs,
-  listAppLogs,
-  resetAppLogDbForTests,
-} from '@/lib/appLogStore'
+import { appendAppLog, clearAppLogs, listAppLogs, resetAppLogDbForTests } from '@/lib/appLogStore'
 import en from '@/locales/en'
 import zh from '@/locales/zh'
 import vuetify from '@/plugins/vuetify'

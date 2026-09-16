@@ -12,11 +12,7 @@ import zh from '@/locales/zh'
 import { useCatalogStore, type DisplayTrack } from '@/stores/catalog'
 import AlbumListView from '../AlbumListView.vue'
 
-function makeTrack(
-  id: string,
-  album: string,
-  extras: Partial<DisplayTrack> = {},
-): DisplayTrack {
+function makeTrack(id: string, album: string, extras: Partial<DisplayTrack> = {}): DisplayTrack {
   return {
     id,
     path: `/music/${id}.mp3`,
