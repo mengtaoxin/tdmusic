@@ -9,6 +9,7 @@ export default {
     search: '搜索',
     settings: '设置',
     about: '关于',
+    openMenu: '打开菜单',
   },
   home: {
     title: '欢迎使用 tdmusic',
@@ -61,6 +62,9 @@ export default {
     reloadHint: '按当前配置地址重新拉取音乐目录。',
     clearCache: '一键清除全部缓存',
     clearCacheHint: '清除已缓存的音频与元数据，不会清空正在播放队列。',
+    clearCacheConfirm: '确定清除全部已缓存的音频与元数据？此操作无法撤销。',
+    cancel: '取消',
+    confirm: '确认',
     saved: '已保存并重新加载配置。',
     reloaded: '配置已重新加载。',
     cacheCleared: '已清除全部音乐缓存。',

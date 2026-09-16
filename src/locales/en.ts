@@ -9,6 +9,7 @@ export default {
     search: 'Search',
     settings: 'Settings',
     about: 'About',
+    openMenu: 'Open menu',
   },
   home: {
     title: 'Welcome to tdmusic',
@@ -61,6 +62,10 @@ export default {
     reloadHint: 'Fetch the catalog again from the current config URL.',
     clearCache: 'Clear all cache',
     clearCacheHint: 'Remove cached audio and extracted metadata. Does not clear the play queue.',
+    clearCacheConfirm:
+      'Clear all cached audio and extracted metadata? This cannot be undone.',
+    cancel: 'Cancel',
+    confirm: 'Confirm',
     saved: 'Settings saved and catalog reloaded.',
     reloaded: 'Catalog reloaded.',
     cacheCleared: 'All music cache cleared.',

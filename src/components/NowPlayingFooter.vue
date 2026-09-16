@@ -19,6 +19,11 @@ const current = computed(() =>
 
 const visible = computed(() => Boolean(current.value))
 
+const progress = computed(() => {
+  if (!player.duration) return 0
+  return (player.currentTime / player.duration) * 100
+})
+
 function openNowPlaying() {
   void router.push({ name: 'now-playing' })
 }
@@ -26,6 +31,16 @@ function openNowPlaying() {
 
 <template>
   <v-footer v-if="visible" app class="now-playing-footer" elevation="8" height="72">
+    <v-progress-linear
+      data-testid="footer-progress"
+      class="footer-progress"
+      :model-value="progress"
+      :max="100"
+      height="3"
+      color="secondary"
+      bg-color="transparent"
+      aria-label="playback progress"
+    />
     <div class="footer-inner d-flex align-center ga-3 px-2" @click="openNowPlaying">
       <v-avatar rounded="lg" size="48" class="cover">
         <CoverImg v-if="current?.displayCover" :src="current.displayCover" />
@@ -48,6 +63,7 @@ function openNowPlaying() {
 
 <style scoped>
 .now-playing-footer {
+  position: relative;
   background: linear-gradient(
     90deg,
     rgb(var(--v-theme-footer-start)) 0%,
@@ -59,6 +75,14 @@ function openNowPlaying() {
   transition:
     transform 0.25s ease,
     opacity 0.25s ease;
+}
+
+.footer-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
 }
 
 .footer-inner {

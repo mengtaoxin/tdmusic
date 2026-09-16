@@ -14,6 +14,8 @@ vi.mock('@/stores/catalogBootstrap', () => ({
   clearMusicCachesAndRefresh: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
 }))
 
+import { clearMusicCachesAndRefresh } from '@/stores/catalogBootstrap'
+
 function mountSettings(locale: 'en' | 'zh') {
   const i18n = createI18n({
     legacy: false,
@@ -38,6 +40,7 @@ function mountSettings(locale: 'en' | 'zh') {
 describe('SettingsView', () => {
   beforeEach(() => {
     document.body.innerHTML = ''
+    vi.mocked(clearMusicCachesAndRefresh).mockClear()
   })
 
   it('shows a short description for each setting in English', () => {
@@ -98,5 +101,45 @@ describe('SettingsView', () => {
     expect(snackbar.props('location')).toBe('bottom')
     expect(snackbar.props('modelValue')).toBe(true)
     expect(document.body.textContent).toContain('Settings saved and catalog reloaded.')
+  })
+
+  it('asks for confirmation before clearing cache', async () => {
+    const wrapper = mountSettings('en')
+    const clearBtn = wrapper.findAll('button').find((b) => b.text().includes('Clear all cache'))
+    expect(clearBtn).toBeTruthy()
+    await clearBtn!.trigger('click')
+    await flushPromises()
+
+    expect(clearMusicCachesAndRefresh).not.toHaveBeenCalled()
+    expect(document.body.textContent).toContain(
+      'Clear all cached audio and extracted metadata? This cannot be undone.',
+    )
+
+    const cancelBtn = [...document.body.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('Cancel'),
+    )
+    expect(cancelBtn).toBeTruthy()
+    cancelBtn!.click()
+    await flushPromises()
+
+    expect(clearMusicCachesAndRefresh).not.toHaveBeenCalled()
+  })
+
+  it('clears cache only after confirm', async () => {
+    const wrapper = mountSettings('en')
+    const clearBtn = wrapper.findAll('button').find((b) => b.text().includes('Clear all cache'))
+    expect(clearBtn).toBeTruthy()
+    await clearBtn!.trigger('click')
+    await flushPromises()
+
+    const confirmBtn = [...document.body.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('Confirm'),
+    )
+    expect(confirmBtn).toBeTruthy()
+    confirmBtn!.click()
+    await flushPromises()
+
+    expect(clearMusicCachesAndRefresh).toHaveBeenCalledTimes(1)
+    expect(document.body.textContent).toContain('All music cache cleared.')
   })
 })

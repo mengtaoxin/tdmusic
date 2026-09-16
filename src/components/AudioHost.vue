@@ -51,6 +51,14 @@ watch(
 )
 
 watch(
+  () => player.repeatMode,
+  (mode) => {
+    const audio = audioRef.value
+    if (audio) audio.loop = mode === 'one'
+  },
+)
+
+watch(
   () => player.pendingPlay,
   (want) => {
     const audio = audioRef.value
@@ -91,12 +99,25 @@ function onPlay() {
 }
 
 function onPause() {
+  const audio = audioRef.value
+  // Natural end fires pause before ended; let onEnded own that transition.
+  if (audio?.ended) return
   player.playing = false
   player.flushPersist()
 }
 
 function onEnded() {
   player.onEnded()
+  // Repeat-one also sets audio.loop; this path covers seek+play if ended still fires
+  // (e.g. loop was off) when pendingPlay was already true so its watch does not re-run.
+  if (player.repeatMode === 'one') {
+    const audio = audioRef.value
+    if (!audio) return
+    const seek = player.seekTo
+    audio.currentTime = seek != null && Number.isFinite(seek) ? seek : 0
+    player.seekTo = null
+    void audio.play().catch(() => player.pause())
+  }
 }
 
 function onVisibilityFlush() {
@@ -104,6 +125,8 @@ function onVisibilityFlush() {
 }
 
 onMounted(() => {
+  const audio = audioRef.value
+  if (audio) audio.loop = player.repeatMode === 'one'
   document.addEventListener('visibilitychange', onVisibilityFlush)
   window.addEventListener('pagehide', onVisibilityFlush)
 })

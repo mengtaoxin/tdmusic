@@ -10,6 +10,7 @@ const settings = useSettingsStore()
 
 const draftUrl = ref(settings.configUrl)
 const clearing = ref(false)
+const confirmClearOpen = ref(false)
 const message = ref('')
 const snackbarOpen = computed({
   get: () => message.value.length > 0,
@@ -29,7 +30,12 @@ async function reload() {
   message.value = t('settings.reloaded')
 }
 
-async function clearCache() {
+function openClearCacheConfirm() {
+  confirmClearOpen.value = true
+}
+
+async function confirmClearCache() {
+  confirmClearOpen.value = false
   clearing.value = true
   try {
     await clearMusicCachesAndRefresh()
@@ -73,10 +79,24 @@ async function clearCache() {
       <p class="setting-hint text-body-2 text-medium-emphasis mb-3">
         {{ t('settings.clearCacheHint') }}
       </p>
-      <v-btn color="error" variant="tonal" :loading="clearing" @click="clearCache">
+      <v-btn color="error" variant="tonal" :loading="clearing" @click="openClearCacheConfirm">
         {{ t('settings.clearCache') }}
       </v-btn>
     </section>
+
+    <v-dialog v-model="confirmClearOpen" max-width="420">
+      <v-card>
+        <v-card-title>{{ t('settings.clearCache') }}</v-card-title>
+        <v-card-text>{{ t('settings.clearCacheConfirm') }}</v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="confirmClearOpen = false">{{ t('settings.cancel') }}</v-btn>
+          <v-btn color="error" variant="tonal" @click="confirmClearCache">
+            {{ t('settings.confirm') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <v-snackbar v-model="snackbarOpen" location="bottom" color="success" :timeout="3000">
       {{ message }}

@@ -73,7 +73,51 @@ describe('App', () => {
     expect(wrapper.text()).toContain('tdmusic')
   })
 
-  it('shows English header menus by default and switches to Chinese via dropdown', async () => {
+  it('styles the document scrollbar to blend with the page theme', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/', name: 'home', component: HomeView }],
+    })
+
+    router.push('/')
+    await router.isReady()
+
+    const wrapper = mount(App, {
+      attachTo: document.body,
+      global: {
+        plugins: [createPinia(), router, vuetify, createTestI18n()],
+      },
+    })
+
+    const style = getComputedStyle(document.documentElement)
+    expect(style.scrollbarGutter).toContain('stable')
+    expect(style.scrollbarColor).not.toBe('auto')
+    expect(style.scrollbarColor.toLowerCase()).toMatch(/rgba?\(/)
+
+    wrapper.unmount()
+  })
+
+  it('shows the brand icon in the app header', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/', name: 'home', component: HomeView }],
+    })
+
+    router.push('/')
+    await router.isReady()
+
+    const wrapper = mount(App, {
+      global: {
+        plugins: [createPinia(), router, vuetify, createTestI18n()],
+      },
+    })
+
+    const brandIcon = wrapper.find('[data-testid="brand-icon"]')
+    expect(brandIcon.exists()).toBe(true)
+    expect(brandIcon.attributes('src')).toMatch(/brand-icon\.png|data:image\/png/)
+  })
+
+  it('shows English header menus by default and switches to Chinese from the nav drawer', async () => {
     const router = createRouter({
       history: createMemoryHistory(),
       routes: [{ path: '/', name: 'home', component: HomeView }],
@@ -95,16 +139,15 @@ describe('App', () => {
       expect(text).toContain(label)
     }
 
-    const localeSelect = wrapper.find('[data-testid="locale-select"]')
-    expect(localeSelect.exists()).toBe(true)
-    expect(localeSelect.text()).toContain('English')
+    expect(wrapper.find('[data-testid="locale-select"]').exists()).toBe(false)
 
-    await localeSelect.trigger('click')
+    await wrapper.find('[data-testid="nav-menu-toggle"]').trigger('click')
     await wrapper.vm.$nextTick()
 
-    const zhOption = [...document.querySelectorAll('.v-list-item')].find((el) =>
-      el.textContent?.includes('中文'),
-    )
+    const drawerRoot = document.querySelector('[data-testid="nav-drawer"]')
+    expect(drawerRoot).toBeTruthy()
+
+    const zhOption = drawerRoot!.querySelector('[data-testid="locale-option-zh"]')
     expect(zhOption).toBeTruthy()
     zhOption!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     await wrapper.vm.$nextTick()
@@ -113,7 +156,6 @@ describe('App', () => {
     for (const label of chineseMenus) {
       expect(zhText).toContain(label)
     }
-    expect(localeSelect.text()).toContain('中文')
     expect(localStorage.getItem('tdmusic.locale')).toBe('zh')
 
     wrapper.unmount()

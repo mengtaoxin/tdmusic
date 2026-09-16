@@ -41,8 +41,10 @@ export default createVuetify({
           'hero-max-width': '28rem',
           'cover-max-width': '16rem',
           'footer-clearance': '88px',
+          'app-bar-height': '64px',
           'home-viewport-offset': '120px',
-          'music-list-height': 'calc(100dvh - 12rem)',
+          /* Fallback cap for pages that still use the CSS token (e.g. Now Playing queue). */
+          'music-list-height': 'calc(100dvh - 64px - 88px - 6rem)',
           'radius-md': '0.5rem',
           'radius-lg': '1rem',
           'blur-header': '10px',

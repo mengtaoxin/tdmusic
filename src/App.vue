@@ -24,7 +24,33 @@ onMounted(async () => {
 
 <style>
 html {
+  color-scheme: dark;
   scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--v-theme-on-background), 0.28) transparent;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--v-theme-on-background), 0.28) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--v-theme-on-background), 0.28);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(var(--v-theme-on-background), 0.42);
 }
 
 .tdmusic-app {
