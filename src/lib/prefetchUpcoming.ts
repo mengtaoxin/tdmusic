@@ -12,7 +12,6 @@ export async function prefetchUpcoming(
     count?: number
     repeatMode: RepeatMode
     shuffle: boolean
-    random?: () => number
     resolveTrack: (id: string) => PrefetchTrackRef | undefined
     /** Called after a track is successfully cached (e.g. to re-enrich covers). */
     onTrackCached?: (id: string) => void
@@ -22,7 +21,6 @@ export async function prefetchUpcoming(
     count: options.count ?? 3,
     repeatMode: options.repeatMode,
     shuffle: options.shuffle,
-    random: options.random,
   })
 
   await Promise.all(

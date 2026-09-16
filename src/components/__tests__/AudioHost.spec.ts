@@ -345,7 +345,8 @@ describe('AudioHost', () => {
     await flushPromises()
 
     expect(prefetchSpy).toHaveBeenCalled()
-    const options = prefetchSpy.mock.calls.at(-1)?.[2]
+    const lastCall = prefetchSpy.mock.calls[prefetchSpy.mock.calls.length - 1]
+    const options = lastCall?.[2]
     expect(options?.onTrackCached).toEqual(expect.any(Function))
     options!.onTrackCached!('t2')
     expect(enrichSpy).toHaveBeenCalledWith('t2')
