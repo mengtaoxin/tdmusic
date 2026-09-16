@@ -56,15 +56,10 @@ export function syncMediaSession(
       player.seek(details.seekTime)
     }
   })
-  bind('seekbackward', (details) => {
-    const offset = details.seekOffset ?? 10
-    player.seek(Math.max(0, player.currentTime - offset))
-  })
-  bind('seekforward', (details) => {
-    const offset = details.seekOffset ?? 10
-    const max = player.duration || Number.POSITIVE_INFINITY
-    player.seek(Math.min(max, player.currentTime + offset))
-  })
+  // Clear seek ±N handlers: on compact lock-screen / notification rows,
+  // seekforward/seekbackward preempt previoustrack/nexttrack when both are set.
+  bind('seekbackward', null)
+  bind('seekforward', null)
 
   if (track && Number.isFinite(player.duration) && player.duration > 0) {
     try {

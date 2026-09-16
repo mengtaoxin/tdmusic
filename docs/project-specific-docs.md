@@ -72,7 +72,7 @@
 
 - Pinia stores: `settings`, `catalog`, `player`.
 - Single `<audio>` in `AudioHost` (mounted from `App.vue`) so playback survives route changes. Download/resolve/enrich/prefetch/failure-skip orchestration lives in `lib/playbackSession` (`createPlaybackSession`); `AudioHost` wires the element, Pinia, and Media Session.
-- `AudioHost` syncs the Web **Media Session** API (when available): metadata (title / artist / album / cover), `setPositionState` for lock-screen progress, and handlers for play, pause, previous, next, seekto / seek forward-back so lock screen, headphones, and OS media keys can control playback.
+- `AudioHost` syncs the Web **Media Session** API (when available): metadata (title / artist / album / cover), `setPositionState` for lock-screen progress, and handlers for play, pause, previous track, next track, and seekto (scrub). Seek ±N (`seekbackward` / `seekforward`) are explicitly cleared so compact lock-screen / notification controls show previous/next track instead of ±10s.
 - If another app / the OS pauses the element, `AudioHost` clears `pendingPlay` and `playing` so the next play click re-invokes `audio.play()` (otherwise `pendingPlay` stayed true and the watcher did not re-run).
 - The app footer shows cover, title, artist, previous / play-pause / next, and a seekable progress bar; tapping the meta area opens `/now-playing`.
 - Clicking a track in Music List (or other lists) clears the now-playing queue and plays that track with the **full source list** as context (album / playlist / library ids): prefix through the clicked track is applied immediately so Previous works; the remainder fills asynchronously in chunks.
