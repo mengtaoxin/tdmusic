@@ -1,0 +1,76 @@
+import { describe, it, expect } from 'vitest'
+import { mount } from '@vue/test-utils'
+import { createI18n } from 'vue-i18n'
+import { createPinia } from 'pinia'
+import { createRouter, createMemoryHistory } from 'vue-router'
+
+import SettingsView from '../SettingsView.vue'
+import vuetify from '@/plugins/vuetify'
+import en from '@/locales/en'
+import zh from '@/locales/zh'
+
+function mountSettings(locale: 'en' | 'zh') {
+  const i18n = createI18n({
+    legacy: false,
+    locale,
+    fallbackLocale: 'en',
+    messages: { en, zh },
+  })
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [
+      { path: '/settings', component: SettingsView },
+      { path: '/config-guides', component: { template: '<div />' } },
+    ],
+  })
+  router.push('/settings')
+  return mount(SettingsView, {
+    global: { plugins: [createPinia(), router, vuetify, i18n] },
+  })
+}
+
+describe('SettingsView', () => {
+  it('shows a short description for each setting in English', () => {
+    const wrapper = mountSettings('en')
+    const text = wrapper.text()
+
+    expect(text).toContain('Config URL')
+    expect(text).toContain(
+      'Where the app loads the music catalog from. Leave empty for the default.',
+    )
+    expect(text).toContain('Reload catalog')
+    expect(text).toContain('Fetch the catalog again from the current config URL.')
+    expect(text).toContain('Clear all cache')
+    expect(text).toContain(
+      'Remove cached audio and extracted metadata. Does not clear the play queue.',
+    )
+  })
+
+  it('shows a short description for each setting in Chinese', () => {
+    const wrapper = mountSettings('zh')
+    const text = wrapper.text()
+
+    expect(text).toContain('配置地址')
+    expect(text).toContain('应用从这里加载音乐目录。留空则使用默认地址。')
+    expect(text).toContain('重新加载配置')
+    expect(text).toContain('按当前配置地址重新拉取音乐目录。')
+    expect(text).toContain('一键清除全部缓存')
+    expect(text).toContain('清除已缓存的音频与元数据，不会清空正在播放队列。')
+  })
+
+  it('links to Config Guides', () => {
+    const wrapper = mountSettings('en')
+    const link = wrapper.find('a[href="/config-guides"]')
+
+    expect(link.exists()).toBe(true)
+    expect(link.text()).toContain('Config Guides')
+  })
+
+  it('shows a Chinese Config Guides link label', () => {
+    const wrapper = mountSettings('zh')
+    const link = wrapper.find('a[href="/config-guides"]')
+
+    expect(link.exists()).toBe(true)
+    expect(link.text()).toContain('配置说明')
+  })
+})
