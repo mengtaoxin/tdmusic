@@ -1,8 +1,6 @@
 import { resolveDisplayAlbum, resolveDisplayArtist } from './displayLabels'
 import { mergeTrackDisplay } from './mergeTrackMeta'
-import { ensureTrackCached } from './musicCache'
 import type { MusicTrack } from './normalizeCatalog'
-import { isRemotePath } from './paths'
 import { ensureTrackMetadata, type MetadataParser } from './trackMetadata'
 
 export type EnrichableTrack = Pick<MusicTrack, 'id' | 'path'> &
@@ -15,22 +13,27 @@ export type DisplayPatch = {
   displayCover?: string
 }
 
+export type EnrichOptions = {
+  parser?: MetadataParser
+  /** When false (default), do not fetch audio over the network for ID3. */
+  network?: boolean
+}
+
 /**
- * Best-effort: ensure remote audio is cached, extract ID3, return display fields.
+ * Best-effort: extract ID3 from already-available audio (or network when allowed),
+ * return display fields. Does not download/cache remote audio.
  * Errors are swallowed; returns null when nothing to apply.
  */
 export async function enrichOneTrack(
   track: EnrichableTrack,
-  options?: { parser?: MetadataParser },
+  options?: EnrichOptions,
 ): Promise<DisplayPatch | null> {
   try {
-    if (isRemotePath(track.path)) {
-      await ensureTrackCached(track.path, track.id)
-    }
-    const parsed = await ensureTrackMetadata(
-      track.path,
-      options?.parser ? { parser: options.parser } : undefined,
-    )
+    const network = options?.network ?? false
+    const parsed = await ensureTrackMetadata(track.path, {
+      network,
+      ...(options?.parser ? { parser: options.parser } : {}),
+    })
     if (!parsed) return null
     const merged = mergeTrackDisplay(track, parsed)
     return {

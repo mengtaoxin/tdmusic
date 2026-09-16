@@ -12,7 +12,8 @@
 - `playlists` is an array of playlists; each references tracks by `id` (resolved against accepted tracks only). Legacy singular `playlist` is still accepted as one playlist.
 - `/playlists` lists playlists; `/playlists/{name}` shows that playlist’s tracks (`name` is the playlist title).
 - `/artists` lists artists; `/artists/{name}/albums` lists that artist’s albums plus **All music by this artist** (escape hatch when album metadata is wrong); `/artists/{name}/albums/{album}` shows that album’s tracks; `/artists/{name}` shows all tracks by the artist.
-- After catalog load, track enrichment (remote download + ID3 extract) runs through an enrich queue with concurrency **2** (not all tracks at once). Orchestration lives in `lib/enrichTracks`; the catalog store only schedules and applies display patches. Reloading or clearing cache drops queued enrich work.
+- `/albums` lists albums; `/albums/{name}` shows that album’s tracks (click a track to play).
+- After catalog load, track enrichment (ID3 from already-cached audio/extract only — **no** remote download) runs through an enrich queue with concurrency **2**. Remote audio downloads on play via `resolvePlayableUrl`; after a successful load, that track is re-enqueued for enrichment (may fetch site-absolute audio for ID3). Orchestration lives in `lib/enrichTracks`; the catalog store schedules and applies display patches. Reloading or clearing cache drops queued enrich work.
 - App bootstrap and Settings save/reload use `loadCatalogAndHydratePlayer` (catalog load + player hydrate). Settings “Clear all cache” uses `clearMusicCachesAndRefresh` (IndexedDB clear + reset in-memory `display*` to config-only + re-enqueue enrich).
 
 ## Audio cache (IndexedDB `music-cache`, schema v1)
@@ -28,7 +29,8 @@
 
 ## Client persistence (`localStorage` via `clientStorage`)
 
-- Keys: `tdmusic.locale`, `tdmusic.configUrl`, `tdmusic.player`.
+- Keys: `tdmusic.locale`, `tdmusic.configUrl`, `tdmusic.player`, `tdmusic.searchHistory`.
+- `tdmusic.searchHistory`: JSON string array of recent search queries (newest first, max 10, case-insensitive dedupe). Written when the user presses Enter on Search (or reuses a history chip).
 - Writes catch `QuotaExceededError` and return failure instead of throwing.
 - Player payload includes `v: 1`; unknown versions are ignored. Legacy payloads without `v` are still accepted.
 

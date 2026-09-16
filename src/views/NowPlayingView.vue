@@ -17,10 +17,18 @@ const current = computed(() =>
   player.currentId ? catalog.trackById.get(player.currentId) : undefined,
 )
 
+const TRACK_ROW_HEIGHT = 64
+
 const queueTracks = computed(() =>
   player.queue
     .map((id) => catalog.trackById.get(id))
     .filter((t): t is NonNullable<typeof t> => Boolean(t)),
+)
+
+/** Shrink for short queues; cap to viewport so long lists virtualize. */
+const queueListHeight = computed(
+  () =>
+    `min(${Math.max(queueTracks.value.length, 1) * TRACK_ROW_HEIGHT}px, var(--v-music-list-height))`,
 )
 
 const progress = computed(() => {
@@ -133,15 +141,21 @@ function playQueueItem(index: number) {
     </v-alert>
 
     <h2 class="text-h6 mb-2">{{ t('player.queue') }}</h2>
-    <v-list bg-color="transparent">
-      <TrackListItem
-        v-for="(track, index) in queueTracks"
-        :key="track.id + '-' + index"
-        :track="track"
-        :active="player.currentId === track.id"
-        @select="playQueueItem(index)"
-      />
-    </v-list>
+    <v-virtual-scroll
+      :items="queueTracks"
+      item-key="id"
+      :item-height="TRACK_ROW_HEIGHT"
+      class="queue-list"
+      :height="queueListHeight"
+    >
+      <template #default="{ item: track, index }">
+        <TrackListItem
+          :track="track"
+          :active="player.currentId === track.id"
+          @select="playQueueItem(index)"
+        />
+      </template>
+    </v-virtual-scroll>
   </v-container>
 </template>
 
@@ -182,6 +196,10 @@ function playQueueItem(index: number) {
 
 .meta-link:hover {
   text-decoration: underline;
+}
+
+.queue-list {
+  background: transparent;
 }
 
 .play-btn {

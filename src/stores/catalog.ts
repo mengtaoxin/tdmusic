@@ -70,8 +70,8 @@ export const useCatalogStore = defineStore('catalog', () => {
       .sort((a, b) => a.name.localeCompare(b.name))
   })
 
-  async function applyEnrichment(track: DisplayTrack) {
-    const patch = await enrichOneTrack(track)
+  async function applyEnrichment(track: DisplayTrack, options?: { network?: boolean }) {
+    const patch = await enrichOneTrack(track, options)
     if (!patch) return
     const index = tracks.value.findIndex((t) => t.id === track.id)
     if (index < 0) return
@@ -81,11 +81,18 @@ export const useCatalogStore = defineStore('catalog', () => {
     }
   }
 
-  /** Enqueue best-effort enrich for the current track list. */
+  /** Enqueue best-effort enrich for the current track list (no network audio fetch). */
   function scheduleEnrichment() {
     for (const track of tracks.value) {
       void enqueueEnrich(() => applyEnrichment(track))
     }
+  }
+
+  /** After play download, re-enrich one track (may fetch site-absolute audio for ID3). */
+  function scheduleEnrichTrack(id: string) {
+    const track = tracks.value.find((t) => t.id === id)
+    if (!track) return
+    void enqueueEnrich(() => applyEnrichment(track, { network: true }))
   }
 
   /** Reset display fields to config-only (drop extracted covers/meta in memory). */
@@ -154,6 +161,7 @@ export const useCatalogStore = defineStore('catalog', () => {
     load,
     search,
     scheduleEnrichment,
+    scheduleEnrichTrack,
     resetDisplayFromConfig,
   }
 })

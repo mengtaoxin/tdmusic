@@ -1,11 +1,25 @@
 {
   "music-list": [
     {
-      "id": "sample-1",
-      "title": "Sample 1",
-      "artist": "Artist 1",
+      "id": "smile-in-the-wind",
+      "title": "Smile in the Wind",
+      "artist": "Doubao",
       "album": "Album 1",
-      "path": "/sample-1.mp3"
+      "path": "/smile-in-the-wind.mp3"
+    },
+    {
+      "id": "drink-in-the-wind",
+      "title": "Drink in the Wind",
+      "artist": "Doubao",
+      "album": "Album 2",
+      "path": "/drink-in-the-wind.mp3"
+    },
+    {
+      "id": "life-in-the-wind",
+      "title": "Life in the Wind",
+      "artist": "Doubao",
+      "album": "Album 2",
+      "path": "/life-in-the-wind.mp3"
     }
   ],
   "playlists": [
@@ -13,7 +27,18 @@
       "title": "My Playlist1",
       "music-list": [
         {
-          "id": "sample-1"
+          "id": "smile-in-the-wind"
+        },
+        {
+          "id": "drink-in-the-wind"
+        }
+      ]
+    },
+    {
+      "title": "My Playlist2",
+      "music-list": [
+        {
+          "id": "life-in-the-wind"
         }
       ]
     }

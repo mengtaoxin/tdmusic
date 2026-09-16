@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { mount, flushPromises } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 import { createPinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
@@ -8,6 +8,11 @@ import SettingsView from '../SettingsView.vue'
 import vuetify from '@/plugins/vuetify'
 import en from '@/locales/en'
 import zh from '@/locales/zh'
+
+vi.mock('@/stores/catalogBootstrap', () => ({
+  loadCatalogAndHydratePlayer: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
+  clearMusicCachesAndRefresh: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
+}))
 
 function mountSettings(locale: 'en' | 'zh') {
   const i18n = createI18n({
@@ -26,10 +31,15 @@ function mountSettings(locale: 'en' | 'zh') {
   router.push('/settings')
   return mount(SettingsView, {
     global: { plugins: [createPinia(), router, vuetify, i18n] },
+    attachTo: document.body,
   })
 }
 
 describe('SettingsView', () => {
+  beforeEach(() => {
+    document.body.innerHTML = ''
+  })
+
   it('shows a short description for each setting in English', () => {
     const wrapper = mountSettings('en')
     const text = wrapper.text()
@@ -72,5 +82,21 @@ describe('SettingsView', () => {
 
     expect(link.exists()).toBe(true)
     expect(link.text()).toContain('配置说明')
+  })
+
+  it('shows a bottom snackbar after save instead of an inline alert', async () => {
+    const wrapper = mountSettings('en')
+    const buttons = wrapper.findAll('button')
+    const saveBtn = buttons.find((b) => b.text().includes('Save'))
+    expect(saveBtn).toBeTruthy()
+    await saveBtn!.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.find('.v-alert').exists()).toBe(false)
+    const snackbar = wrapper.findComponent({ name: 'VSnackbar' })
+    expect(snackbar.exists()).toBe(true)
+    expect(snackbar.props('location')).toBe('bottom')
+    expect(snackbar.props('modelValue')).toBe(true)
+    expect(document.body.textContent).toContain('Settings saved and catalog reloaded.')
   })
 })

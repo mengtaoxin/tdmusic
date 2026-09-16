@@ -8,6 +8,7 @@ import ArtistAlbumsView from '../views/ArtistAlbumsView.vue'
 import ArtistTracksView from '../views/ArtistTracksView.vue'
 import ArtistAlbumDetailView from '../views/ArtistAlbumDetailView.vue'
 import AlbumListView from '../views/AlbumListView.vue'
+import AlbumDetailView from '../views/AlbumDetailView.vue'
 import NowPlayingView from '../views/NowPlayingView.vue'
 import SearchView from '../views/SearchView.vue'
 import SettingsView from '../views/SettingsView.vue'
@@ -56,6 +57,11 @@ const router = createRouter({
       path: '/artists/:name',
       name: 'artist',
       component: ArtistTracksView,
+    },
+    {
+      path: '/albums/:album',
+      name: 'album',
+      component: AlbumDetailView,
     },
     {
       path: '/albums',

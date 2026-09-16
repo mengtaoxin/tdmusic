@@ -6,6 +6,10 @@
 #   ./scripts/test.sh e2e/vue.spec.ts              # single e2e file
 set -euo pipefail
 
+# Cursor Agent may inject PLAYWRIGHT_BROWSERS_PATH at a sandbox cache.
+# Clear it so e2e uses the normal user browser cache.
+unset PLAYWRIGHT_BROWSERS_PATH
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
@@ -40,7 +44,7 @@ run_e2e_all() {
   echo "test: e2e (npm run test:e2e)"
   (
     cd "$ROOT"
-    npm run test:e2e
+    env -u PLAYWRIGHT_BROWSERS_PATH npm run test:e2e
   )
 }
 
@@ -50,7 +54,7 @@ run_one() {
     echo "test: e2e (${target})"
     (
       cd "$ROOT"
-      npm run test:e2e -- "$target"
+      env -u PLAYWRIGHT_BROWSERS_PATH npm run test:e2e -- "$target"
     )
   else
     echo "test: unit (${target})"

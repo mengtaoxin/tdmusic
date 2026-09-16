@@ -35,6 +35,10 @@ export default {
     notFound: 'Artist not found.',
     albumNotFound: 'Album not found.',
   },
+  album: {
+    trackCount: '{count} tracks',
+    notFound: 'Album not found.',
+  },
   player: {
     unknownArtist: 'Unknown artist',
     unknownAlbum: 'Unknown album',
@@ -43,6 +47,7 @@ export default {
   },
   search: {
     placeholder: 'Search tracks, artists, albums',
+    history: 'Recent searches',
     tracks: 'Tracks',
     artists: 'Artists',
     albums: 'Albums',

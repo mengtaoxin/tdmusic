@@ -11,7 +11,7 @@ describe('enrichOneTrack', () => {
     vi.restoreAllMocks()
   })
 
-  it('caches remote audio, extracts metadata, and returns display fields', async () => {
+  it('does not download remote audio; extracts metadata with network disabled', async () => {
     const track = {
       id: 't1',
       path: 'https://example.com/song.mp3',
@@ -27,8 +27,8 @@ describe('enrichOneTrack', () => {
 
     const patch = await enrichOneTrack(track)
 
-    expect(ensureCached).toHaveBeenCalledWith(track.path, track.id)
-    expect(ensureMeta).toHaveBeenCalledWith(track.path, undefined)
+    expect(ensureCached).not.toHaveBeenCalled()
+    expect(ensureMeta).toHaveBeenCalledWith(track.path, { network: false })
     expect(patch).toEqual({
       displayTitle: 'Parsed',
       displayArtist: 'Artist',
@@ -37,7 +37,20 @@ describe('enrichOneTrack', () => {
     })
   })
 
-  it('skips cache for site-absolute paths', async () => {
+  it('passes network:true when requested (e.g. after play)', async () => {
+    const track = { id: 'local', path: '/sample.mp3' }
+    const ensureMeta = vi.spyOn(trackMetadata, 'ensureTrackMetadata').mockResolvedValue({
+      title: 'Local',
+      artist: 'A',
+      album: 'B',
+    })
+
+    await enrichOneTrack(track, { network: true })
+
+    expect(ensureMeta).toHaveBeenCalledWith(track.path, { network: true })
+  })
+
+  it('does not call ensureTrackCached for site-absolute paths', async () => {
     const track = { id: 'local', path: '/sample.mp3' }
     const ensureCached = vi.spyOn(musicCache, 'ensureTrackCached').mockResolvedValue(undefined)
     vi.spyOn(trackMetadata, 'ensureTrackMetadata').mockResolvedValue({
@@ -58,7 +71,6 @@ describe('enrichOneTrack', () => {
       title: 'Config Title',
       artist: 'Config Artist',
     }
-    vi.spyOn(musicCache, 'ensureTrackCached').mockResolvedValue(undefined)
     vi.spyOn(trackMetadata, 'ensureTrackMetadata').mockResolvedValue({
       title: 'Parsed',
       artist: 'Artist',
@@ -76,7 +88,6 @@ describe('enrichOneTrack', () => {
   })
 
   it('returns null when metadata is unavailable', async () => {
-    vi.spyOn(musicCache, 'ensureTrackCached').mockResolvedValue(undefined)
     vi.spyOn(trackMetadata, 'ensureTrackMetadata').mockResolvedValue(null)
 
     const patch = await enrichOneTrack({
@@ -88,7 +99,7 @@ describe('enrichOneTrack', () => {
   })
 
   it('swallows errors and returns null (best-effort)', async () => {
-    vi.spyOn(musicCache, 'ensureTrackCached').mockRejectedValue(new Error('network'))
+    vi.spyOn(trackMetadata, 'ensureTrackMetadata').mockRejectedValue(new Error('network'))
 
     const patch = await enrichOneTrack({
       id: 't1',

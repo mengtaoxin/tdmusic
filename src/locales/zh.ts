@@ -35,6 +35,10 @@ export default {
     notFound: '未找到该歌手。',
     albumNotFound: '未找到该专辑。',
   },
+  album: {
+    trackCount: '{count} 首',
+    notFound: '未找到该专辑。',
+  },
   player: {
     unknownArtist: '未知歌手',
     unknownAlbum: '未知专辑',
@@ -43,6 +47,7 @@ export default {
   },
   search: {
     placeholder: '搜索歌曲、歌手、专辑',
+    history: '最近搜索',
     tracks: '歌曲',
     artists: '歌手',
     albums: '专辑',

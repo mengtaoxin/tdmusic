@@ -23,6 +23,7 @@ async function loadCurrent() {
     if (player.currentId !== id) return
     audio.src = url
     audio.load()
+    catalog.scheduleEnrichTrack(id)
     const seek = player.seekTo
     const onLoaded = () => {
       if (seek != null && Number.isFinite(seek)) {

@@ -71,4 +71,35 @@ describe('ensureTrackMetadata', () => {
     expect(second?.coverUrl).toBeUndefined()
     expect(parser).toHaveBeenCalledTimes(1)
   })
+
+  it('with network:false does not fetch site-absolute audio', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response(new Blob(['audio']), { status: 200 }))
+    const parser = vi.fn<() => Promise<{ title: string; artist: string; album: string }>>()
+
+    const result = await ensureTrackMetadata('/sample.mp3', { network: false, parser })
+
+    expect(result).toBeNull()
+    expect(fetchSpy).not.toHaveBeenCalled()
+    expect(parser).not.toHaveBeenCalled()
+  })
+
+  it('with network:true fetches site-absolute audio for parsing', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(new Blob(['audio']), { status: 200 }),
+    )
+    const parser = vi
+      .fn<() => Promise<{ title: string; artist: string; album: string }>>()
+      .mockResolvedValue({
+        title: 'Local',
+        artist: 'A',
+        album: 'B',
+      })
+
+    const result = await ensureTrackMetadata('/sample.mp3', { network: true, parser })
+
+    expect(result?.title).toBe('Local')
+    expect(parser).toHaveBeenCalledTimes(1)
+  })
 })

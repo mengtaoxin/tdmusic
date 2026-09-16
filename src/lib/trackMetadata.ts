@@ -47,10 +47,14 @@ const defaultParser: MetadataParser = async (blob) => {
   return parsedFromMusicMetadata(meta)
 }
 
-async function resolveAudioBlob(path: string): Promise<Blob | null> {
+async function resolveAudioBlob(
+  path: string,
+  options?: { network?: boolean },
+): Promise<Blob | null> {
   if (isRemotePath(path)) {
     return getCachedFile(path)
   }
+  if (options?.network === false) return null
   try {
     const response = await fetch(path)
     if (!response.ok) return null
@@ -79,6 +83,8 @@ export async function ensureTrackMetadata(
   options?: {
     force?: boolean
     parser?: MetadataParser
+    /** When false, skip network fetch for site-absolute paths (cached extract/blob only). */
+    network?: boolean
   },
 ): Promise<ParsedAudioMeta | null> {
   if (!options?.force) {
@@ -88,7 +94,7 @@ export async function ensureTrackMetadata(
     }
   }
 
-  const blob = await resolveAudioBlob(sourceUrl)
+  const blob = await resolveAudioBlob(sourceUrl, { network: options?.network })
   if (!blob) return null
 
   const parser = options?.parser ?? defaultParser

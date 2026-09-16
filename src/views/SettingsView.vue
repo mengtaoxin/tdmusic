@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import { clearMusicCachesAndRefresh, loadCatalogAndHydratePlayer } from '@/stores/catalogBootstrap'
@@ -11,6 +11,12 @@ const settings = useSettingsStore()
 const draftUrl = ref(settings.configUrl)
 const clearing = ref(false)
 const message = ref('')
+const snackbarOpen = computed({
+  get: () => message.value.length > 0,
+  set: (open: boolean) => {
+    if (!open) message.value = ''
+  },
+})
 
 async function save() {
   settings.saveConfigUrl(draftUrl.value)
@@ -72,7 +78,9 @@ async function clearCache() {
       </v-btn>
     </section>
 
-    <v-alert v-if="message" type="success" variant="tonal" class="mt-6">{{ message }}</v-alert>
+    <v-snackbar v-model="snackbarOpen" location="bottom" color="success" :timeout="3000">
+      {{ message }}
+    </v-snackbar>
   </v-container>
 </template>
 
