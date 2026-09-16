@@ -115,4 +115,26 @@ describe('syncMediaSession', () => {
     syncMediaSession(undefined, makePlayer())
     expect(setPositionState).not.toHaveBeenCalled()
   })
+
+  it('binds prev/next track and clears seek ±N so lock screen shows track skip', () => {
+    const player = makePlayer()
+    syncMediaSession(makeTrack(), player)
+
+    expect(setActionHandler).toHaveBeenCalledWith('previoustrack', expect.any(Function))
+    expect(setActionHandler).toHaveBeenCalledWith('nexttrack', expect.any(Function))
+    expect(setActionHandler).toHaveBeenCalledWith('seekbackward', null)
+    expect(setActionHandler).toHaveBeenCalledWith('seekforward', null)
+
+    const prevHandler = setActionHandler.mock.calls.find((c) => c[0] === 'previoustrack')?.[1] as
+      | (() => void)
+      | undefined
+    const nextHandler = setActionHandler.mock.calls.find((c) => c[0] === 'nexttrack')?.[1] as
+      | (() => void)
+      | undefined
+    prevHandler?.()
+    nextHandler?.()
+    expect(player.prev).toHaveBeenCalledOnce()
+    expect(player.next).toHaveBeenCalledOnce()
+    expect(player.seek).not.toHaveBeenCalled()
+  })
 })
