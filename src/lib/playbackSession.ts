@@ -36,6 +36,8 @@ export type PlaybackSessionHooks = {
   appendAppLog: (message: string) => void
   scheduleEnrichTrack: (id: string) => void
   schedulePrefetch: () => void
+  /** Called when a playable URL is ready for `id`, before assigning audio.src. */
+  onTrackResolved?: (id: string) => void
 }
 
 /**
@@ -60,6 +62,7 @@ export function createPlaybackSession(
       const url = await hooks.resolvePlayableUrl(track.path, track.id)
       if (player.getCurrentId() !== id) return
       consecutiveLoadFailures = 0
+      hooks.onTrackResolved?.(id)
       audio.src = url
       audio.load()
       hooks.scheduleEnrichTrack(id)

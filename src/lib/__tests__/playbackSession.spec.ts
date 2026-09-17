@@ -51,6 +51,7 @@ describe('playbackSession', () => {
     const scheduleEnrichTrack = vi.fn<(id: string) => void>()
     const schedulePrefetch = vi.fn<() => void>()
     const appendAppLog = vi.fn<(message: string) => void>()
+    const onTrackResolved = vi.fn<(id: string) => void>()
     const skip = vi.fn<() => void>()
     const pause = vi.fn<() => void>()
     let seekTo: number | null = 12
@@ -71,11 +72,12 @@ describe('playbackSession', () => {
         getTrack: (id) =>
           id === 't1' ? { id: 't1', path: 'https://example.com/t1.mp3' } : undefined,
       },
-      { resolvePlayableUrl, appendAppLog, scheduleEnrichTrack, schedulePrefetch },
+      { resolvePlayableUrl, appendAppLog, scheduleEnrichTrack, schedulePrefetch, onTrackResolved },
     )
 
     await session.loadCurrent()
     expect(resolvePlayableUrl).toHaveBeenCalledWith('https://example.com/t1.mp3', 't1')
+    expect(onTrackResolved).toHaveBeenCalledWith('t1')
     expect(audio.src).toBe('blob:good')
     expect(audio.load).toHaveBeenCalledOnce()
     expect(scheduleEnrichTrack).toHaveBeenCalledWith('t1')

@@ -59,8 +59,14 @@ const session = createPlaybackSession(
     },
     scheduleEnrichTrack: (id) => catalog.scheduleEnrichTrack(id),
     schedulePrefetch,
+    onTrackResolved: (id) => {
+      boundTrackId = id
+    },
   },
 )
+
+/** Id whose playable URL is currently assigned to the audio element. */
+let boundTrackId: string | null = null
 
 function updateMediaSession() {
   const track = player.currentId ? catalog.trackById.get(player.currentId) : undefined
@@ -109,6 +115,10 @@ watch(
     const audio = audioRef.value
     if (!audio) return
     if (want) {
+      // Resume only when the element already holds the current track. Otherwise
+      // loadCurrent owns autoplay after resolving the new src (avoids playing the
+      // previous song after idle pause + queue click).
+      if (boundTrackId !== player.currentId) return
       void audio.play().catch(() => player.pause())
     } else {
       audio.pause()

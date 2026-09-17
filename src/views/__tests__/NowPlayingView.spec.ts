@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 import { createPinia } from 'pinia'
@@ -55,7 +55,7 @@ async function mountNowPlaying(trackCount = 1) {
   const wrapper = mount(NowPlayingView, {
     global: { plugins: [pinia, router, vuetify, i18n] },
   })
-  return { wrapper, player }
+  return { wrapper, player, catalog }
 }
 
 describe('NowPlayingView', () => {
@@ -145,5 +145,40 @@ describe('NowPlayingView', () => {
 
     expect(player.queue).toEqual(['t2', 't3'])
     expect(player.currentId).toBe('t2')
+  })
+
+  it('plays the visible queue row even when an earlier queue id is missing from the catalog', async () => {
+    const { wrapper, player, catalog } = await mountNowPlaying(3)
+    // Queue still holds a ghost id (e.g. after catalog reload); UI only shows known tracks.
+    player.queue = ['gone', 't2', 't3']
+    player.originalQueue = [...player.queue]
+    player.currentId = 't2'
+    catalog.tracks = catalog.tracks.filter((track) => track.id !== 't1')
+    await flushPromises()
+
+    const rows = wrapper.findAllComponents(TrackListItem)
+    // Visible rows are t2, t3 — click the second visible row (t3).
+    expect(rows).toHaveLength(2)
+    await rows[1]!.trigger('click')
+    await flushPromises()
+
+    expect(player.currentId).toBe('t3')
+  })
+
+  it('plays the clicked duplicate queue occurrence, not the first match', async () => {
+    const { wrapper, player } = await mountNowPlaying(2)
+    player.queue = ['t1', 't2', 't1']
+    player.originalQueue = [...player.queue]
+    player.currentId = 't2'
+    await flushPromises()
+
+    const goToIndex = vi.spyOn(player, 'goToIndex')
+    const rows = wrapper.findAllComponents(TrackListItem)
+    expect(rows).toHaveLength(3)
+    // Third row is the second occurrence of t1.
+    await rows[2]!.trigger('click')
+    await flushPromises()
+
+    expect(goToIndex).toHaveBeenCalledWith(2, true)
   })
 })
