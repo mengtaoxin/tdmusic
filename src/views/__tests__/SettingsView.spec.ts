@@ -28,6 +28,7 @@ import {
   loadCatalogAndHydratePlayer,
 } from '@/lib/catalog/catalogBootstrap'
 import { getMusicCacheSizeBytes } from '@/lib/cache/musicCache'
+import { usePlayerStore } from '@/stores/player'
 
 function mountSettings(locale: 'en' | 'zh') {
   const i18n = createI18n({
@@ -71,11 +72,11 @@ describe('SettingsView', () => {
     expect(text).not.toContain('Reload catalog')
     expect(text).toContain('Delete local config cache')
     expect(text).toContain(
-      'Remove the cached configs.json from this browser. It will be downloaded again the next time the catalog loads.',
+      'Remove the cached configs.json from this browser. Also clears now playing and the play queue. It will be downloaded again the next time the catalog loads.',
     )
     expect(text).toContain('Clear all cache')
     expect(text).toContain(
-      'Remove cached audio and extracted metadata. Does not clear the play queue.',
+      'Remove cached audio and extracted metadata. Also clears now playing and the play queue.',
     )
   })
 
@@ -87,9 +88,11 @@ describe('SettingsView', () => {
     expect(text).toContain('应用从这里加载音乐目录。留空则使用默认地址。')
     expect(text).not.toContain('重新加载配置')
     expect(text).toContain('删除本地配置缓存')
-    expect(text).toContain('删除保存在本机的 configs.json 缓存。下次使用时会自动重新下载。')
+    expect(text).toContain(
+      '删除保存在本机的 configs.json 缓存，并清空正在播放与播放队列。下次使用时会自动重新下载。',
+    )
     expect(text).toContain('一键清除全部缓存')
-    expect(text).toContain('清除已缓存的音频与元数据，不会清空正在播放队列。')
+    expect(text).toContain('清除已缓存的音频与元数据，并清空正在播放与播放队列。')
   })
 
   it('links to configs.json guideline', () => {
@@ -135,7 +138,7 @@ describe('SettingsView', () => {
 
     expect(clearCachedConfigs).not.toHaveBeenCalled()
     expect(document.body.textContent).toContain(
-      'Delete the local configs.json cache? It will be downloaded again next time.',
+      'Delete the local configs.json cache and clear now playing and the play queue? It will be downloaded again next time.',
     )
 
     const cancelBtn = [...document.body.querySelectorAll('button')].find((b) =>
@@ -150,6 +153,13 @@ describe('SettingsView', () => {
 
   it('deletes local config cache only after confirm', async () => {
     const wrapper = mountSettings('en')
+    const player = usePlayerStore()
+    player.queue = ['a', 'b']
+    player.originalQueue = ['a', 'b']
+    player.currentId = 'a'
+    player.currentIndex = 0
+    player.playing = true
+
     const clearBtn = wrapper
       .findAll('button')
       .find((b) => b.text().includes('Delete local config cache'))
@@ -166,6 +176,9 @@ describe('SettingsView', () => {
 
     expect(clearCachedConfigs).toHaveBeenCalledTimes(1)
     expect(loadCatalogAndHydratePlayer).not.toHaveBeenCalled()
+    expect(player.queue).toEqual([])
+    expect(player.currentId).toBeNull()
+    expect(player.playing).toBe(false)
     expect(document.body.textContent).toContain('Local config cache deleted.')
   })
 
@@ -215,7 +228,7 @@ describe('SettingsView', () => {
 
     expect(clearMusicCachesAndRefresh).not.toHaveBeenCalled()
     expect(document.body.textContent).toContain(
-      'Clear all cached audio and extracted metadata? This cannot be undone.',
+      'Clear all cached audio and extracted metadata, and clear now playing and the play queue? This cannot be undone.',
     )
 
     const cancelBtn = [...document.body.querySelectorAll('button')].find((b) =>

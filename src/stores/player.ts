@@ -348,6 +348,18 @@ export const usePlayerStore = defineStore('player', () => {
     flushPersist()
   }
 
+  /** Stop playback and empty the now-playing queue (in memory + localStorage). */
+  function clearNowPlaying() {
+    cancelFill?.()
+    cancelFill = null
+    queue.value = []
+    originalQueue.value = []
+    clearPlayback()
+    seekTo.value = 0
+    pause()
+    flushPersist()
+  }
+
   function onEnded() {
     if (repeatMode.value === 'one') {
       seek(0)
@@ -385,6 +397,7 @@ export const usePlayerStore = defineStore('player', () => {
     addToQueue,
     removeAt,
     clearUpcoming: clearUpcomingTracks,
+    clearNowPlaying,
     onEnded,
     hydrate,
     flushPersist,

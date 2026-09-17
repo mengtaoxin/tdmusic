@@ -4,7 +4,7 @@
 
 - Default URL: `/configs.json` (from `public/configs.json`).
 - Override with `localStorage` key `tdmusic.configUrl` (Settings page; via `clientStorage`). Empty/whitespace → default.
-- Fetched `configs.json` (default or override URL) is stored under `tdmusic.configs` as `{ url, data }`. Later loads use that cache when `url` matches the resolved config URL; otherwise fetch and replace the cache. Settings “Delete local config cache” confirms, then removes `tdmusic.configs` only — the next catalog load fetches again.
+- Fetched `configs.json` (default or override URL) is stored under `tdmusic.configs` as `{ url, data }`. Later loads use that cache when `url` matches the resolved config URL; otherwise fetch and replace the cache. Settings “Delete local config cache” confirms, then removes `tdmusic.configs` and clears now playing / the play queue — the next catalog load fetches again.
 - Settings and **More** link to **configs.json guideline** (`/config-guides`) for a field-by-field explanation of `configs.json`, plus a copyable LLM prompt (locale-matched) to generate the file from a track list.
 - `music-list` entries require `id` and `path`. Missing either, or duplicate `id`, drops the entry and surfaces an error in Music List.
 - Optional fields: `title`, `artist`, `album`, `cover`. Config values win over extracted ID3.
@@ -12,10 +12,10 @@
 - Missing artist/album metadata resolves to stable labels `Unknown artist` / `Unknown album` (UI shows localized 未知歌手 / 未知专辑). Those tracks still group under artist → albums → tracks.
 - `playlists` is an array of playlists; each references tracks by `id` (resolved against accepted tracks only). Legacy singular `playlist` is still accepted as one playlist.
 - `/playlists` lists playlists (empty catalog shows a short empty state plus configs.json guideline link); `/playlists/{name}` shows that playlist’s tracks (`name` is the playlist title). When the playlist has tracks, **Play all** starts from the first track with shuffle off; **Shuffle all** starts from a random track with shuffle on. After queue fill, that track is first and every other playlist track is shuffled as upcoming (`originalQueue` keeps playlist order).
-- `/artists` lists artists; `/artists/{name}/albums` lists that artist’s albums as a cover gallery (same tile layout as `/albums`: first track cover or placeholder) plus **All music by this artist** above the gallery (escape hatch when album metadata is wrong); `/artists/{name}/albums/{album}` shows that album’s tracks; `/artists/{name}` shows all tracks by the artist.
-- `/albums` lists albums as a cover gallery (each tile shows the first track cover in that album, or a placeholder); `/albums/{name}` shows that album’s tracks (click a track to play).
+- `/artists` lists artists (virtualized rows via `v-virtual-scroll`, same host-height pattern as Music List); `/artists/{name}/albums` lists that artist’s albums as a cover gallery (same tile layout as `/albums`: first track cover or placeholder) plus **All music by this artist** above the gallery (escape hatch when album metadata is wrong); `/artists/{name}/albums/{album}` shows that album’s tracks; `/artists/{name}` shows all tracks by the artist.
+- `/albums` lists albums as a cover gallery (each tile shows the first track cover in that album, or a placeholder). The gallery virtualizes by **row** (`v-virtual-scroll` over column-chunked tiles; column count follows the same 2 / 3 / 4 breakpoints as before) so off-screen covers are not mounted; `/albums/{name}` shows that album’s tracks (click a track to play).
 - After catalog load, track enrichment (ID3 from already-cached audio/extract only — **no** download) runs through an enrich queue with concurrency **2**. Audio downloads into IndexedDB on play via `resolvePlayableUrl` (both `http(s)://` and site-absolute `/…` paths); after a successful load, that track is re-enqueued for enrichment (may use the cached blob for ID3). Orchestration lives in `lib/catalog/enrichTracks`; the catalog store schedules and applies display patches. Reloading or clearing cache drops queued enrich work.
-- App bootstrap and Settings save use `loadCatalogAndHydratePlayer` (catalog load + player hydrate; concurrent callers share one in-flight promise). Route views that need the catalog call `ensureCatalogLoaded` (no-op when tracks exist; otherwise the same load+hydrate path) — never `catalog.load()` alone. Settings “Clear all cache” confirms, then uses `clearMusicCachesAndRefresh` (IndexedDB clear + reset in-memory `display*` to config-only + re-enqueue enrich).
+- App bootstrap and Settings save use `loadCatalogAndHydratePlayer` (catalog load + player hydrate; concurrent callers share one in-flight promise). Route views that need the catalog call `ensureCatalogLoaded` (no-op when tracks exist; otherwise the same load+hydrate path) — never `catalog.load()` alone. Settings “Clear all cache” confirms, then uses `clearMusicCachesAndRefresh` (IndexedDB clear + reset in-memory `display*` to config-only + clear now playing / play queue + re-enqueue enrich).
 
 ## Audio cache (IndexedDB `music-cache`, schema v1)
 
@@ -27,7 +27,7 @@
 - In-flight ingest publishes progress through `cacheDownloadState` (by source URL / track id) so covers can animate; `done` (success or failure) and cache-clear cancel the marker.
 - Audio blob key: `__audio__`. Cover art blob key: `__cover__` (not stored as data URLs in `trackMeta`).
 - Before writing large blobs, soft quota check via `navigator.storage.estimate()`: if `usage + size > quota * 0.85`, evict oldest `ready` tracks by `downloadedAt` until under the limit (no-op when quota unknown).
-- Settings → “Clear all cache” asks for confirmation, then clears audio/cover blobs + extracted metadata and the enrich queue (not the now-playing queue in localStorage), resets in-memory display fields to config-only, and re-enqueues enrichment. The same section shows the current size of cached audio and cover blobs (`getMusicCacheSizeBytes`); that figure refreshes after a successful clear.
+- Settings → “Clear all cache” asks for confirmation, then clears audio/cover blobs + extracted metadata and the enrich queue, clears now playing and the play queue (`player.clearNowPlaying`, including `tdmusic.player`), resets in-memory display fields to config-only, and re-enqueues enrichment. The same section shows the current size of cached audio and cover blobs (`getMusicCacheSizeBytes`); that figure refreshes after a successful clear.
 - Public cache API for app code: `lib/cache/musicCache` (including `putCoverFile` and `getMusicCacheSizeBytes`). `trackMetadata` / `cacheStore` / `cacheIngest` / `cacheEviction` / `downloadLimiter` are internal to the cache stack.
 
 ## Client persistence (`localStorage` via `clientStorage`)
@@ -57,7 +57,7 @@
 - Extracted covers are stored as Blobs in IndexedDB (`files` / `__cover__`) and surfaced to the UI as `blob:` object URLs.
 - All cover art goes through `CoverImg`, which loads the image only after the element enters the viewport (`IntersectionObserver`). Pass `eager` only when the image must load immediately.
 - While the **current** track’s audio is downloading into IndexedDB, `CoverImg` replaces the still cover (or the music-note placeholder) with a simple circular loading indicator. When ingest finishes (`meta.status` `ready`), the real cover is shown (config URL or extracted `__cover__` blob). Prefetch downloads do not animate other rows.
-- Music List also virtualizes rows (`v-virtual-scroll`), so off-screen track rows (and their covers) are not mounted.
+- Music List, Artist List, and Album List virtualize with `v-virtual-scroll`, so off-screen rows (and album covers) are not mounted. Album List chunks tiles into responsive rows first, then virtualizes those rows.
 
 ## Playback
 

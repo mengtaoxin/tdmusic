@@ -136,4 +136,21 @@ describe('catalogBootstrap', () => {
     expect(catalog.tracks[0]!.displayCover).toBeUndefined()
     expect(schedule).toHaveBeenCalledOnce()
   })
+
+  it('clearMusicCachesAndRefresh also clears now playing and the play queue', async () => {
+    const catalog = useCatalogStore()
+    catalog.tracks = sampleTracks()
+    vi.spyOn(catalog, 'scheduleEnrichment').mockImplementation(() => {})
+
+    const player = usePlayerStore()
+    player.playFrom(0, ['a'])
+    player.playing = true
+
+    await clearMusicCachesAndRefresh()
+
+    expect(player.queue).toEqual([])
+    expect(player.originalQueue).toEqual([])
+    expect(player.currentId).toBeNull()
+    expect(player.playing).toBe(false)
+  })
 })

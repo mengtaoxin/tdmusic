@@ -9,10 +9,12 @@ import {
   loadCatalogAndHydratePlayer,
 } from '@/lib/catalog/catalogBootstrap'
 import { formatBytes } from '@/lib/formatBytes'
+import { usePlayerStore } from '@/stores/player'
 import { useSettingsStore } from '@/stores/settings'
 
 const { t } = useI18n()
 const settings = useSettingsStore()
+const player = usePlayerStore()
 
 const draftUrl = ref(settings.configUrl)
 const clearing = ref(false)
@@ -40,6 +42,7 @@ function openClearConfigsCacheConfirm() {
 function confirmClearConfigsCache() {
   confirmClearConfigsOpen.value = false
   clearCachedConfigs()
+  player.clearNowPlaying()
   message.value = t('settings.configsCacheCleared')
 }
 

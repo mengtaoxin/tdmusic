@@ -73,11 +73,14 @@ export default {
     configGuidesLink: 'configs.json 指南',
     save: '保存',
     clearConfigsCache: '删除本地配置缓存',
-    clearConfigsCacheHint: '删除保存在本机的 configs.json 缓存。下次使用时会自动重新下载。',
-    clearConfigsCacheConfirm: '确定删除本地 configs.json 缓存？下次使用时会自动重新下载。',
+    clearConfigsCacheHint:
+      '删除保存在本机的 configs.json 缓存，并清空正在播放与播放队列。下次使用时会自动重新下载。',
+    clearConfigsCacheConfirm:
+      '确定删除本地 configs.json 缓存，并清空正在播放与播放队列？下次使用时会自动重新下载。',
     clearCache: '一键清除全部缓存',
-    clearCacheHint: '清除已缓存的音频与元数据，不会清空正在播放队列。',
-    clearCacheConfirm: '确定清除全部已缓存的音频与元数据？此操作无法撤销。',
+    clearCacheHint: '清除已缓存的音频与元数据，并清空正在播放与播放队列。',
+    clearCacheConfirm:
+      '确定清除全部已缓存的音频与元数据，并清空正在播放与播放队列？此操作无法撤销。',
     cacheSize: '已缓存音乐：{size}',
     cancel: '取消',
     confirm: '确认',

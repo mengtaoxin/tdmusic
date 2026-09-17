@@ -224,6 +224,22 @@ describe('playerStore', () => {
     expect(store.currentId).toBe('b')
   })
 
+  it('clearNowPlaying empties the queue, stops playback, and persists', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'c'])
+    await vi.runAllTimersAsync()
+    store.setCurrentTime(12)
+    store.clearNowPlaying()
+    expect(store.queue).toEqual([])
+    expect(store.originalQueue).toEqual([])
+    expect(store.currentId).toBeNull()
+    expect(store.currentIndex).toBe(-1)
+    expect(store.currentTime).toBe(0)
+    expect(store.playing).toBe(false)
+    expect(localStorage.getItem(PLAYER_STORAGE_KEY)).toBeTruthy()
+    expect(JSON.parse(localStorage.getItem(PLAYER_STORAGE_KEY)!).queue).toEqual([])
+  })
+
   it('goToIndex on a duplicate id drives next/prev/clearUpcoming from that occurrence', async () => {
     const store = usePlayerStore()
     store.playFrom(0, ['a', 'b', 'a', 'c'])

@@ -74,12 +74,14 @@ export default {
     save: 'Save',
     clearConfigsCache: 'Delete local config cache',
     clearConfigsCacheHint:
-      'Remove the cached configs.json from this browser. It will be downloaded again the next time the catalog loads.',
+      'Remove the cached configs.json from this browser. Also clears now playing and the play queue. It will be downloaded again the next time the catalog loads.',
     clearConfigsCacheConfirm:
-      'Delete the local configs.json cache? It will be downloaded again next time.',
+      'Delete the local configs.json cache and clear now playing and the play queue? It will be downloaded again next time.',
     clearCache: 'Clear all cache',
-    clearCacheHint: 'Remove cached audio and extracted metadata. Does not clear the play queue.',
-    clearCacheConfirm: 'Clear all cached audio and extracted metadata? This cannot be undone.',
+    clearCacheHint:
+      'Remove cached audio and extracted metadata. Also clears now playing and the play queue.',
+    clearCacheConfirm:
+      'Clear all cached audio and extracted metadata, and clear now playing and the play queue? This cannot be undone.',
     cacheSize: 'Cached music: {size}',
     cancel: 'Cancel',
     confirm: 'Confirm',

@@ -33,11 +33,12 @@ export async function ensureCatalogLoaded(): Promise<void> {
 
 /**
  * Clear IndexedDB audio/meta caches, reset in-memory display fields to config-only,
- * and re-enqueue enrichment.
+ * clear now playing / the play queue, and re-enqueue enrichment.
  */
 export async function clearMusicCachesAndRefresh(): Promise<void> {
   await clearAllMusicCaches()
   const catalog = useCatalogStore()
   catalog.resetDisplayFromConfig()
   catalog.scheduleEnrichment()
+  usePlayerStore().clearNowPlaying()
 }

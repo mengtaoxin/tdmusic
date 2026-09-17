@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { afterEach, describe, it, expect, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 import { createPinia } from 'pinia'
@@ -21,6 +21,34 @@ function makeTrack(id: string, album: string, extras: Partial<DisplayTrack> = {}
     displayAlbum: album,
     ...extras,
   }
+}
+
+type RoCallback = ResizeObserverCallback
+
+function stubResizeObserver(heightPx: number, widthPx = 400) {
+  class FakeResizeObserver {
+    private readonly cb: RoCallback
+    constructor(cb: RoCallback) {
+      this.cb = cb
+    }
+    observe(target: Element) {
+      this.cb(
+        [
+          {
+            target,
+            contentRect: { height: heightPx, width: widthPx } as DOMRectReadOnly,
+            borderBoxSize: [],
+            contentBoxSize: [],
+            devicePixelContentBoxSize: [],
+          } as ResizeObserverEntry,
+        ],
+        this as unknown as ResizeObserver,
+      )
+    }
+    unobserve() {}
+    disconnect() {}
+  }
+  vi.stubGlobal('ResizeObserver', FakeResizeObserver)
 }
 
 async function mountAlbumList(tracks?: DisplayTrack[]) {
@@ -55,8 +83,13 @@ async function mountAlbumList(tracks?: DisplayTrack[]) {
   })
 }
 
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
+
 describe('AlbumListView', () => {
   it('lists albums as links and does not render track rows', async () => {
+    stubResizeObserver(800)
     const wrapper = await mountAlbumList()
     await flushPromises()
 
@@ -71,6 +104,7 @@ describe('AlbumListView', () => {
   })
 
   it('shows the first track cover on each album tile', async () => {
+    stubResizeObserver(800)
     const wrapper = await mountAlbumList([
       makeTrack('t1', 'Album One'),
       makeTrack('t2', 'Album One', { displayCover: 'https://example.com/one.jpg' }),
@@ -84,5 +118,26 @@ describe('AlbumListView', () => {
 
     const albumTwo = wrapper.find('a[href="/albums/Album%20Two"]')
     expect(albumTwo.findComponent(CoverImg).exists()).toBe(false)
+  })
+
+  it('only mounts a viewport-sized subset of album tiles for large catalogs', async () => {
+    stubResizeObserver(400, 400)
+    const albumCount = 200
+    const tracks = Array.from({ length: albumCount }, (_, i) => makeTrack(`t${i}`, `Album ${i}`))
+    const wrapper = await mountAlbumList(tracks)
+    await flushPromises()
+
+    const rendered = wrapper.findAll('.album-tile').length
+    expect(rendered).toBeGreaterThan(0)
+    expect(rendered).toBeLessThan(albumCount)
+  })
+
+  it('uses a viewport-bounded page shell with a flex list host', async () => {
+    stubResizeObserver(800)
+    const wrapper = await mountAlbumList()
+    await flushPromises()
+
+    expect(wrapper.find('.album-list-page').exists()).toBe(true)
+    expect(wrapper.find('.list-host').exists()).toBe(true)
   })
 })
