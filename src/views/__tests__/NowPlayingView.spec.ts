@@ -100,6 +100,23 @@ describe('NowPlayingView', () => {
     expect(root.classes()).toContain('no-touch-callout')
   })
 
+  it('shows clear upcoming as a flat header action with an icon', async () => {
+    const { wrapper } = await mountNowPlaying(4)
+    await flushPromises()
+
+    const clearBtn = wrapper.find('[data-testid="clear-upcoming"]')
+    expect(clearBtn.exists()).toBe(true)
+    expect(clearBtn.classes()).toContain('v-btn--variant-flat')
+    expect(clearBtn.classes()).toContain('bg-secondary')
+    expect(clearBtn.find('.v-icon').exists()).toBe(true)
+
+    const queueHeading = wrapper.find('h2')
+    expect(queueHeading.exists()).toBe(true)
+    expect(queueHeading.text()).toContain('queue')
+    // Same header row as the queue title (Logs-style clear action).
+    expect(clearBtn.element.parentElement).toBe(queueHeading.element.parentElement)
+  })
+
   it('clears upcoming tracks from the queue', async () => {
     const { wrapper, player } = await mountNowPlaying(4)
     player.goToIndex(1, false)
