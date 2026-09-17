@@ -18,11 +18,16 @@ vi.mock('@/lib/catalog/loadConfigs', () => ({
   clearCachedConfigs: vi.fn<() => void>(),
 }))
 
+vi.mock('@/lib/cache/musicCache', () => ({
+  getMusicCacheSizeBytes: vi.fn<() => Promise<number>>().mockResolvedValue(0),
+}))
+
 import { clearCachedConfigs } from '@/lib/catalog/loadConfigs'
 import {
   clearMusicCachesAndRefresh,
   loadCatalogAndHydratePlayer,
 } from '@/lib/catalog/catalogBootstrap'
+import { getMusicCacheSizeBytes } from '@/lib/cache/musicCache'
 
 function mountSettings(locale: 'en' | 'zh') {
   const i18n = createI18n({
@@ -51,6 +56,8 @@ describe('SettingsView', () => {
     vi.mocked(clearMusicCachesAndRefresh).mockClear()
     vi.mocked(loadCatalogAndHydratePlayer).mockClear()
     vi.mocked(clearCachedConfigs).mockClear()
+    vi.mocked(getMusicCacheSizeBytes).mockReset()
+    vi.mocked(getMusicCacheSizeBytes).mockResolvedValue(0)
   })
 
   it('shows a short description for each setting in English', () => {
@@ -160,6 +167,43 @@ describe('SettingsView', () => {
     expect(clearCachedConfigs).toHaveBeenCalledTimes(1)
     expect(loadCatalogAndHydratePlayer).not.toHaveBeenCalled()
     expect(document.body.textContent).toContain('Local config cache deleted.')
+  })
+
+  it('shows the current music cache size in English', async () => {
+    vi.mocked(getMusicCacheSizeBytes).mockResolvedValue(1536)
+    const wrapper = mountSettings('en')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Cached music: 1.5 KB')
+  })
+
+  it('shows the current music cache size in Chinese', async () => {
+    vi.mocked(getMusicCacheSizeBytes).mockResolvedValue(1048576)
+    const wrapper = mountSettings('zh')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('已缓存音乐：1 MB')
+  })
+
+  it('refreshes the music cache size after clearing cache', async () => {
+    vi.mocked(getMusicCacheSizeBytes).mockResolvedValueOnce(2048).mockResolvedValueOnce(0)
+    const wrapper = mountSettings('en')
+    await flushPromises()
+    expect(wrapper.text()).toContain('Cached music: 2 KB')
+
+    const clearBtn = wrapper.findAll('button').find((b) => b.text().includes('Clear all cache'))
+    expect(clearBtn).toBeTruthy()
+    await clearBtn!.trigger('click')
+    await flushPromises()
+
+    const confirmBtn = [...document.body.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('Confirm'),
+    )
+    expect(confirmBtn).toBeTruthy()
+    confirmBtn!.click()
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Cached music: 0 B')
   })
 
   it('asks for confirmation before clearing cache', async () => {

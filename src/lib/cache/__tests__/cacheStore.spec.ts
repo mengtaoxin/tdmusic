@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   COVER_FILE_KEY,
   getCachedFile,
+  getMusicCacheSizeBytes,
   isTrackCached,
   listTrackMetas,
   putFiles,
@@ -84,6 +85,22 @@ describe('music cache', () => {
     })
     expect(await isTrackCached(sourceUrl)).toBe(true)
     expect(await isTrackCached(sourceUrl)).toBe(true)
+  })
+
+  it('returns 0 when no files are cached', async () => {
+    expect(await getMusicCacheSizeBytes()).toBe(0)
+  })
+
+  it('sums audio and cover blob sizes across tracks', async () => {
+    await putFiles('https://example.com/a.mp3', [
+      { relativePath: AUDIO_FILE_KEY, blob: new Blob(['12345']) },
+      { relativePath: COVER_FILE_KEY, blob: new Blob(['img']) },
+    ])
+    await putFiles('https://example.com/b.mp3', [
+      { relativePath: AUDIO_FILE_KEY, blob: new Blob(['xy']) },
+    ])
+
+    expect(await getMusicCacheSizeBytes()).toBe(10)
   })
 
   it('clearAllMusicCaches removes records', async () => {

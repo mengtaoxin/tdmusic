@@ -181,6 +181,19 @@ export async function listTrackMetas(): Promise<TrackCacheMeta[]> {
   return (rows as TrackCacheMeta[]) ?? []
 }
 
+/** Total size of cached audio and cover blobs in the files store. */
+export async function getMusicCacheSizeBytes(): Promise<number> {
+  const db = await openDb()
+  const blobs = await idbRequest(
+    db.transaction(FILES_STORE, 'readonly').objectStore(FILES_STORE).getAll(),
+  )
+  let total = 0
+  for (const value of blobs ?? []) {
+    if (value instanceof Blob) total += value.size
+  }
+  return total
+}
+
 export async function deleteTrackCacheRecords(sourceUrl: string): Promise<void> {
   revokeBlobUrlsForSource(sourceUrl)
 

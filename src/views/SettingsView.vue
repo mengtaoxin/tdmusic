@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
+import { getMusicCacheSizeBytes } from '@/lib/cache/musicCache'
 import { clearCachedConfigs } from '@/lib/catalog/loadConfigs'
 import {
   clearMusicCachesAndRefresh,
   loadCatalogAndHydratePlayer,
 } from '@/lib/catalog/catalogBootstrap'
+import { formatBytes } from '@/lib/formatBytes'
 import { useSettingsStore } from '@/stores/settings'
 
 const { t } = useI18n()
@@ -16,6 +18,7 @@ const draftUrl = ref(settings.configUrl)
 const clearing = ref(false)
 const confirmClearOpen = ref(false)
 const confirmClearConfigsOpen = ref(false)
+const cacheSizeBytes = ref<number | null>(null)
 const message = ref('')
 const snackbarOpen = computed({
   get: () => message.value.length > 0,
@@ -44,16 +47,25 @@ function openClearCacheConfirm() {
   confirmClearOpen.value = true
 }
 
+async function refreshCacheSize() {
+  cacheSizeBytes.value = await getMusicCacheSizeBytes()
+}
+
 async function confirmClearCache() {
   confirmClearOpen.value = false
   clearing.value = true
   try {
     await clearMusicCachesAndRefresh()
+    await refreshCacheSize()
     message.value = t('settings.cacheCleared')
   } finally {
     clearing.value = false
   }
 }
+
+onMounted(() => {
+  void refreshCacheSize()
+})
 </script>
 
 <template>
@@ -90,6 +102,9 @@ async function confirmClearCache() {
       <h2 class="text-subtitle-1 mb-1">{{ t('settings.clearCache') }}</h2>
       <p class="setting-hint text-body-2 text-medium-emphasis mb-3">
         {{ t('settings.clearCacheHint') }}
+      </p>
+      <p v-if="cacheSizeBytes !== null" class="setting-hint text-body-2 text-medium-emphasis mb-3">
+        {{ t('settings.cacheSize', { size: formatBytes(cacheSizeBytes) }) }}
       </p>
       <v-btn color="error" variant="tonal" :loading="clearing" @click="openClearCacheConfirm">
         {{ t('settings.clearCache') }}
