@@ -1,21 +1,20 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { artistAlbumsPath } from '@/lib/routes/artistRoutes'
-import { localizeArtistName } from '@/lib/catalog/displayLabels'
-import { useCatalogStore } from '@/stores/catalog'
+import { useVirtualListHost } from '@/composables/useVirtualListHost'
 import { ensureCatalogLoaded } from '@/lib/catalog/catalogBootstrap'
+import { localizeArtistName } from '@/lib/catalog/displayLabels'
+import { artistAlbumsPath } from '@/lib/routes/artistRoutes'
 import { capVirtualListHeight, virtualListNeedsScroll } from '@/lib/virtualListHeight'
+import { useCatalogStore } from '@/stores/catalog'
 
 const { t } = useI18n()
 const catalog = useCatalogStore()
 
 const ARTIST_ROW_HEIGHT = 64
 
-const listHost = ref<HTMLElement | null>(null)
-const hostHeight = ref(0)
-let resizeObserver: ResizeObserver | null = null
+const { listHost, hostHeight } = useVirtualListHost()
 
 const listHeight = computed(() =>
   capVirtualListHeight(catalog.artists.length, ARTIST_ROW_HEIGHT, hostHeight.value),
@@ -25,31 +24,8 @@ const listFlush = computed(
   () => !virtualListNeedsScroll(catalog.artists.length, ARTIST_ROW_HEIGHT, hostHeight.value),
 )
 
-watch(
-  listHost,
-  (el) => {
-    resizeObserver?.disconnect()
-    resizeObserver = null
-    hostHeight.value = 0
-    if (!el || typeof ResizeObserver === 'undefined') return
-
-    resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0]
-      if (!entry) return
-      hostHeight.value = entry.contentRect.height
-    })
-    resizeObserver.observe(el)
-  },
-  { flush: 'post' },
-)
-
 onMounted(() => {
   void ensureCatalogLoaded()
-})
-
-onBeforeUnmount(() => {
-  resizeObserver?.disconnect()
-  resizeObserver = null
 })
 </script>
 

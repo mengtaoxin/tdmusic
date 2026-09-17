@@ -89,33 +89,8 @@ export default {
     cacheCleared: '已清除全部音乐缓存。',
   },
   configGuides: {
-    title: 'configs.json 指南',
-    intro: '应用从 JSON 配置文件（通常是 configs.json）加载音乐目录。本页说明该文件的写法。',
-    whereTitle: '从哪里加载',
-    whereBody:
-      '默认地址是 /configs.json（来自 public/configs.json）。可在设置页修改；留空则使用默认地址。加载后的 configs.json 会存入 localStorage；可在设置里删除该缓存以便下次重新下载。',
-    musicListTitle: 'music-list',
-    musicListBody:
-      '曲目数组。每条必须有 id 和 path；缺少任一字段或 id 重复会被丢弃，并在音乐列表中显示错误。可选字段若填写，会覆盖从 ID3 提取的标签。',
-    fieldId: '曲目唯一 id（必填）',
-    fieldPath: '音频 URL 或站点路径（必填）',
-    fieldTitle: '显示标题（可选）',
-    fieldArtist: '歌手名（可选）',
-    fieldAlbum: '专辑名（可选）',
-    fieldCover: '封面图 URL（可选）',
-    playlistsTitle: 'playlists',
-    playlistsBody:
-      '播放列表数组。每项有 title，以及由 {\'{\'} "id": "…" {\'}\'} 组成的 music-list（只能引用已接受的曲目）。仍兼容旧版单数 playlist，当作一个播放列表。',
-    exampleTitle: '示例',
-    notesTitle: '补充说明',
-    noteFallback: '标题回退顺序：配置 → ID3 → path 文件名（解码后的无扩展名 basename）→ id。',
-    noteUnknown: '缺少歌手/专辑时显示为未知歌手 / 未知专辑；曲目仍会按歌手 → 专辑 → 曲目分组。',
-    notePaths: 'http(s):// 与站点绝对路径（/…）在播放时都会写入 IndexedDB 缓存。',
-    llmTitle: '让大模型生成 configs.json',
-    llmBody:
-      '把下面的提示词复制到 ChatGPT、Claude 等大模型，再附上你的音频文件列表（URL 或路径）。把返回的 JSON 写入 configs.json（或放到可访问地址，并在设置里填写配置地址）。',
-    llmCopy: '复制提示词',
-    llmCopied: '已复制',
+    loading: '加载中…',
+    loadError: '无法加载配置指南。',
   },
   about: {
     github: 'GitHub',

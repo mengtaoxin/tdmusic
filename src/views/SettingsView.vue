@@ -77,24 +77,29 @@ onMounted(() => {
 
     <section class="setting">
       <h2 class="text-subtitle-1 mb-1">{{ t('settings.configUrl') }}</h2>
-      <p class="setting-hint text-body-2 text-medium-emphasis mb-3">
+      <p class="setting-hint text-body-2 text-medium-emphasis">
         {{ t('settings.configUrlHint') }}
       </p>
-      <p class="setting-hint text-body-2 mb-3">
+      <p class="setting-hint text-body-2">
         <RouterLink to="/config-guides">{{ t('settings.configGuidesLink') }}</RouterLink>
       </p>
-      <v-text-field v-model="draftUrl" hide-details variant="outlined" class="mb-3 setting-field" />
-      <v-btn color="primary" @click="save">{{ t('settings.save') }}</v-btn>
+      <v-text-field
+        v-model="draftUrl"
+        hide-details
+        variant="outlined"
+        class="setting-field setting-control"
+      />
+      <v-btn color="primary" class="setting-control" @click="save">{{ t('settings.save') }}</v-btn>
     </section>
 
     <v-divider class="my-6" />
 
     <section class="setting">
       <h2 class="text-subtitle-1 mb-1">{{ t('settings.clearConfigsCache') }}</h2>
-      <p class="setting-hint text-body-2 text-medium-emphasis mb-3">
+      <p class="setting-hint text-body-2 text-medium-emphasis">
         {{ t('settings.clearConfigsCacheHint') }}
       </p>
-      <v-btn variant="tonal" @click="openClearConfigsCacheConfirm">
+      <v-btn variant="tonal" class="setting-control" @click="openClearConfigsCacheConfirm">
         {{ t('settings.clearConfigsCache') }}
       </v-btn>
     </section>
@@ -103,13 +108,19 @@ onMounted(() => {
 
     <section class="setting">
       <h2 class="text-subtitle-1 mb-1">{{ t('settings.clearCache') }}</h2>
-      <p class="setting-hint text-body-2 text-medium-emphasis mb-3">
+      <p class="setting-hint text-body-2 text-medium-emphasis">
         {{ t('settings.clearCacheHint') }}
       </p>
-      <p v-if="cacheSizeBytes !== null" class="setting-hint text-body-2 text-medium-emphasis mb-3">
+      <p v-if="cacheSizeBytes !== null" class="setting-hint text-body-2 text-medium-emphasis">
         {{ t('settings.cacheSize', { size: formatBytes(cacheSizeBytes) }) }}
       </p>
-      <v-btn color="error" variant="tonal" :loading="clearing" @click="openClearCacheConfirm">
+      <v-btn
+        color="error"
+        variant="tonal"
+        class="setting-control"
+        :loading="clearing"
+        @click="openClearCacheConfirm"
+      >
         {{ t('settings.clearCache') }}
       </v-btn>
     </section>
@@ -163,5 +174,11 @@ onMounted(() => {
 
 .setting-hint {
   margin: 0;
+  /* Match body line spacing so copy is not flush with the next block. */
+  margin-bottom: 1lh;
+}
+
+.setting-control + .setting-control {
+  margin-top: 1lh;
 }
 </style>

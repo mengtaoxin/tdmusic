@@ -11,7 +11,7 @@ A browser music player that reads your library from a JSON catalog. No backend: 
 - Offline-friendly audio + cover cache in IndexedDB (prefetch upcoming tracks)
 - ID3 enrichment from cached audio when config metadata is incomplete
 - Browse: Music List, Playlists, Artists, Albums, Search
-- In-app configs.json guideline and Logs
+- In-app Guidelines for configs.json and Logs
 
 ## Requirements
 
@@ -51,7 +51,7 @@ Default catalog: [`public/configs.json`](public/configs.json) served at `/config
 
 Each `music-list` entry needs `id` and `path` (`http(s)://` or site-absolute `/…`). Optional `title`, `artist`, `album`, and `cover` override extracted tags. Playlists reference tracks by `id`.
 
-Field-by-field help is in the app under **More → configs.json guideline**, and in [docs/project-specific-docs.md](docs/project-specific-docs.md).
+Field-by-field help is in the app under **More → Guidelines for configs.json**, and in [docs/project-specific-docs.md](docs/project-specific-docs.md).
 
 ## Stack
 

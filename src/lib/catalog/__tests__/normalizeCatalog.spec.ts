@@ -92,4 +92,15 @@ describe('normalizeConfigs', () => {
     })
     expect(playlists).toEqual([{ title: 'My Playlist1', trackIds: ['sample-1', '9277'] }])
   })
+
+  it('ignores legacy singular playlist', () => {
+    const { playlists } = normalizeConfigs({
+      'music-list': [{ id: 'sample-1', path: '/sample-1.mp3' }],
+      playlist: {
+        title: 'Legacy',
+        'music-list': [{ id: 'sample-1' }],
+      },
+    })
+    expect(playlists).toEqual([])
+  })
 })

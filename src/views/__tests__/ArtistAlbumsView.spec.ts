@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { afterEach, describe, it, expect, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 import { createPinia } from 'pinia'
@@ -25,6 +25,34 @@ function makeTrack(
     displayAlbum: album,
     ...extras,
   }
+}
+
+type RoCallback = ResizeObserverCallback
+
+function stubResizeObserver(heightPx: number, widthPx = 400) {
+  class FakeResizeObserver {
+    private readonly cb: RoCallback
+    constructor(cb: RoCallback) {
+      this.cb = cb
+    }
+    observe(target: Element) {
+      this.cb(
+        [
+          {
+            target,
+            contentRect: { height: heightPx, width: widthPx } as DOMRectReadOnly,
+            borderBoxSize: [],
+            contentBoxSize: [],
+            devicePixelContentBoxSize: [],
+          } as ResizeObserverEntry,
+        ],
+        this as unknown as ResizeObserver,
+      )
+    }
+    unobserve() {}
+    disconnect() {}
+  }
+  vi.stubGlobal('ResizeObserver', FakeResizeObserver)
 }
 
 async function mountArtistAlbums(name: string, tracks?: DisplayTrack[]) {
@@ -60,8 +88,13 @@ async function mountArtistAlbums(name: string, tracks?: DisplayTrack[]) {
   })
 }
 
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
+
 describe('ArtistAlbumsView', () => {
   it('links to all music and each album for the artist', async () => {
+    stubResizeObserver(800)
     const wrapper = await mountArtistAlbums('Artist One')
     await flushPromises()
 
@@ -75,6 +108,7 @@ describe('ArtistAlbumsView', () => {
   })
 
   it('lists albums as a cover gallery like the global album list', async () => {
+    stubResizeObserver(800)
     const wrapper = await mountArtistAlbums('Artist One', [
       makeTrack('t1', 'Artist One', 'Album A'),
       makeTrack('t2', 'Artist One', 'Album A', { displayCover: 'https://example.com/a.jpg' }),
@@ -94,7 +128,22 @@ describe('ArtistAlbumsView', () => {
     expect(albumB.find('.album-tile__fallback').exists()).toBe(true)
   })
 
+  it('only mounts a viewport-sized subset of album tiles for large catalogs', async () => {
+    stubResizeObserver(400, 400)
+    const albumCount = 200
+    const tracks = Array.from({ length: albumCount }, (_, i) =>
+      makeTrack(`t${i}`, 'Artist One', `Album ${i}`),
+    )
+    const wrapper = await mountArtistAlbums('Artist One', tracks)
+    await flushPromises()
+
+    const rendered = wrapper.findAll('.album-tile').length
+    expect(rendered).toBeGreaterThan(0)
+    expect(rendered).toBeLessThan(albumCount)
+  })
+
   it('shows not-found when the artist is missing', async () => {
+    stubResizeObserver(800)
     const wrapper = await mountArtistAlbums('Missing')
     await flushPromises()
 

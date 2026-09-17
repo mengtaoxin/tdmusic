@@ -1,103 +1,75 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import { resolveDisplayAlbum, resolveDisplayArtist } from '@/lib/catalog/displayLabels'
+import {
+  buildCatalogSnapshot,
+  patchCatalogTrack,
+  searchCatalog,
+  toDisplayTrack,
+  type CatalogSearchResult,
+  type CatalogSnapshot,
+  type CatalogTrackGroup,
+  type DisplayTrack,
+} from '@/lib/catalog/catalogIndex'
 import { clearEnrichQueue, enqueueEnrich } from '@/lib/catalog/enrichQueue'
 import { enrichOneTrack } from '@/lib/catalog/enrichTracks'
 import { loadConfigsJson } from '@/lib/catalog/loadConfigs'
-import { mergeTrackDisplay } from '@/lib/catalog/mergeTrackMeta'
 import {
   normalizeConfigs,
   type CatalogError,
-  type MusicTrack,
   type NormalizedPlaylist,
 } from '@/lib/catalog/normalizeCatalog'
 
-export type DisplayTrack = MusicTrack & {
-  displayTitle: string
-  displayArtist: string
-  displayAlbum: string
-  displayCover?: string
-}
-
-function toDisplayTrack(track: MusicTrack): DisplayTrack {
-  const merged = mergeTrackDisplay(track, null)
-  return {
-    ...track,
-    displayTitle: merged.title ?? track.id,
-    displayArtist: resolveDisplayArtist(merged.artist),
-    displayAlbum: resolveDisplayAlbum(merged.album),
-    displayCover: merged.cover,
-  }
-}
+export type { DisplayTrack, CatalogTrackGroup, CatalogSearchResult }
 
 export const useCatalogStore = defineStore('catalog', () => {
-  const tracks = ref<DisplayTrack[]>([])
+  const snapshot = ref<CatalogSnapshot>(buildCatalogSnapshot([]))
   const playlists = ref<NormalizedPlaylist[]>([])
   const errors = ref<CatalogError[]>([])
   const loading = ref(false)
   const loadError = ref<string | null>(null)
 
-  const trackById = computed(() => {
-    const map = new Map<string, DisplayTrack>()
-    for (const track of tracks.value) map.set(track.id, track)
-    return map
+  function applySnapshot(next: CatalogSnapshot) {
+    snapshot.value = next
+  }
+
+  /** Writable so tests/callers can assign `catalog.tracks = […]` and rebuild indexes. */
+  const tracks = computed({
+    get: () => snapshot.value.tracks,
+    set: (next: DisplayTrack[]) => {
+      applySnapshot(buildCatalogSnapshot(next))
+    },
   })
 
-  const artists = computed(() => {
-    const map = new Map<string, DisplayTrack[]>()
-    for (const track of tracks.value) {
-      const key = resolveDisplayArtist(track.displayArtist)
-      const list = map.get(key) ?? []
-      list.push(track)
-      map.set(key, list)
-    }
-    return [...map.entries()]
-      .map(([name, items]) => ({ name, tracks: items }))
-      .sort((a, b) => a.name.localeCompare(b.name))
-  })
-
-  const albums = computed(() => {
-    const map = new Map<string, DisplayTrack[]>()
-    for (const track of tracks.value) {
-      const key = resolveDisplayAlbum(track.displayAlbum)
-      const list = map.get(key) ?? []
-      list.push(track)
-      map.set(key, list)
-    }
-    return [...map.entries()]
-      .map(([name, items]) => ({ name, tracks: items }))
-      .sort((a, b) => a.name.localeCompare(b.name))
-  })
+  const trackById = computed(() => snapshot.value.trackById)
+  const artists = computed(() => snapshot.value.artists)
+  const albums = computed(() => snapshot.value.albums)
 
   async function applyEnrichment(track: DisplayTrack, options?: { network?: boolean }) {
     const patch = await enrichOneTrack(track, options)
     if (!patch) return
-    const index = tracks.value.findIndex((t) => t.id === track.id)
-    if (index < 0) return
-    tracks.value[index] = {
-      ...tracks.value[index]!,
-      ...patch,
-    }
+    const result = patchCatalogTrack(snapshot.value, track.id, patch)
+    if (!result) return
+    applySnapshot(result.snapshot)
   }
 
   /** Enqueue best-effort enrich for the current track list (no network audio fetch). */
   function scheduleEnrichment() {
-    for (const track of tracks.value) {
+    for (const track of snapshot.value.tracks) {
       void enqueueEnrich(() => applyEnrichment(track))
     }
   }
 
   /** After play download, re-enrich one track (may use cached audio for ID3). */
   function scheduleEnrichTrack(id: string) {
-    const track = tracks.value.find((t) => t.id === id)
+    const track = snapshot.value.trackById.get(id)
     if (!track) return
     void enqueueEnrich(() => applyEnrichment(track, { network: true }))
   }
 
   /** Reset display fields to config-only (drop extracted covers/meta in memory). */
   function resetDisplayFromConfig() {
-    tracks.value = tracks.value.map((track) => toDisplayTrack(track))
+    applySnapshot(buildCatalogSnapshot(snapshot.value.tracks.map((track) => toDisplayTrack(track))))
   }
 
   async function load() {
@@ -109,44 +81,19 @@ export const useCatalogStore = defineStore('catalog', () => {
       const normalized = normalizeConfigs(raw)
       errors.value = normalized.errors
       playlists.value = normalized.playlists
-      tracks.value = normalized.tracks.map(toDisplayTrack)
+      applySnapshot(buildCatalogSnapshot(normalized.tracks.map(toDisplayTrack)))
       scheduleEnrichment()
     } catch (error) {
       loadError.value = error instanceof Error ? error.message : String(error)
-      tracks.value = []
+      applySnapshot(buildCatalogSnapshot([]))
       playlists.value = []
     } finally {
       loading.value = false
     }
   }
 
-  function search(query: string) {
-    const q = query.trim().toLowerCase()
-    if (!q) {
-      return {
-        tracks: [] as DisplayTrack[],
-        artists: [] as string[],
-        albums: [] as string[],
-      }
-    }
-    const matchedTracks = tracks.value.filter(
-      (t) =>
-        t.displayTitle.toLowerCase().includes(q) ||
-        t.id.toLowerCase().includes(q) ||
-        t.displayArtist.toLowerCase().includes(q) ||
-        t.displayAlbum.toLowerCase().includes(q),
-    )
-    const matchedArtists = artists.value
-      .filter((a) => a.name.toLowerCase().includes(q))
-      .map((a) => a.name)
-    const matchedAlbums = albums.value
-      .filter((a) => a.name.toLowerCase().includes(q))
-      .map((a) => a.name)
-    return {
-      tracks: matchedTracks,
-      artists: matchedArtists,
-      albums: matchedAlbums,
-    }
+  function search(query: string): CatalogSearchResult {
+    return searchCatalog(snapshot.value, query)
   }
 
   return {

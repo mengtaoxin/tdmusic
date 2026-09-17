@@ -108,7 +108,6 @@ export function normalizePlaylists(raw: unknown, tracks: MusicTrack[]): Normaliz
 export type MusicConfigs = {
   'music-list'?: unknown
   playlists?: unknown
-  playlist?: unknown
 }
 
 export function normalizeConfigs(raw: unknown): {
@@ -118,12 +117,6 @@ export function normalizeConfigs(raw: unknown): {
 } {
   const data = (raw ?? {}) as MusicConfigs
   const { tracks, errors } = normalizeMusicList(data['music-list'])
-  const playlists =
-    data.playlists !== undefined
-      ? normalizePlaylists(data.playlists, tracks)
-      : (() => {
-          const single = normalizePlaylist(data.playlist, tracks)
-          return single ? [single] : []
-        })()
+  const playlists = normalizePlaylists(data.playlists, tracks)
   return { tracks, playlists, errors }
 }

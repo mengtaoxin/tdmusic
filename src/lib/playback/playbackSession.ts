@@ -11,6 +11,7 @@ export function formatDownloadFailureLog(
 export type PlaybackAudioElement = {
   src: string
   currentTime: number
+  duration: number
   loop: boolean
   ended: boolean
   load: () => void

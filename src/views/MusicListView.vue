@@ -1,18 +1,17 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import TrackListItem from '@/components/TrackListItem.vue'
 import { useTrackListPlayback } from '@/composables/useTrackListPlayback'
+import { useVirtualListHost } from '@/composables/useVirtualListHost'
 import { capVirtualListHeight, virtualListNeedsScroll } from '@/lib/virtualListHeight'
 
 const { t } = useI18n()
 
 const TRACK_ROW_HEIGHT = 64
 
-const listHost = ref<HTMLElement | null>(null)
-const hostHeight = ref(0)
-let resizeObserver: ResizeObserver | null = null
+const { listHost, hostHeight } = useVirtualListHost()
 
 const { catalog, player, playAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(() =>
   catalog.tracks.map((track) => track.id),
@@ -25,29 +24,6 @@ const listHeight = computed(() =>
 const listFlush = computed(
   () => !virtualListNeedsScroll(catalog.tracks.length, TRACK_ROW_HEIGHT, hostHeight.value),
 )
-
-watch(
-  listHost,
-  (el) => {
-    resizeObserver?.disconnect()
-    resizeObserver = null
-    hostHeight.value = 0
-    if (!el || typeof ResizeObserver === 'undefined') return
-
-    resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0]
-      if (!entry) return
-      hostHeight.value = entry.contentRect.height
-    })
-    resizeObserver.observe(el)
-  },
-  { flush: 'post' },
-)
-
-onBeforeUnmount(() => {
-  resizeObserver?.disconnect()
-  resizeObserver = null
-})
 </script>
 
 <template>

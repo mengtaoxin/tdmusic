@@ -80,6 +80,17 @@ describe('SettingsView', () => {
     )
   })
 
+  it('spaces setting hints from controls by about one line of body text', () => {
+    const wrapper = mountSettings('en')
+    const hints = wrapper.findAll('.setting-hint')
+    expect(hints.length).toBeGreaterThan(0)
+
+    for (const hint of hints) {
+      // 1lh in CSS; jsdom may not resolve lh against computed line-height.
+      expect(parseFloat(getComputedStyle(hint.element).marginBottom)).toBeGreaterThan(0)
+    }
+  })
+
   it('shows a short description for each setting in Chinese', () => {
     const wrapper = mountSettings('zh')
     const text = wrapper.text()
@@ -95,12 +106,12 @@ describe('SettingsView', () => {
     expect(text).toContain('清除已缓存的音频与元数据，并清空正在播放与播放队列。')
   })
 
-  it('links to configs.json guideline', () => {
+  it('links to Guidelines for configs.json', () => {
     const wrapper = mountSettings('en')
     const link = wrapper.find('a[href="/config-guides"]')
 
     expect(link.exists()).toBe(true)
-    expect(link.text()).toContain('configs.json guideline')
+    expect(link.text()).toContain('Guidelines for configs.json')
   })
 
   it('shows a Chinese configs.json guideline link label', () => {

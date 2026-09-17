@@ -10,7 +10,7 @@ export default {
     more: 'More',
     language: 'Language',
     settings: 'Settings',
-    configGuides: 'configs.json guideline',
+    configGuides: 'Guidelines for configs.json',
     about: 'About',
     logs: 'Logs',
     feedback: 'Feedback',
@@ -70,7 +70,7 @@ export default {
   settings: {
     configUrl: 'Config URL',
     configUrlHint: 'Where the app loads the music catalog from. Leave empty for the default.',
-    configGuidesLink: 'configs.json guideline',
+    configGuidesLink: 'Guidelines for configs.json',
     save: 'Save',
     clearConfigsCache: 'Delete local config cache',
     clearConfigsCacheHint:
@@ -90,36 +90,8 @@ export default {
     cacheCleared: 'All music cache cleared.',
   },
   configGuides: {
-    title: 'configs.json guideline',
-    intro:
-      'The app loads its music catalog from a JSON file (usually configs.json). This page explains the shape of that file.',
-    whereTitle: 'Where it loads from',
-    whereBody:
-      'Default URL is /configs.json (from public/configs.json). Change it on the Settings page; leave empty to use the default. Loaded configs.json is saved in localStorage; delete that cache in Settings to download it again.',
-    musicListTitle: 'music-list',
-    musicListBody:
-      'An array of tracks. Each entry needs id and path. Missing either, or a duplicate id, drops that entry and shows an error in Music List. Optional fields override extracted ID3 tags when set.',
-    fieldId: 'unique track id (required)',
-    fieldPath: 'audio URL or site path (required)',
-    fieldTitle: 'display title (optional)',
-    fieldArtist: 'artist name (optional)',
-    fieldAlbum: 'album name (optional)',
-    fieldCover: 'cover image URL (optional)',
-    playlistsTitle: 'playlists',
-    playlistsBody:
-      'An array of playlists. Each has a title and a music-list of {\'{\'} "id": "…" {\'}\'} refs that must match accepted tracks. Legacy singular playlist is still accepted as one playlist.',
-    exampleTitle: 'Example',
-    notesTitle: 'Notes',
-    noteFallback:
-      'Title fallback order: config → ID3 → filename from path (decoded basename without extension) → id.',
-    noteUnknown:
-      'Missing artist/album become Unknown artist / Unknown album; tracks still group under artist → albums → tracks.',
-    notePaths: 'http(s):// and site-absolute (/…) paths are cached in IndexedDB on play.',
-    llmTitle: 'Ask an AI to generate configs.json',
-    llmBody:
-      'Paste the prompt below into ChatGPT, Claude, or another model, then append your audio file list (URLs or paths). Copy the returned JSON into configs.json (or host it and set the Config URL in Settings).',
-    llmCopy: 'Copy prompt',
-    llmCopied: 'Copied',
+    loading: 'Loading…',
+    loadError: 'Could not load the config guide.',
   },
   about: {
     github: 'GitHub',

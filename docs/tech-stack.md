@@ -13,6 +13,7 @@ tdmusic is a Vue 3 SPA (Vite) at the repo root — no separate `api/` or `web/` 
 | State         | Pinia                                       |
 | i18n          | vue-i18n (en default, zh)                   |
 | UI            | Vuetify 4 + MDI + Roboto                    |
+| Markdown      | marked (Config Guides page)                 |
 | Audio meta    | music-metadata                              |
 | Lint / format | ESLint + oxlint + Prettier                  |
 | Unit tests    | Vitest                                      |

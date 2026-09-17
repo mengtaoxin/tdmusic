@@ -84,7 +84,7 @@ const GITHUB_ISSUES_URL = 'https://github.com/mengtaoxin/tdmusic/issues'
 const englishMoreSubMenus = [
   'Search',
   'Settings',
-  'configs.json guideline',
+  'Guidelines for configs.json',
   'About',
   'Logs',
   'Feedback',
@@ -296,7 +296,7 @@ describe('AppHeader', () => {
     wrapper.unmount()
   })
 
-  it('nests Search, Settings, configs.json guideline, About, Logs, and Feedback under More in desktop nav and the drawer', async () => {
+  it('nests Search, Settings, Guidelines for configs.json, About, Logs, and Feedback under More in desktop nav and the drawer', async () => {
     const { wrapper, router } = await mountHeader()
     applyLayoutWidths(wrapper, { toolbarWidth: 1200, brandWidth: 120, navContentWidth: 800 })
     await measureNavLayout()

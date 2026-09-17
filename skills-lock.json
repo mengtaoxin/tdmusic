@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "test-driven-development": {
+      "source": "mengtaoxin/agent-kit",
+      "sourceType": "github",
+      "skillPath": "skills/test-driven-development/SKILL.md",
+      "computedHash": "6d5f9565407b2b80efaeec8622d148e1de13b6ba28460bb3a931f46787cb79e3"
+    }
+  }
+}

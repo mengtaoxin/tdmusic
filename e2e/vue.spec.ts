@@ -39,13 +39,13 @@ test('language menu opens on the first click after navigating', async ({ page })
   await page.keyboard.press('Escape')
   await expect(page.getByTestId('nav-locale-menu')).toHaveCount(0)
 
-  await page.getByRole('link', { name: 'Music List' }).click()
+  await page.getByTestId('desktop-nav').getByRole('link', { name: 'Music List' }).click()
   await expect(page).toHaveURL(/\/music/)
 
   await page.getByTestId('nav-locale-toggle').click()
   await expect(page.getByTestId('nav-locale-menu')).toBeVisible()
-  await expect(page.getByTestId('locale-option-en')).toBeVisible()
-  await expect(page.getByTestId('locale-option-zh')).toBeVisible()
+  await expect(page.getByTestId('nav-locale-menu').getByTestId('locale-option-en')).toBeVisible()
+  await expect(page.getByTestId('nav-locale-menu').getByTestId('locale-option-zh')).toBeVisible()
 })
 
 test('reserves scrollbar gutter on the right by default', async ({ page }) => {
@@ -59,15 +59,13 @@ test('reserves scrollbar gutter on the right by default', async ({ page }) => {
 test('settings links to config guides', async ({ page }) => {
   await page.goto('/settings')
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
-  await page.getByRole('main').getByRole('link', { name: 'configs.json guideline' }).click()
+  await page.getByRole('main').getByRole('link', { name: 'Guidelines for configs.json' }).click()
   await expect(page).toHaveURL(/\/config-guides/)
-  await expect(page.getByRole('heading', { name: 'configs.json guideline' })).toBeVisible()
-  await expect(page.getByText('/configs.json', { exact: false }).first()).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Guidelines for configs.json' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'music-list' })).toBeVisible()
   await expect(
     page.getByRole('heading', { name: 'Ask an AI to generate configs.json' }),
   ).toBeVisible()
-  await expect(page.getByTestId('copy-llm-prompt')).toBeVisible()
 })
 
 test('music list shows catalog tracks', async ({ page }) => {

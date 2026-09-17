@@ -13,6 +13,7 @@ function makeAudio(): TestAudio {
   return {
     src: '',
     currentTime: 0,
+    duration: 0,
     loop: false,
     ended: false,
     load: vi.fn<() => void>(),
