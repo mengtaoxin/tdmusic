@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CoverImg from '@/components/CoverImg.vue'
+import { useTrackDownload } from '@/composables/useTrackDownload'
 import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels'
 import type { DisplayTrack } from '@/stores/catalog'
+import { usePlayerStore } from '@/stores/player'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     track: DisplayTrack
     active?: boolean
@@ -23,13 +26,21 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const player = usePlayerStore()
+const { downloading, percent } = useTrackDownload(() => props.track)
+const coverBusy = computed(() => downloading.value && player.currentId === props.track.id)
 </script>
 
 <template>
   <v-list-item :active="active" rounded="lg" class="track-row" @click="emit('select')">
     <template #prepend>
       <v-avatar rounded="lg" size="40" class="me-3">
-        <CoverImg v-if="track.displayCover" :src="track.displayCover" />
+        <CoverImg
+          v-if="track.displayCover || coverBusy"
+          :src="track.displayCover"
+          :downloading="coverBusy"
+          :download-percent="coverBusy ? percent : null"
+        />
         <v-icon v-else icon="mdi-music" />
       </v-avatar>
     </template>

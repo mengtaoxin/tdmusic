@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 
 import CoverImg from '@/components/CoverImg.vue'
 import TrackListItem from '@/components/TrackListItem.vue'
+import { useTrackDownload } from '@/composables/useTrackDownload'
 import { artistAlbumPath, artistAlbumsPath } from '@/lib/routes/artistRoutes'
 import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels'
 import { useCatalogStore, type DisplayTrack } from '@/stores/catalog'
@@ -17,6 +18,8 @@ const player = usePlayerStore()
 const current = computed(() =>
   player.currentId ? catalog.trackById.get(player.currentId) : undefined,
 )
+
+const { downloading, percent } = useTrackDownload(current)
 
 const TRACK_ROW_HEIGHT = 64
 
@@ -84,9 +87,11 @@ function clearUpcoming() {
     <div v-if="current" class="player-hero mb-8">
       <div class="cover-wrap mb-4">
         <CoverImg
-          v-if="current.displayCover"
+          v-if="current.displayCover || downloading"
           :src="current.displayCover"
           :aspect-ratio="1"
+          :downloading="downloading"
+          :download-percent="percent"
           class="cover-art"
         />
         <div v-else class="cover-fallback">

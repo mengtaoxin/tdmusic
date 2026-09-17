@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import CoverImg from '@/components/CoverImg.vue'
+import { useTrackDownload } from '@/composables/useTrackDownload'
 import { localizeArtistName } from '@/lib/catalog/displayLabels'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
@@ -16,6 +17,8 @@ const player = usePlayerStore()
 const current = computed(() =>
   player.currentId ? catalog.trackById.get(player.currentId) : undefined,
 )
+
+const { downloading, percent } = useTrackDownload(current)
 
 const visible = computed(() => Boolean(current.value))
 
@@ -60,7 +63,12 @@ function onProgressClick(event: MouseEvent) {
     />
     <div class="footer-inner d-flex align-center ga-2 px-2" @click="openNowPlaying">
       <v-avatar rounded="lg" size="48" class="cover">
-        <CoverImg v-if="current?.displayCover" :src="current.displayCover" />
+        <CoverImg
+          v-if="current?.displayCover || downloading"
+          :src="current?.displayCover"
+          :downloading="downloading"
+          :download-percent="percent"
+        />
         <v-icon v-else icon="mdi-music-note" />
       </v-avatar>
       <div class="meta">
