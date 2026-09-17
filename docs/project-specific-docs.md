@@ -86,3 +86,4 @@
 - On `/now-playing`, the current track’s artist links to `/artists/{name}/albums` and the album links to `/artists/{name}/albums/{album}`.
 - Track rows expose a ⋮ menu: **Play next** inserts after the current track; **Add to queue** appends at the end. Duplicates are allowed. With an empty queue, either action starts playback with that single track.
 - On `/now-playing`, each queue row can **Remove from queue**; **Clear upcoming** drops everything after the current track. Removing the current track advances to the next (or previous if none), or clears and pauses when it was the only track.
+- Queue mutations that also update `originalQueue` (`playNext`, `removeAt`, `clearUpcoming`, turning shuffle **off**) locate the playing/removed slot by **id occurrence** (nth match of that id), not `indexOf`, so duplicate playlist entries stay aligned between the play order and the unshuffled restore order.

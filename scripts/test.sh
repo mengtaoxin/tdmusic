@@ -19,6 +19,7 @@ usage() {
 Usage:
   ./scripts/test.sh [--platform chrome|chromium|firefox|webkit|safari[,...]] [--file path/to/spec.ts]
 
+Default (no --file): unit, then e2e (chromium).
 E2E defaults to chromium only. Pass --platform with a comma-separated list to run more browsers.
 Pass --file to run a single spec (paths under e2e/ use Playwright; otherwise Vitest).
 EOF

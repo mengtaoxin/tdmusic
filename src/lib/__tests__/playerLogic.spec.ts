@@ -6,6 +6,7 @@ import {
   clearUpcoming,
   hydratePlayerState,
   insertAfterCurrent,
+  mapOccurrenceIndex,
   nextIndex,
   parsePlayerState,
   prevIndex,
@@ -213,6 +214,7 @@ describe('persist helpers', () => {
         queue: ['a', 'gone', 'b'],
         originalQueue: ['a', 'gone', 'b'],
         currentId: 'gone',
+        currentIndex: -1,
         currentTime: 3,
         repeatMode: 'off',
         shuffle: false,
@@ -228,6 +230,12 @@ describe('persist helpers', () => {
       repeatMode: 'off',
       shuffle: false,
     })
+  })
+
+  it('mapOccurrenceIndex maps duplicate slots across orders', () => {
+    expect(mapOccurrenceIndex(['a', 'b', 'a', 'c'], 2, ['a', 'b', 'a', 'c'])).toBe(2)
+    expect(mapOccurrenceIndex(['a', 'a', 'c', 'b'], 1, ['a', 'b', 'a', 'c'])).toBe(2)
+    expect(mapOccurrenceIndex(['a', 'b', 'a'], 0, ['a', 'b', 'a'])).toBe(0)
   })
 
   it('hydrates currentIndex for duplicate ids and remaps when filtering', () => {

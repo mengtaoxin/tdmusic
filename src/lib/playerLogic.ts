@@ -85,6 +85,43 @@ export function clearUpcoming(queue: string[], currentIndex: number): string[] {
   return queue.slice(0, currentIndex + 1)
 }
 
+/** How many times `id` appears in `queue[0..index)` (exclusive of `index`). */
+export function occurrenceCountBefore(queue: string[], index: number, id: string): number {
+  let n = 0
+  const end = Math.min(Math.max(index, 0), queue.length)
+  for (let i = 0; i < end; i += 1) {
+    if (queue[i] === id) n += 1
+  }
+  return n
+}
+
+/** Index of the `occurrence`-th match of `id` (0-based), or `-1`. */
+export function indexOfOccurrence(queue: string[], id: string, occurrence: number): number {
+  if (occurrence < 0) return -1
+  let seen = 0
+  for (let i = 0; i < queue.length; i += 1) {
+    if (queue[i] !== id) continue
+    if (seen === occurrence) return i
+    seen += 1
+  }
+  return -1
+}
+
+/**
+ * Map `fromIndex` in `fromQueue` to the same id-occurrence in `toQueue`.
+ * Used when queue and originalQueue share ids but may differ in order (shuffle).
+ */
+export function mapOccurrenceIndex(
+  fromQueue: string[],
+  fromIndex: number,
+  toQueue: string[],
+): number {
+  if (fromIndex < 0 || fromIndex >= fromQueue.length) return -1
+  const id = fromQueue[fromIndex]!
+  const occurrence = occurrenceCountBefore(fromQueue, fromIndex, id)
+  return indexOfOccurrence(toQueue, id, occurrence)
+}
+
 /** Upcoming queue ids to prefetch (does not include current). */
 export function upcomingQueueIds(
   queue: string[],

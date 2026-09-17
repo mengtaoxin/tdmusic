@@ -109,7 +109,8 @@ describe('AudioHost', () => {
     expect(playSpy).not.toHaveBeenCalled()
     expect(audio.src).toContain('blob:t1')
 
-    resolveT2?.('blob:t2')
+    expect(resolveT2).not.toBeNull()
+    resolveT2!('blob:t2')
     await flushPromises()
     await flushPromises()
     audio.dispatchEvent(new Event('loadedmetadata'))

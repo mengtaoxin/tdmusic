@@ -8,6 +8,7 @@ import {
   clearUpcoming,
   hydratePlayerState,
   insertAfterCurrent,
+  mapOccurrenceIndex,
   nextIndex,
   parsePlayerState,
   PLAYER_STORAGE_KEY,
@@ -232,15 +233,20 @@ export const usePlayerStore = defineStore('player', () => {
       queue.value = shuffleUpcoming(queue.value, currentIndex.value)
     } else if (originalQueue.value.length > 0) {
       const id = currentId.value
+      const playingIndex = currentIndex.value
+      const fromQueue = queue.value
       queue.value = [...originalQueue.value]
       if (id) {
-        const restored =
-          currentIndex.value >= 0 && originalQueue.value[currentIndex.value] === id
-            ? currentIndex.value
-            : originalQueue.value.indexOf(id)
+        const restored = mapOccurrenceIndex(fromQueue, playingIndex, originalQueue.value)
         if (restored >= 0) {
           currentIndex.value = restored
           currentId.value = id
+        } else {
+          const fallback = originalQueue.value.indexOf(id)
+          if (fallback >= 0) {
+            currentIndex.value = fallback
+            currentId.value = id
+          }
         }
       }
     }
@@ -254,8 +260,8 @@ export const usePlayerStore = defineStore('player', () => {
       return
     }
     const idx = currentIndex.value
+    const origIdx = mapOccurrenceIndex(queue.value, idx, originalQueue.value)
     queue.value = insertAfterCurrent(queue.value, idx, id)
-    const origIdx = originalQueue.value.indexOf(currentId.value)
     originalQueue.value = insertAfterCurrent(
       originalQueue.value,
       origIdx >= 0 ? origIdx : originalQueue.value.length - 1,
@@ -279,7 +285,7 @@ export const usePlayerStore = defineStore('player', () => {
     if (index < 0 || index >= queue.value.length) return
     const playingIndex = currentIndex.value
     const removingCurrent = index === playingIndex
-    const removedId = queue.value[index]!
+    const origPos = mapOccurrenceIndex(queue.value, index, originalQueue.value)
 
     if (removingCurrent) {
       if (queue.value.length === 1) {
@@ -307,7 +313,6 @@ export const usePlayerStore = defineStore('player', () => {
       }
       const nextQueue = removeAtIndex(queue.value, index, index).queue
       queue.value = nextQueue
-      const origPos = originalQueue.value.indexOf(removedId)
       if (origPos >= 0) {
         originalQueue.value = removeAtIndex(originalQueue.value, origPos, origPos).queue
       }
@@ -321,7 +326,6 @@ export const usePlayerStore = defineStore('player', () => {
     if (index < playingIndex) {
       currentIndex.value = playingIndex - 1
     }
-    const origPos = originalQueue.value.indexOf(removedId)
     if (origPos >= 0) {
       originalQueue.value = removeAtIndex(originalQueue.value, origPos, origPos).queue
     }
@@ -331,16 +335,11 @@ export const usePlayerStore = defineStore('player', () => {
   function clearUpcomingTracks() {
     const idx = currentIndex.value
     if (idx < 0) return
+    const origIdx = mapOccurrenceIndex(queue.value, idx, originalQueue.value)
     const kept = clearUpcoming(queue.value, idx)
-    const current = currentId.value
     queue.value = kept
-    if (current) {
-      const origIdx = originalQueue.value.indexOf(current)
-      if (origIdx >= 0) {
-        originalQueue.value = clearUpcoming(originalQueue.value, origIdx)
-      } else {
-        originalQueue.value = [...kept]
-      }
+    if (origIdx >= 0) {
+      originalQueue.value = clearUpcoming(originalQueue.value, origIdx)
     } else {
       originalQueue.value = [...kept]
     }

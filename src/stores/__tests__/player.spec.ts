@@ -230,6 +230,7 @@ describe('playerStore', () => {
     store.goToIndex(2, true)
     store.clearUpcoming()
     expect(store.queue).toEqual(['a', 'b', 'a'])
+    expect(store.originalQueue).toEqual(['a', 'b', 'a'])
     expect(store.currentIndex).toBe(2)
     expect(store.currentId).toBe('a')
   })
@@ -241,8 +242,53 @@ describe('playerStore', () => {
     store.goToIndex(2, true)
     store.removeAt(0)
     expect(store.queue).toEqual(['b', 'a'])
+    expect(store.originalQueue).toEqual(['b', 'a'])
     expect(store.currentIndex).toBe(1)
     expect(store.currentId).toBe('a')
+  })
+
+  it('removeAt drops the matching duplicate in originalQueue, not the first id', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'a'])
+    await vi.runAllTimersAsync()
+    store.removeAt(2)
+    expect(store.queue).toEqual(['a', 'b'])
+    expect(store.originalQueue).toEqual(['a', 'b'])
+    expect(store.currentIndex).toBe(0)
+    expect(store.currentId).toBe('a')
+  })
+
+  it('playNext after a duplicate occurrence inserts in originalQueue at that occurrence', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'a', 'c'])
+    await vi.runAllTimersAsync()
+    store.goToIndex(2, true)
+    store.playNext('x')
+    expect(store.queue).toEqual(['a', 'b', 'a', 'x', 'c'])
+    expect(store.originalQueue).toEqual(['a', 'b', 'a', 'x', 'c'])
+    expect(store.currentIndex).toBe(2)
+  })
+
+  it('turning shuffle off restores the same duplicate occurrence', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'a', 'c'])
+    await vi.runAllTimersAsync()
+    store.goToIndex(0, true)
+    const values = [0, 0]
+    const rnd = vi.spyOn(Math, 'random').mockImplementation(() => values.shift() ?? 0)
+    store.toggleShuffle()
+    // head [a] + shuffle [b,a,c] with random 0 → [a, a, c, b]
+    expect(store.queue).toEqual(['a', 'a', 'c', 'b'])
+    store.goToIndex(1, true)
+    expect(store.currentId).toBe('a')
+    store.toggleShuffle()
+    expect(store.shuffle).toBe(false)
+    expect(store.queue).toEqual(['a', 'b', 'a', 'c'])
+    expect(store.currentIndex).toBe(2)
+    expect(store.currentId).toBe('a')
+    store.next()
+    expect(store.currentId).toBe('c')
+    rnd.mockRestore()
   })
 
   it('persists and hydrates currentIndex for duplicate queue ids', async () => {
