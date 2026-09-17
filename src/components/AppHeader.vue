@@ -11,7 +11,6 @@ const { t, locale } = useI18n()
 const route = useRoute()
 const drawerOpen = ref(false)
 const compactNav = ref(true)
-const openMenus = ref<Record<string, boolean>>({})
 
 const appBarRef = ref<{ $el?: HTMLElement } | null>(null)
 const desktopNavRef = ref<HTMLElement | null>(null)
@@ -78,7 +77,6 @@ watch(
   () => route.fullPath,
   () => {
     drawerOpen.value = false
-    openMenus.value = {}
   },
 )
 
@@ -292,7 +290,7 @@ function childTitle(child: NavLink): string {
         <template v-for="item in navItems" :key="item.key">
           <v-menu
             v-if="isNavGroup(item)"
-            v-model="openMenus[item.key]"
+            :key="`${item.menuTestId}-${route.fullPath}`"
             location="bottom end"
             :close-on-content-click="true"
             transition="fade-transition"

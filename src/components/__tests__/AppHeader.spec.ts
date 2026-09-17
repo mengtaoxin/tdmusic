@@ -491,6 +491,35 @@ describe('AppHeader', () => {
     wrapper.unmount()
   })
 
+  it('opens the Language dropdown on the first click after a route change', async () => {
+    const { wrapper, router } = await mountHeader()
+    applyLayoutWidths(wrapper, { toolbarWidth: 1200, brandWidth: 120, navContentWidth: 800 })
+    await measureNavLayout()
+
+    await wrapper.find('[data-testid="nav-locale-toggle"]').trigger('click')
+    await nextTick()
+    await flushPromises()
+    expect(document.querySelector('[data-testid="nav-locale-menu"]')).toBeTruthy()
+
+    await router.push('/now-playing')
+    await nextTick()
+    await flushPromises()
+    await router.push('/music')
+    await nextTick()
+    await flushPromises()
+
+    expect(document.querySelector('.v-overlay--active.v-menu')).toBeNull()
+
+    await wrapper.find('[data-testid="nav-locale-toggle"]').trigger('click')
+    await nextTick()
+    await flushPromises()
+
+    expect(document.querySelector('[data-testid="nav-locale-menu"]')).toBeTruthy()
+    expect(document.querySelector('.v-overlay--active.v-menu')).toBeTruthy()
+
+    wrapper.unmount()
+  })
+
   it('nests English and 中文 under a Language group in the drawer like More', async () => {
     const { wrapper } = await mountHeader()
     applyLayoutWidths(wrapper, { toolbarWidth: 400, brandWidth: 120, navContentWidth: 800 })

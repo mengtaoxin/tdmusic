@@ -11,6 +11,7 @@ Top-bar layout, menus, and related visual behavior. Domain contracts (catalog, c
 - **Language** is the same submenu pattern as **More**: one entry in `navItems` with locale children (`English` / `中文`). Desktop uses a dropdown (same `size="small"` / height / font-size as other nav buttons); the drawer uses a `v-list-group` (not a separate flat locale block).
 - Desktop nav **More** / **Language** activators use the same computed font-size as the router-link nav items beside them.
 - App `v-menu` dropdowns (desktop More / Language, track ⋮) use a fade open transition. Vuetify’s default dialog-scale animation sets `pointer-events: none` while entering, so touch taps on items often miss.
+- Desktop Language / More menus are uncontrolled and remount on route change (`:key` includes the path) so navigation always leaves them closed. Do not bind a controlled `v-model` that can become `undefined` after a reset — that makes the next open click a no-op.
 - When horizontal nav links fit beside the brand without clipping, show them in the app bar.
 - When they would be clipped (narrow viewport or content wider than the remaining space), hide the desktop links and show the hamburger instead — not only at a fixed breakpoint.
 - Brand title stays leftmost; when collapsed, the hamburger follows it.

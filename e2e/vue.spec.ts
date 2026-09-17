@@ -29,6 +29,25 @@ test('desktop nav menu toggles match link button font size', async ({ page }) =>
   expect(sizes!.language).toBe(sizes!.albums)
 })
 
+test('language menu opens on the first click after navigating', async ({ page }) => {
+  await page.setViewportSize({ width: 1400, height: 800 })
+  await page.goto('/now-playing')
+  await expect(page.getByTestId('desktop-nav')).toBeVisible()
+
+  await page.getByTestId('nav-locale-toggle').click()
+  await expect(page.getByTestId('nav-locale-menu')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByTestId('nav-locale-menu')).toHaveCount(0)
+
+  await page.getByRole('link', { name: 'Music List' }).click()
+  await expect(page).toHaveURL(/\/music/)
+
+  await page.getByTestId('nav-locale-toggle').click()
+  await expect(page.getByTestId('nav-locale-menu')).toBeVisible()
+  await expect(page.getByTestId('locale-option-en')).toBeVisible()
+  await expect(page.getByTestId('locale-option-zh')).toBeVisible()
+})
+
 test('reserves scrollbar gutter on the right by default', async ({ page }) => {
   await page.goto('/')
   const gutter = await page.evaluate(
