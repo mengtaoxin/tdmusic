@@ -6,6 +6,12 @@ import {
   type CacheProgress,
 } from './cacheIngest'
 import {
+  isTrackDownloading,
+  subscribeCacheDownloads,
+  trackDownloadPercent,
+  type CacheDownloadTrackRef,
+} from './cacheDownloadState'
+import {
   clearAllCacheRecords,
   COVER_FILE_KEY,
   deleteTrackCacheRecords,
@@ -21,7 +27,7 @@ import {
 } from './cacheStore'
 import { clearEnrichQueue } from '../catalog/enrichQueue'
 
-export type { CacheProgress, ExtractedTrackMeta, TrackCacheMeta }
+export type { CacheProgress, CacheDownloadTrackRef, ExtractedTrackMeta, TrackCacheMeta }
 export {
   COVER_FILE_KEY,
   ensureTrackCached,
@@ -30,7 +36,10 @@ export {
   getExtractedTrackMeta,
   getMusicCacheSizeBytes,
   isTrackCached,
+  isTrackDownloading,
   putExtractedTrackMeta,
+  subscribeCacheDownloads,
+  trackDownloadPercent,
 }
 
 /** Quota-check then store a cover blob under the standard cover key. */

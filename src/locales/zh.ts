@@ -58,6 +58,7 @@ export default {
     addToQueue: '添加到队列',
     removeFromQueue: '从队列移除',
     clearUpcoming: '清除后续',
+    downloading: '正在下载',
   },
   search: {
     placeholder: '搜索歌曲、歌手、专辑',
