@@ -28,16 +28,16 @@ Default: `npm install`, then Playwright **Chromium** only.
 
 ## format.sh
 
-Default **writes files**: Prettier `--write` and lint `--fix`. This is the everyday formatter, not a read-only CI check.
+Default **writes files**: Prettier `--write` and lint `--fix`, then TypeScript check (`vue-tsc --build`). This is the everyday formatter, not a read-only CI check.
 
 ```sh
-./scripts/format.sh          # default: write files
+./scripts/format.sh          # default: write files, then type-check
 ./scripts/format.sh --check  # check only, do not write
 ```
 
 | Flag | Value | Default | Notes |
 | ---- | ----- | ------- | ----- |
-| `--check` | _(switch)_ | off | Prettier `--check`; oxlint/eslint without `--fix` |
+| `--check` | _(switch)_ | off | Prettier `--check`; oxlint/eslint without `--fix`; then type-check |
 
 ## dev-start.sh / dev-stop.sh / build.sh
 

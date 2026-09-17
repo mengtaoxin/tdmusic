@@ -33,7 +33,7 @@ Flags and extra options: [docs/commands.md](docs/commands.md).
 | `./scripts/install-dependency.sh` | Install dependencies |
 | `./scripts/dev-start.sh` / `dev-stop.sh` | Start / stop the Vite dev server |
 | `./scripts/build.sh` | Production build |
-| `./scripts/format.sh` | Format (**writes files** by default; `--check` is read-only) |
+| `./scripts/format.sh` | Format + type-check (**writes files** by default; `--check` is read-only) |
 | `./scripts/test.sh` | Full test suite (unit + e2e) |
 
 Run a single test file or one layer (e2e defaults to Chromium; add browsers with `--platform`):

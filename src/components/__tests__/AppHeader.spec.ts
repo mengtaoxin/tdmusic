@@ -282,7 +282,7 @@ describe('AppHeader', () => {
       .map((el) => el.textContent?.trim())
       .filter(Boolean)
     expect(topLabels.indexOf('Now Playing')).toBe(0)
-    expect(topLabels.at(-1)).toBe('More')
+    expect(topLabels[topLabels.length - 1]).toBe('More')
     expect(topLabels.indexOf('More')).toBeGreaterThan(topLabels.indexOf('Language'))
 
     applyLayoutWidths(wrapper, { toolbarWidth: 700, brandWidth: 120, navContentWidth: 800 })
@@ -525,7 +525,8 @@ describe('AppHeader', () => {
       expect(drawerRoot!.textContent).toContain(label)
     }
 
-    const lastDrawerGroup = [...drawerRoot!.querySelectorAll('.v-list-group')].at(-1)
+    const drawerGroups = [...drawerRoot!.querySelectorAll('.v-list-group')]
+    const lastDrawerGroup = drawerGroups[drawerGroups.length - 1]
     expect(lastDrawerGroup?.querySelector('.v-list-group__header')?.textContent).toContain('More')
 
     const musicLink = [...drawerRoot!.querySelectorAll('a')].find((el) =>

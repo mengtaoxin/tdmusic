@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Format (Prettier) then lint-fix (oxlint + eslint).
+# Format (Prettier) then lint-fix (oxlint + eslint), then TypeScript check.
 # Default writes files (prettier --write, lint --fix). Pass --check for read-only.
 set -euo pipefail
 
@@ -13,8 +13,8 @@ usage() {
 Usage:
   ./scripts/format.sh [--check]
 
-Default: write files (prettier --write, lint --fix).
---check: check only, do not write files.
+Default: write files (prettier --write, lint --fix), then type-check.
+--check: check only, do not write files (prettier --check, lint without --fix, type-check).
 Named flags only (--key value or --key=value); order does not matter.
 EOF
   exit "${1:-1}"
@@ -61,5 +61,11 @@ else
     npm run lint
   )
 fi
+
+echo "format: type-check (npm run type-check)"
+(
+  cd "$ROOT"
+  npm run type-check
+)
 
 echo "format: done"

@@ -33,7 +33,7 @@
 | `./scripts/install-dependency.sh` | 安装依赖 |
 | `./scripts/dev-start.sh` / `dev-stop.sh` | 启动 / 停止 Vite 开发服务器 |
 | `./scripts/build.sh` | 生产构建 |
-| `./scripts/format.sh` | 格式化（**默认会改文件**；`--check` 只读） |
+| `./scripts/format.sh` | 格式化 + TypeScript 检查（**默认会改文件**；`--check` 只读） |
 | `./scripts/test.sh` | 完整测试（单元 + e2e） |
 
 只跑单个测试文件或一层（e2e 默认仅 Chromium；用 `--platform` 追加浏览器）：

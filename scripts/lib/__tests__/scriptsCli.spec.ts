@@ -41,6 +41,14 @@ describe('scripts CLI', () => {
   })
 })
 
+describe('format.sh flag contracts', () => {
+  it('--help mentions type-check', () => {
+    const result = runScript('format.sh', ['--help'])
+    expect(result.status).toBe(0)
+    expect(`${result.stdout}${result.stderr}`).toMatch(/type-check/i)
+  })
+})
+
 describe('test.sh flag contracts', () => {
   it('rejects an unknown --layer value without running tests', () => {
     const result = runScript('test.sh', ['--layer', 'nope'])
