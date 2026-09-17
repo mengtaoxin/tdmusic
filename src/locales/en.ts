@@ -14,6 +14,7 @@ export default {
     about: 'About',
     logs: 'Logs',
     feedback: 'Feedback',
+    feedbackConfirm: 'Open GitHub to send feedback?',
     openMenu: 'Open menu',
     beta: 'Beta',
   },

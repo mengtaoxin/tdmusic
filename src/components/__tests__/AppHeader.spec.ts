@@ -321,11 +321,10 @@ describe('AppHeader', () => {
       expect(link!.querySelector(`.${icon}`)).toBeTruthy()
     }
 
-    const feedbackLink = moreMenu!.querySelector(`a[href="${GITHUB_ISSUES_URL}"]`)
-    expect(feedbackLink).toBeTruthy()
-    expect(feedbackLink!.getAttribute('target')).toBe('_blank')
-    expect(feedbackLink!.getAttribute('rel')).toContain('noopener')
-    expect(feedbackLink!.querySelector('.mdi-message-text-outline')).toBeTruthy()
+    const feedbackItem = moreMenu!.querySelector('[data-testid="nav-feedback"]')
+    expect(feedbackItem).toBeTruthy()
+    expect(feedbackItem!.getAttribute('href')).not.toBe(GITHUB_ISSUES_URL)
+    expect(feedbackItem!.querySelector('.mdi-message-text-outline')).toBeTruthy()
 
     const logsLink = moreMenu!.querySelector('a[href="/logs"]')
     expect(logsLink).toBeTruthy()
@@ -353,10 +352,84 @@ describe('AppHeader', () => {
       expect(link!.querySelector(`.${icon}`)).toBeTruthy()
     }
 
-    const drawerFeedback = drawerRoot!.querySelector(`a[href="${GITHUB_ISSUES_URL}"]`)
+    const drawerFeedback = drawerRoot!.querySelector('[data-testid="nav-feedback"]')
     expect(drawerFeedback).toBeTruthy()
-    expect(drawerFeedback!.getAttribute('target')).toBe('_blank')
+    expect(drawerFeedback!.getAttribute('href')).not.toBe(GITHUB_ISSUES_URL)
     expect(drawerFeedback!.querySelector('.mdi-message-text-outline')).toBeTruthy()
+
+    wrapper.unmount()
+  })
+
+  it('asks for confirmation before opening Feedback on GitHub', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null)
+    const { wrapper } = await mountHeader()
+    applyLayoutWidths(wrapper, { toolbarWidth: 1200, brandWidth: 120, navContentWidth: 800 })
+    await measureNavLayout()
+
+    await wrapper.find('[data-testid="nav-more-toggle"]').trigger('click')
+    await nextTick()
+    await flushPromises()
+
+    const moreMenu = document.querySelector('[data-testid="nav-more-menu"]')
+    expect(moreMenu).toBeTruthy()
+    const feedbackItem = moreMenu!.querySelector('[data-testid="nav-feedback"]')
+    expect(feedbackItem).toBeTruthy()
+    feedbackItem!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    await nextTick()
+    await flushPromises()
+
+    expect(openSpy).not.toHaveBeenCalled()
+    expect(document.body.textContent).toContain('Open GitHub to send feedback?')
+
+    const cancelBtn = [...document.body.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('Cancel'),
+    )
+    expect(cancelBtn).toBeTruthy()
+    cancelBtn!.click()
+    await nextTick()
+    await flushPromises()
+
+    expect(openSpy).not.toHaveBeenCalled()
+    const dialog = wrapper.findComponent({ name: 'VDialog' })
+    expect(dialog.exists()).toBe(true)
+    expect(dialog.props('modelValue')).toBe(false)
+
+    wrapper.unmount()
+  })
+
+  it('opens GitHub issues only after confirming Feedback', async () => {
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null)
+    const { wrapper } = await mountHeader()
+    applyLayoutWidths(wrapper, { toolbarWidth: 400, brandWidth: 120, navContentWidth: 800 })
+    await measureNavLayout()
+
+    await wrapper.find('[data-testid="nav-menu-toggle"]').trigger('click')
+    await nextTick()
+    await flushPromises()
+
+    const drawerRoot = document.querySelector('[data-testid="nav-drawer"]')
+    expect(drawerRoot).toBeTruthy()
+    const drawerFeedback = drawerRoot!.querySelector('[data-testid="nav-feedback"]')
+    expect(drawerFeedback).toBeTruthy()
+    drawerFeedback!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    await nextTick()
+    await flushPromises()
+
+    expect(openSpy).not.toHaveBeenCalled()
+    expect(document.body.textContent).toContain('Open GitHub to send feedback?')
+
+    const confirmBtn = [...document.body.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('Confirm'),
+    )
+    expect(confirmBtn).toBeTruthy()
+    confirmBtn!.click()
+    await nextTick()
+    await flushPromises()
+
+    expect(openSpy).toHaveBeenCalledWith(GITHUB_ISSUES_URL, '_blank', 'noopener,noreferrer')
+    const dialog = wrapper.findComponent({ name: 'VDialog' })
+    expect(dialog.exists()).toBe(true)
+    expect(dialog.props('modelValue')).toBe(false)
 
     wrapper.unmount()
   })

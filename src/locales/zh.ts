@@ -14,6 +14,7 @@ export default {
     about: '关于',
     logs: '日志',
     feedback: '反馈',
+    feedbackConfirm: '将跳转到 GitHub 提交反馈，是否继续？',
     openMenu: '打开菜单',
     beta: 'Beta',
   },

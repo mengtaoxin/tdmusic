@@ -7,7 +7,7 @@ Top-bar layout, menus, and related visual behavior. Domain contracts (catalog, c
 - Top-level order: Now Playing, Music List, Playlist, Artist List, Album List, Language, More.
 - **More** is last: rightmost in desktop nav, bottommost in the drawer.
 - There is no Home nav item; clicking the brand title (`tdmusic` + icon) navigates to `/`.
-- **More** is a submenu (desktop dropdown / drawer group) with Search, Settings, configs.json guideline, About, Logs, and Feedback. Logs (`/logs`) lists persisted app logs and can clear them after confirmation. Feedback opens the GitHub issues page (`https://github.com/mengtaoxin/tdmusic/issues`) in a new tab.
+- **More** is a submenu (desktop dropdown / drawer group) with Search, Settings, configs.json guideline, About, Logs, and Feedback. Logs (`/logs`) lists persisted app logs and can clear them after confirmation. Feedback asks for confirmation, then opens the GitHub issues page (`https://github.com/mengtaoxin/tdmusic/issues`) in a new tab.
 - **Language** is the same submenu pattern as **More**: one entry in `navItems` with locale children (`English` / `中文`). Desktop uses a dropdown (same `size="small"` / height / font-size as other nav buttons); the drawer uses a `v-list-group` (not a separate flat locale block).
 - Desktop nav **More** / **Language** activators use the same computed font-size as the router-link nav items beside them.
 - App `v-menu` dropdowns (desktop More / Language, track ⋮) use a fade open transition. Vuetify’s default dialog-scale animation sets `pointer-events: none` while entering, so touch taps on items often miss.
