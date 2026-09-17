@@ -7,6 +7,7 @@ import {
   type TrackCacheMeta,
 } from './cacheStore'
 import { ensureQuota } from './cacheEviction'
+import { reportCacheDownload, clearCacheDownloadState } from './cacheDownloadState'
 import { isPlayablePath } from '../paths'
 
 export type CacheProgress = {
@@ -17,8 +18,19 @@ export type CacheProgress = {
 
 const ensureInFlight = new Map<string, Promise<void>>()
 
+function emitProgress(
+  sourceUrl: string,
+  id: string | undefined,
+  progress: CacheProgress,
+  onProgress?: (progress: CacheProgress) => void,
+) {
+  reportCacheDownload(sourceUrl, id, progress)
+  onProgress?.(progress)
+}
+
 async function fetchAsBlob(
   sourceUrl: string,
+  id?: string,
   onProgress?: (progress: CacheProgress) => void,
 ): Promise<Blob> {
   const response = await fetch(sourceUrl)
@@ -31,7 +43,12 @@ async function fetchAsBlob(
   const body = response.body
   if (!body || total == null || !Number.isFinite(total)) {
     const blob = await response.blob()
-    onProgress?.({ phase: 'download', loaded: blob.size, total: blob.size })
+    emitProgress(
+      sourceUrl,
+      id,
+      { phase: 'download', loaded: blob.size, total: blob.size },
+      onProgress,
+    )
     return blob
   }
 
@@ -44,7 +61,7 @@ async function fetchAsBlob(
     if (value) {
       chunks.push(value)
       loaded += value.byteLength
-      onProgress?.({ phase: 'download', loaded, total })
+      emitProgress(sourceUrl, id, { phase: 'download', loaded, total }, onProgress)
     }
   }
 
@@ -70,10 +87,11 @@ async function downloadAndStore(
     status: 'pending',
     downloadedAt: Date.now(),
   }
+  emitProgress(sourceUrl, id, { phase: 'download', loaded: 0, total: null }, onProgress)
   await putMeta(pendingMeta)
 
   try {
-    const blob = await fetchAsBlob(sourceUrl, onProgress)
+    const blob = await fetchAsBlob(sourceUrl, id, onProgress)
     await ensureQuota(blob.size)
     await putFiles(sourceUrl, [{ relativePath: AUDIO_FILE_KEY, blob }])
     const meta: TrackCacheMeta = {
@@ -83,9 +101,10 @@ async function downloadAndStore(
       downloadedAt: Date.now(),
     }
     await putMeta(meta)
-    onProgress?.({ phase: 'done', loaded: blob.size, total: blob.size })
+    emitProgress(sourceUrl, id, { phase: 'done', loaded: blob.size, total: blob.size }, onProgress)
   } catch (error) {
     await deleteTrackCacheRecords(sourceUrl)
+    emitProgress(sourceUrl, id, { phase: 'done', loaded: 0, total: 0 }, onProgress)
     throw error
   }
 }
@@ -118,8 +137,10 @@ export async function ensureTrackCached(
 
 export function cancelEnsureInFlight(sourceUrl: string) {
   ensureInFlight.delete(sourceUrl)
+  reportCacheDownload(sourceUrl, undefined, { phase: 'done', loaded: 0, total: 0 })
 }
 
 export function clearEnsureInFlight() {
   ensureInFlight.clear()
+  clearCacheDownloadState()
 }

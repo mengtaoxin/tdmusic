@@ -14,6 +14,7 @@ export default {
     about: '关于',
     logs: '日志',
     feedback: '反馈',
+    feedbackConfirm: '将跳转到 GitHub 提交反馈，是否继续？',
     openMenu: '打开菜单',
     beta: 'Beta',
   },
@@ -57,6 +58,7 @@ export default {
     addToQueue: '添加到队列',
     removeFromQueue: '从队列移除',
     clearUpcoming: '清除后续',
+    downloading: '正在下载',
   },
   search: {
     placeholder: '搜索歌曲、歌手、专辑',

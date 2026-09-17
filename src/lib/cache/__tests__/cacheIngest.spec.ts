@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getCachedFile, isTrackCached, resetCacheDbForTests } from '../cacheStore'
+import { isTrackDownloading, resetCacheDownloadStateForTests } from '../cacheDownloadState'
 import { ensureTrackCached } from '../cacheIngest'
 
 function stubFetchBlob(body: string) {
@@ -15,6 +16,7 @@ function stubFetchBlob(body: string) {
 describe('ensureTrackCached', () => {
   beforeEach(async () => {
     await resetCacheDbForTests()
+    resetCacheDownloadStateForTests()
     vi.restoreAllMocks()
   })
 
@@ -87,5 +89,56 @@ describe('ensureTrackCached', () => {
     await ensureTrackCached('sample-1.mp3')
     expect(fetch).not.toHaveBeenCalled()
     expect(await isTrackCached('sample-1.mp3')).toBe(false)
+  })
+
+  it('marks a track as downloading until the audio is stored', async () => {
+    const sourceUrl = 'https://example.com/slow.mp3'
+    const track = { id: 'slow', path: sourceUrl }
+    let release!: (value: unknown) => void
+    const gate = new Promise((resolve) => {
+      release = resolve
+    })
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(async () => {
+        await gate
+        return {
+          ok: true,
+          headers: new Headers({ 'Content-Type': 'audio/mpeg' }),
+          body: null,
+          blob: async () => new Blob(['slow-bytes'], { type: 'audio/mpeg' }),
+        }
+      }),
+    )
+
+    const job = ensureTrackCached(sourceUrl, 'slow')
+    await vi.waitFor(() => {
+      expect(isTrackDownloading(track)).toBe(true)
+    })
+
+    release(undefined)
+    await job
+
+    expect(isTrackDownloading(track)).toBe(false)
+    expect(await isTrackCached(sourceUrl)).toBe(true)
+  })
+
+  it('clears the downloading marker when the download fails', async () => {
+    const sourceUrl = 'https://example.com/boom.mp3'
+    const track = { id: 'boom', path: sourceUrl }
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        headers: new Headers(),
+        body: null,
+        blob: async () => new Blob([]),
+      }),
+    )
+
+    await expect(ensureTrackCached(sourceUrl, 'boom')).rejects.toThrow(/downloadFailed/)
+    expect(isTrackDownloading(track)).toBe(false)
   })
 })

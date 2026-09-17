@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import { createI18n } from 'vue-i18n'
 import { createPinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
@@ -8,6 +9,10 @@ import { VApp } from 'vuetify/components'
 import vuetify from '@/plugins/vuetify'
 import en from '@/locales/en'
 import zh from '@/locales/zh'
+import {
+  reportCacheDownload,
+  resetCacheDownloadStateForTests,
+} from '@/lib/cache/cacheDownloadState'
 import { useCatalogStore, type DisplayTrack } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
 import NowPlayingFooter from '../NowPlayingFooter.vue'
@@ -74,6 +79,10 @@ async function mountFooter(opts?: { currentTime?: number; duration?: number; que
 }
 
 describe('NowPlayingFooter', () => {
+  beforeEach(() => {
+    resetCacheDownloadStateForTests()
+  })
+
   it('shows playback progress along the top of the footer', async () => {
     const { wrapper } = await mountFooter({ currentTime: 30, duration: 120 })
     await flushPromises()
@@ -108,5 +117,20 @@ describe('NowPlayingFooter', () => {
 
     await nextBtn.trigger('click')
     expect(player.currentId).toBe('t2')
+  })
+
+  it('animates the cover while the current track is downloading', async () => {
+    const { wrapper } = await mountFooter()
+    await flushPromises()
+
+    reportCacheDownload('/music/t1.mp3', 't1', { phase: 'download', loaded: 1, total: 4 })
+    await nextTick()
+
+    expect(wrapper.find('[data-testid="cover-downloading"]').exists()).toBe(true)
+
+    reportCacheDownload('/music/t1.mp3', 't1', { phase: 'done', loaded: 4, total: 4 })
+    await nextTick()
+
+    expect(wrapper.find('[data-testid="cover-downloading"]').exists()).toBe(false)
   })
 })

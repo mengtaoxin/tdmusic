@@ -14,6 +14,7 @@ export default {
     about: 'About',
     logs: 'Logs',
     feedback: 'Feedback',
+    feedbackConfirm: 'Open GitHub to send feedback?',
     openMenu: 'Open menu',
     beta: 'Beta',
   },
@@ -57,6 +58,7 @@ export default {
     addToQueue: 'Add to queue',
     removeFromQueue: 'Remove from queue',
     clearUpcoming: 'Clear upcoming',
+    downloading: 'Downloading',
   },
   search: {
     placeholder: 'Search tracks, artists, albums',

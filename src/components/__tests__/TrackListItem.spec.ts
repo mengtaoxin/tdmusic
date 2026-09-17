@@ -1,12 +1,18 @@
-import { afterEach, describe, it, expect } from 'vitest'
+import { afterEach, beforeEach, describe, it, expect } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import { createI18n } from 'vue-i18n'
 import { createPinia } from 'pinia'
 
 import vuetify from '@/plugins/vuetify'
 import en from '@/locales/en'
 import zh from '@/locales/zh'
+import {
+  reportCacheDownload,
+  resetCacheDownloadStateForTests,
+} from '@/lib/cache/cacheDownloadState'
 import type { DisplayTrack } from '@/stores/catalog'
+import { usePlayerStore } from '@/stores/player'
 import TrackListItem from '../TrackListItem.vue'
 
 function makeTrack(): DisplayTrack {
@@ -20,6 +26,10 @@ function makeTrack(): DisplayTrack {
 }
 
 let wrapper: VueWrapper | null = null
+
+beforeEach(() => {
+  resetCacheDownloadStateForTests()
+})
 
 afterEach(() => {
   wrapper?.unmount()
@@ -117,5 +127,30 @@ describe('TrackListItem', () => {
     ;(remove as HTMLElement).click()
     await flushPromises()
     expect(item.emitted('remove')).toHaveLength(1)
+  })
+
+  it('animates the cover while the current track is downloading', async () => {
+    const item = mountItem()
+    const player = usePlayerStore()
+    player.currentId = 't1'
+    reportCacheDownload('/music/t1.mp3', 't1', { phase: 'download', loaded: 0, total: null })
+    await nextTick()
+
+    expect(item.find('[data-testid="cover-downloading"]').exists()).toBe(true)
+
+    reportCacheDownload('/music/t1.mp3', 't1', { phase: 'done', loaded: 0, total: 0 })
+    await nextTick()
+
+    expect(item.find('[data-testid="cover-downloading"]').exists()).toBe(false)
+  })
+
+  it('does not animate the cover for a downloading track that is not current', async () => {
+    const item = mountItem()
+    const player = usePlayerStore()
+    player.currentId = 'other'
+    reportCacheDownload('/music/t1.mp3', 't1', { phase: 'download', loaded: 0, total: null })
+    await nextTick()
+
+    expect(item.find('[data-testid="cover-downloading"]').exists()).toBe(false)
   })
 })
