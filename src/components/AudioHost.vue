@@ -59,6 +59,9 @@ const session = createPlaybackSession(
     },
     scheduleEnrichTrack: (id) => catalog.scheduleEnrichTrack(id),
     schedulePrefetch,
+    onLoadStart: () => {
+      boundTrackId = null
+    },
     onTrackResolved: (id) => {
       boundTrackId = id
     },
@@ -67,6 +70,10 @@ const session = createPlaybackSession(
 
 /** Id whose playable URL is currently assigned to the audio element. */
 let boundTrackId: string | null = null
+
+function isBoundToCurrent() {
+  return boundTrackId != null && boundTrackId === player.currentId
+}
 
 function updateMediaSession() {
   const track = player.currentId ? catalog.trackById.get(player.currentId) : undefined
@@ -118,7 +125,7 @@ watch(
       // Resume only when the element already holds the current track. Otherwise
       // loadCurrent owns autoplay after resolving the new src (avoids playing the
       // previous song after idle pause + queue click).
-      if (boundTrackId !== player.currentId) return
+      if (!isBoundToCurrent()) return
       void audio.play().catch(() => player.pause())
     } else {
       audio.pause()
@@ -139,7 +146,7 @@ watch(
 
 function onTimeUpdate() {
   const audio = audioRef.value
-  if (!audio) return
+  if (!audio || !isBoundToCurrent()) return
   player.currentTime = audio.currentTime
   player.duration = audio.duration || 0
   const now = Date.now()
@@ -161,6 +168,9 @@ function onPause() {
   const audio = audioRef.value
   // Natural end fires pause before ended; let onEnded own that transition.
   if (audio?.ended) return
+  // Track switch pauses the previous src before the new URL resolves. Ignore that
+  // (and any events from an unbound element) so pendingPlay still autoplays the new track.
+  if (!isBoundToCurrent()) return
   // External interrupt (other app / OS) pauses the element without store.pause();
   // clear pendingPlay so a later play() re-triggers the pendingPlay watcher.
   player.pendingPlay = false
@@ -169,6 +179,8 @@ function onPause() {
 }
 
 function onEnded() {
+  // The previous file can end while a later queue item is still downloading.
+  if (!isBoundToCurrent()) return
   player.onEnded()
   // Repeat-one also sets audio.loop; this path covers seek+play if ended still fires
   // (e.g. loop was off) when pendingPlay was already true so its watch does not re-run.

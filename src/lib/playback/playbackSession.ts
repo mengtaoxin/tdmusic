@@ -38,6 +38,8 @@ export type PlaybackSessionHooks = {
   schedulePrefetch: () => void
   /** Called when a playable URL is ready for `id`, before assigning audio.src. */
   onTrackResolved?: (id: string) => void
+  /** Called when a load for `id` starts, before resolving the playable URL. */
+  onLoadStart?: (id: string) => void
 }
 
 /**
@@ -50,6 +52,18 @@ export function createPlaybackSession(
   hooks: PlaybackSessionHooks,
 ) {
   let consecutiveLoadFailures = 0
+  let loadGeneration = 0
+  let loadedMetadataHandler: (() => void) | null = null
+
+  function detachLoadedMetadata(audio: PlaybackAudioElement) {
+    if (!loadedMetadataHandler) return
+    audio.removeEventListener('loadedmetadata', loadedMetadataHandler)
+    loadedMetadataHandler = null
+  }
+
+  function isCurrentLoad(generation: number, id: string) {
+    return generation === loadGeneration && player.getCurrentId() === id
+  }
 
   async function loadCurrent(): Promise<void> {
     const audio = getAudio()
@@ -58,9 +72,16 @@ export function createPlaybackSession(
     const track = player.getTrack(id)
     if (!track) return
 
+    const generation = ++loadGeneration
+    hooks.onLoadStart?.(id)
+    detachLoadedMetadata(audio)
+    // Stop the previously bound file immediately. UI already shows `id`; waiting
+    // on cache/download would otherwise keep playing the old song (slow on old devices).
+    audio.pause()
+
     try {
       const url = await hooks.resolvePlayableUrl(track.path, track.id)
-      if (player.getCurrentId() !== id) return
+      if (!isCurrentLoad(generation, id)) return
       consecutiveLoadFailures = 0
       hooks.onTrackResolved?.(id)
       audio.src = url
@@ -69,6 +90,7 @@ export function createPlaybackSession(
       hooks.schedulePrefetch()
       const seek = player.getSeekTo()
       const onLoaded = () => {
+        if (!isCurrentLoad(generation, id)) return
         if (seek != null && Number.isFinite(seek)) {
           audio.currentTime = seek
         }
@@ -79,10 +101,12 @@ export function createPlaybackSession(
           })
         }
         audio.removeEventListener('loadedmetadata', onLoaded)
+        if (loadedMetadataHandler === onLoaded) loadedMetadataHandler = null
       }
+      loadedMetadataHandler = onLoaded
       audio.addEventListener('loadedmetadata', onLoaded)
     } catch (error) {
-      if (player.getCurrentId() !== id) return
+      if (!isCurrentLoad(generation, id)) return
       hooks.appendAppLog(formatDownloadFailureLog(track, error))
       consecutiveLoadFailures += 1
       const limit = Math.max(player.getQueueLength(), 1)
