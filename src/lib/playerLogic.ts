@@ -174,6 +174,11 @@ export type PersistedPlayerState = {
   /** Unshuffled order for restoring when shuffle turns off. */
   originalQueue: string[]
   currentId: string | null
+  /**
+   * Index of the playing occurrence in `queue`. Required after hydrate.
+   * Missing/legacy payloads use `-1` so hydrate can fall back to `currentId`.
+   */
+  currentIndex: number
   currentTime: number
   repeatMode: RepeatMode
   shuffle: boolean
@@ -200,6 +205,7 @@ export function parsePlayerState(raw: string | null): PersistedPlayerState | nul
       queue,
       originalQueue,
       currentId: typeof data.currentId === 'string' ? data.currentId : null,
+      currentIndex: typeof data.currentIndex === 'number' ? data.currentIndex : -1,
       currentTime: typeof data.currentTime === 'number' ? data.currentTime : 0,
       repeatMode:
         data.repeatMode === 'off' || data.repeatMode === 'all' || data.repeatMode === 'one'
@@ -212,19 +218,34 @@ export function parsePlayerState(raw: string | null): PersistedPlayerState | nul
   }
 }
 
-/** Drop queue ids not in knownIds; fix currentId/time if invalid. */
+/** Drop queue ids not in knownIds; fix currentId/index/time if invalid. */
 export function hydratePlayerState(
   persisted: PersistedPlayerState,
   knownIds: Set<string>,
 ): PersistedPlayerState | null {
-  const queue = persisted.queue.filter((id) => knownIds.has(id))
+  const queue: string[] = []
+  let currentIndex = -1
+  const wantIndex = persisted.currentIndex
+
+  for (let i = 0; i < persisted.queue.length; i += 1) {
+    const id = persisted.queue[i]!
+    if (!knownIds.has(id)) continue
+    if (i === wantIndex) currentIndex = queue.length
+    queue.push(id)
+  }
   if (queue.length === 0) return null
 
   const originalQueue = persisted.originalQueue.filter((id) => knownIds.has(id))
   const restoredOriginal = originalQueue.length > 0 ? originalQueue : [...queue]
 
   let currentId = persisted.currentId
-  if (!currentId || !queue.includes(currentId)) {
+  if (currentIndex >= 0) {
+    currentId = queue[currentIndex]!
+  } else if (currentId && queue.includes(currentId)) {
+    // Legacy payloads without currentIndex: first matching id.
+    currentIndex = queue.indexOf(currentId)
+  } else {
+    currentIndex = 0
     currentId = queue[0]!
   }
 
@@ -232,6 +253,7 @@ export function hydratePlayerState(
     queue,
     originalQueue: restoredOriginal,
     currentId,
+    currentIndex,
     currentTime: Math.max(0, persisted.currentTime),
     repeatMode: persisted.repeatMode,
     shuffle: persisted.shuffle,

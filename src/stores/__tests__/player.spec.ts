@@ -209,4 +209,56 @@ describe('playerStore', () => {
     expect(store.originalQueue).toEqual(['a', 'b'])
     expect(store.currentId).toBe('b')
   })
+
+  it('goToIndex on a duplicate id drives next/prev/clearUpcoming from that occurrence', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'a', 'c'])
+    await vi.runAllTimersAsync()
+    store.goToIndex(2, true)
+    expect(store.currentIndex).toBe(2)
+    expect(store.currentId).toBe('a')
+
+    store.next()
+    expect(store.currentIndex).toBe(3)
+    expect(store.currentId).toBe('c')
+
+    store.goToIndex(2, true)
+    store.prev()
+    expect(store.currentIndex).toBe(1)
+    expect(store.currentId).toBe('b')
+
+    store.goToIndex(2, true)
+    store.clearUpcoming()
+    expect(store.queue).toEqual(['a', 'b', 'a'])
+    expect(store.currentIndex).toBe(2)
+    expect(store.currentId).toBe('a')
+  })
+
+  it('removeAt before the playing duplicate shifts currentIndex', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'a'])
+    await vi.runAllTimersAsync()
+    store.goToIndex(2, true)
+    store.removeAt(0)
+    expect(store.queue).toEqual(['b', 'a'])
+    expect(store.currentIndex).toBe(1)
+    expect(store.currentId).toBe('a')
+  })
+
+  it('persists and hydrates currentIndex for duplicate queue ids', async () => {
+    const store = usePlayerStore()
+    store.playFrom(0, ['a', 'b', 'a'])
+    await vi.runAllTimersAsync()
+    store.goToIndex(2, true)
+    store.setCurrentTime(9)
+    store.flushPersist()
+
+    setActivePinia(createPinia())
+    const restored = usePlayerStore()
+    expect(restored.hydrate(new Set(['a', 'b']))).toBe(true)
+    expect(restored.queue).toEqual(['a', 'b', 'a'])
+    expect(restored.currentIndex).toBe(2)
+    expect(restored.currentId).toBe('a')
+    expect(restored.currentTime).toBe(9)
+  })
 })

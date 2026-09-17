@@ -85,6 +85,7 @@ describe('AudioHost', () => {
     player.queue = ['t1', 't2']
     player.originalQueue = ['t1', 't2']
     player.currentId = 't1'
+    player.currentIndex = 0
     player.pendingPlay = true
     player.playing = true
     player.loadToken += 1
@@ -146,6 +147,7 @@ describe('AudioHost', () => {
 
     player.queue = ['smile-in-the-wind']
     player.currentId = 'smile-in-the-wind'
+    player.currentIndex = 0
     player.pendingPlay = true
     player.playing = true
     player.loadToken += 1
@@ -214,6 +216,7 @@ describe('AudioHost', () => {
 
     player.queue = ['bad', 'good']
     player.currentId = 'bad'
+    player.currentIndex = 0
     player.pendingPlay = true
     player.playing = true
     player.loadToken += 1
@@ -290,6 +293,7 @@ describe('AudioHost', () => {
 
     player.queue = ['t1']
     player.currentId = 't1'
+    player.currentIndex = 0
     player.pendingPlay = true
     player.playing = true
     player.duration = 120
@@ -379,6 +383,7 @@ describe('AudioHost', () => {
 
     player.queue = ['t1']
     player.currentId = 't1'
+    player.currentIndex = 0
     player.playing = true
     player.duration = 100
     player.currentTime = 0
@@ -435,6 +440,7 @@ describe('AudioHost', () => {
 
     player.queue = ['t1', 't2']
     player.currentId = 't1'
+    player.currentIndex = 0
     player.pendingPlay = true
     player.loadToken += 1
     await nextTick()

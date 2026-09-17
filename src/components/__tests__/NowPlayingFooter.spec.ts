@@ -40,6 +40,7 @@ async function mountFooter(opts?: { currentTime?: number; duration?: number; que
   player.queue = opts?.queue ?? [track.id, track2.id]
   player.originalQueue = [...player.queue]
   player.currentId = track.id
+  player.currentIndex = 0
   player.currentTime = opts?.currentTime ?? 30
   player.duration = opts?.duration ?? 120
 

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 
 import { getItem, removeItem, setItem } from '@/lib/clientStorage'
 import {
@@ -23,6 +23,8 @@ export const usePlayerStore = defineStore('player', () => {
   /** Linear order from playFrom; used to restore when shuffle turns off. */
   const originalQueue = ref<string[]>([])
   const currentId = ref<string | null>(null)
+  /** Playing occurrence in `queue` (supports duplicate ids). */
+  const currentIndex = ref(-1)
   const currentTime = ref(0)
   const duration = ref(0)
   const playing = ref(false)
@@ -36,16 +38,12 @@ export const usePlayerStore = defineStore('player', () => {
   let cancelFill: (() => void) | null = null
   let persistTimer: ReturnType<typeof setTimeout> | null = null
 
-  const currentIndex = computed(() => {
-    if (!currentId.value) return -1
-    return queue.value.indexOf(currentId.value)
-  })
-
   function persistNow() {
     const payload = serializePlayerState({
       queue: queue.value,
       originalQueue: originalQueue.value,
       currentId: currentId.value,
+      currentIndex: currentIndex.value,
       currentTime: currentTime.value,
       repeatMode: repeatMode.value,
       shuffle: shuffle.value,
@@ -73,6 +71,12 @@ export const usePlayerStore = defineStore('player', () => {
     persistNow()
   }
 
+  function clearPlayback() {
+    currentId.value = null
+    currentIndex.value = -1
+    currentTime.value = 0
+  }
+
   function hydrate(knownIds: Set<string>) {
     const persisted = parsePlayerState(getItem(PLAYER_STORAGE_KEY))
     if (!persisted) return false
@@ -81,13 +85,13 @@ export const usePlayerStore = defineStore('player', () => {
       removeItem(PLAYER_STORAGE_KEY)
       queue.value = []
       originalQueue.value = []
-      currentId.value = null
-      currentTime.value = 0
+      clearPlayback()
       return false
     }
     queue.value = next.queue
     originalQueue.value = next.originalQueue
     currentId.value = next.currentId
+    currentIndex.value = next.currentIndex
     currentTime.value = next.currentTime
     repeatMode.value = next.repeatMode
     shuffle.value = next.shuffle
@@ -112,6 +116,7 @@ export const usePlayerStore = defineStore('player', () => {
     const job = buildQueueFrom(sourceIds, startIndex, {
       onHead: (headId) => {
         currentId.value = headId
+        currentIndex.value = startIndex
         pendingPlay.value = true
         playing.value = true
         loadToken.value += 1
@@ -164,6 +169,7 @@ export const usePlayerStore = defineStore('player', () => {
 
   function goToIndex(index: number, autoPlay: boolean) {
     if (index < 0 || index >= queue.value.length) return
+    currentIndex.value = index
     currentId.value = queue.value[index]!
     currentTime.value = 0
     seekTo.value = 0
@@ -225,7 +231,18 @@ export const usePlayerStore = defineStore('player', () => {
       }
       queue.value = shuffleUpcoming(queue.value, currentIndex.value)
     } else if (originalQueue.value.length > 0) {
+      const id = currentId.value
       queue.value = [...originalQueue.value]
+      if (id) {
+        const restored =
+          currentIndex.value >= 0 && originalQueue.value[currentIndex.value] === id
+            ? currentIndex.value
+            : originalQueue.value.indexOf(id)
+        if (restored >= 0) {
+          currentIndex.value = restored
+          currentId.value = id
+        }
+      }
     }
     flushPersist()
   }
@@ -260,7 +277,8 @@ export const usePlayerStore = defineStore('player', () => {
 
   function removeAt(index: number) {
     if (index < 0 || index >= queue.value.length) return
-    const removingCurrent = index === currentIndex.value
+    const playingIndex = currentIndex.value
+    const removingCurrent = index === playingIndex
     const removedId = queue.value[index]!
 
     if (removingCurrent) {
@@ -269,8 +287,7 @@ export const usePlayerStore = defineStore('player', () => {
         cancelFill = null
         queue.value = []
         originalQueue.value = []
-        currentId.value = null
-        currentTime.value = 0
+        clearPlayback()
         seekTo.value = 0
         pause()
         flushPersist()
@@ -288,20 +305,22 @@ export const usePlayerStore = defineStore('player', () => {
         pause()
         return
       }
-      const targetId = queue.value[targetIdx]!
       const nextQueue = removeAtIndex(queue.value, index, index).queue
       queue.value = nextQueue
       const origPos = originalQueue.value.indexOf(removedId)
       if (origPos >= 0) {
         originalQueue.value = removeAtIndex(originalQueue.value, origPos, origPos).queue
       }
-      const newIdx = queue.value.indexOf(targetId)
-      goToIndex(newIdx >= 0 ? newIdx : 0, true)
+      const newIdx = targetIdx > index ? targetIdx - 1 : targetIdx
+      goToIndex(newIdx, true)
       return
     }
 
-    const { queue: nextQueue } = removeAtIndex(queue.value, index, currentIndex.value)
+    const { queue: nextQueue } = removeAtIndex(queue.value, index, playingIndex)
     queue.value = nextQueue
+    if (index < playingIndex) {
+      currentIndex.value = playingIndex - 1
+    }
     const origPos = originalQueue.value.indexOf(removedId)
     if (origPos >= 0) {
       originalQueue.value = removeAtIndex(originalQueue.value, origPos, origPos).queue

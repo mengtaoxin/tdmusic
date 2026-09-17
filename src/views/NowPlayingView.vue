@@ -176,7 +176,7 @@ function clearUpcoming() {
       <template #default="{ item }">
         <TrackListItem
           :track="item.track"
-          :active="player.currentId === item.track.id"
+          :active="player.currentIndex === item.queueIndex"
           actions="queue"
           @select="playQueueItem(item.queueIndex)"
           @remove="removeQueueItem(item.queueIndex)"

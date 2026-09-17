@@ -160,6 +160,7 @@ describe('persist helpers', () => {
       queue: ['a', 'b'],
       originalQueue: ['a', 'b'],
       currentId: 'b',
+      currentIndex: 1,
       currentTime: 12.5,
       repeatMode: 'all' as const,
       shuffle: true,
@@ -184,6 +185,7 @@ describe('persist helpers', () => {
       queue: ['a'],
       originalQueue: ['a'],
       currentId: 'a',
+      currentIndex: -1,
       currentTime: 1,
       repeatMode: 'off',
       shuffle: false,
@@ -221,7 +223,32 @@ describe('persist helpers', () => {
       queue: ['a', 'b'],
       originalQueue: ['a', 'b'],
       currentId: 'a',
+      currentIndex: 0,
       currentTime: 3,
+      repeatMode: 'off',
+      shuffle: false,
+    })
+  })
+
+  it('hydrates currentIndex for duplicate ids and remaps when filtering', () => {
+    const hydrated = hydratePlayerState(
+      {
+        queue: ['a', 'gone', 'a', 'b'],
+        originalQueue: ['a', 'gone', 'a', 'b'],
+        currentId: 'a',
+        currentIndex: 2,
+        currentTime: 1,
+        repeatMode: 'off',
+        shuffle: false,
+      },
+      new Set(['a', 'b']),
+    )
+    expect(hydrated).toEqual({
+      queue: ['a', 'a', 'b'],
+      originalQueue: ['a', 'a', 'b'],
+      currentId: 'a',
+      currentIndex: 1,
+      currentTime: 1,
       repeatMode: 'off',
       shuffle: false,
     })

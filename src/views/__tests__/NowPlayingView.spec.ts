@@ -33,6 +33,7 @@ async function mountNowPlaying(trackCount = 1) {
   player.queue = tracks.map((track) => track.id)
   player.originalQueue = [...player.queue]
   player.currentId = tracks[0]!.id
+  player.currentIndex = 0
 
   const i18n = createI18n({
     legacy: false,
@@ -153,6 +154,7 @@ describe('NowPlayingView', () => {
     player.queue = ['gone', 't2', 't3']
     player.originalQueue = [...player.queue]
     player.currentId = 't2'
+    player.currentIndex = 1
     catalog.tracks = catalog.tracks.filter((track) => track.id !== 't1')
     await flushPromises()
 
@@ -170,6 +172,7 @@ describe('NowPlayingView', () => {
     player.queue = ['t1', 't2', 't1']
     player.originalQueue = [...player.queue]
     player.currentId = 't2'
+    player.currentIndex = 1
     await flushPromises()
 
     const goToIndex = vi.spyOn(player, 'goToIndex')
@@ -180,5 +183,19 @@ describe('NowPlayingView', () => {
     await flushPromises()
 
     expect(goToIndex).toHaveBeenCalledWith(2, true)
+  })
+
+  it('highlights only the playing duplicate occurrence', async () => {
+    const { wrapper, player } = await mountNowPlaying(2)
+    player.queue = ['t1', 't2', 't1']
+    player.originalQueue = [...player.queue]
+    player.goToIndex(2, false)
+    await flushPromises()
+
+    const rows = wrapper.findAllComponents(TrackListItem)
+    expect(rows).toHaveLength(3)
+    expect(rows[0]!.props('active')).toBe(false)
+    expect(rows[1]!.props('active')).toBe(false)
+    expect(rows[2]!.props('active')).toBe(true)
   })
 })
