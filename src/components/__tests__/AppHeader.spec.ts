@@ -282,7 +282,8 @@ describe('AppHeader', () => {
       .map((el) => el.textContent?.trim())
       .filter(Boolean)
     expect(topLabels.indexOf('Now Playing')).toBe(0)
-    expect(topLabels.indexOf('Language')).toBeGreaterThan(topLabels.indexOf('More'))
+    expect(topLabels.at(-1)).toBe('More')
+    expect(topLabels.indexOf('More')).toBeGreaterThan(topLabels.indexOf('Language'))
 
     applyLayoutWidths(wrapper, { toolbarWidth: 700, brandWidth: 120, navContentWidth: 800 })
     await measureNavLayout()
@@ -523,6 +524,9 @@ describe('AppHeader', () => {
     for (const label of [...englishTopMenus, 'Language', ...englishMoreSubMenus]) {
       expect(drawerRoot!.textContent).toContain(label)
     }
+
+    const lastDrawerGroup = [...drawerRoot!.querySelectorAll('.v-list-group')].at(-1)
+    expect(lastDrawerGroup?.querySelector('.v-list-group__header')?.textContent).toContain('More')
 
     const musicLink = [...drawerRoot!.querySelectorAll('a')].find((el) =>
       el.textContent?.includes('Music List'),
