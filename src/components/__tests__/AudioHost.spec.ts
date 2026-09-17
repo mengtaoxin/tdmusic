@@ -123,6 +123,240 @@ describe('AudioHost', () => {
     wrapper.unmount()
   })
 
+  it('stops the previous track immediately when switching while it is still playing', async () => {
+    const pinia = createPinia()
+    const catalog = useCatalogStore(pinia)
+    catalog.tracks = [
+      {
+        id: 't1',
+        path: 'https://example.com/t1.mp3',
+        displayTitle: 'One',
+        displayArtist: 'A',
+        displayAlbum: 'B',
+      },
+      {
+        id: 't2',
+        path: 'https://example.com/t2.mp3',
+        displayTitle: 'Two',
+        displayArtist: 'A',
+        displayAlbum: 'B',
+      },
+    ]
+
+    let resolveT2: ((url: string) => void) | null = null
+    vi.spyOn(resolvePlayableUrlMod, 'resolvePlayableUrl').mockImplementation(async (_path, id) => {
+      if (id === 't1') return 'blob:t1'
+      return new Promise<string>((resolve) => {
+        resolveT2 = resolve
+      })
+    })
+    vi.spyOn(prefetchUpcomingMod, 'prefetchUpcoming').mockResolvedValue(undefined)
+
+    const wrapper = mount(AudioHost, {
+      global: { plugins: [pinia] },
+    })
+    const player = usePlayerStore(pinia)
+    const audio = wrapper.get('[data-testid="global-audio"]').element as HTMLAudioElement
+    const playSpy = vi.spyOn(audio, 'play').mockResolvedValue(undefined)
+    const pauseSpy = vi.spyOn(audio, 'pause').mockImplementation(() => {
+      audio.dispatchEvent(new Event('pause'))
+    })
+    vi.spyOn(audio, 'load').mockImplementation(() => undefined)
+
+    player.queue = ['t1', 't2']
+    player.originalQueue = ['t1', 't2']
+    player.currentId = 't1'
+    player.currentIndex = 0
+    player.pendingPlay = true
+    player.playing = true
+    player.loadToken += 1
+    await nextTick()
+    await flushPromises()
+    await flushPromises()
+    audio.dispatchEvent(new Event('loadedmetadata'))
+    await nextTick()
+    expect(audio.src).toContain('blob:t1')
+    playSpy.mockClear()
+    pauseSpy.mockClear()
+
+    player.goToIndex(1, true)
+    await nextTick()
+    await flushPromises()
+
+    expect(player.currentId).toBe('t2')
+    expect(pauseSpy).toHaveBeenCalled()
+    expect(playSpy).not.toHaveBeenCalled()
+    expect(player.pendingPlay).toBe(true)
+    expect(audio.src).toContain('blob:t1')
+
+    expect(resolveT2).not.toBeNull()
+    resolveT2!('blob:t2')
+    await flushPromises()
+    await flushPromises()
+    audio.dispatchEvent(new Event('loadedmetadata'))
+    await nextTick()
+
+    expect(audio.src).toContain('blob:t2')
+    expect(playSpy).toHaveBeenCalled()
+    expect(player.pendingPlay).toBe(true)
+
+    wrapper.unmount()
+  })
+
+  it('does not skip past the selected track when the previous src ends during load', async () => {
+    const pinia = createPinia()
+    const catalog = useCatalogStore(pinia)
+    catalog.tracks = [
+      {
+        id: 't1',
+        path: 'https://example.com/t1.mp3',
+        displayTitle: 'One',
+        displayArtist: 'A',
+        displayAlbum: 'B',
+      },
+      {
+        id: 't2',
+        path: 'https://example.com/t2.mp3',
+        displayTitle: 'Two',
+        displayArtist: 'A',
+        displayAlbum: 'B',
+      },
+      {
+        id: 't3',
+        path: 'https://example.com/t3.mp3',
+        displayTitle: 'Three',
+        displayArtist: 'A',
+        displayAlbum: 'B',
+      },
+    ]
+
+    let resolveT2: ((url: string) => void) | null = null
+    vi.spyOn(resolvePlayableUrlMod, 'resolvePlayableUrl').mockImplementation(async (_path, id) => {
+      if (id === 't1') return 'blob:t1'
+      if (id === 't2') {
+        return new Promise<string>((resolve) => {
+          resolveT2 = resolve
+        })
+      }
+      return 'blob:t3'
+    })
+    vi.spyOn(prefetchUpcomingMod, 'prefetchUpcoming').mockResolvedValue(undefined)
+
+    const wrapper = mount(AudioHost, {
+      global: { plugins: [pinia] },
+    })
+    const player = usePlayerStore(pinia)
+    const audio = wrapper.get('[data-testid="global-audio"]').element as HTMLAudioElement
+    vi.spyOn(audio, 'play').mockResolvedValue(undefined)
+    vi.spyOn(audio, 'pause').mockImplementation(() => {
+      audio.dispatchEvent(new Event('pause'))
+    })
+    vi.spyOn(audio, 'load').mockImplementation(() => undefined)
+
+    player.queue = ['t1', 't2', 't3']
+    player.originalQueue = ['t1', 't2', 't3']
+    player.currentId = 't1'
+    player.currentIndex = 0
+    player.pendingPlay = true
+    player.playing = true
+    player.loadToken += 1
+    await nextTick()
+    await flushPromises()
+    await flushPromises()
+    audio.dispatchEvent(new Event('loadedmetadata'))
+    await nextTick()
+
+    player.goToIndex(1, true)
+    await nextTick()
+    await flushPromises()
+    expect(player.currentId).toBe('t2')
+
+    audio.dispatchEvent(new Event('ended'))
+    await nextTick()
+    await flushPromises()
+
+    expect(player.currentId).toBe('t2')
+    expect(player.currentIndex).toBe(1)
+
+    expect(resolveT2).not.toBeNull()
+    resolveT2!('blob:t2')
+    await flushPromises()
+    await flushPromises()
+    audio.dispatchEvent(new Event('loadedmetadata'))
+    await nextTick()
+
+    expect(audio.src).toContain('blob:t2')
+    expect(player.currentId).toBe('t2')
+
+    wrapper.unmount()
+  })
+
+  it('ignores timeupdate from the previous src after the now-playing track has changed', async () => {
+    const pinia = createPinia()
+    const catalog = useCatalogStore(pinia)
+    catalog.tracks = [
+      {
+        id: 't1',
+        path: 'https://example.com/t1.mp3',
+        displayTitle: 'One',
+        displayArtist: 'A',
+        displayAlbum: 'B',
+      },
+      {
+        id: 't2',
+        path: 'https://example.com/t2.mp3',
+        displayTitle: 'Two',
+        displayArtist: 'A',
+        displayAlbum: 'B',
+      },
+    ]
+
+    vi.spyOn(resolvePlayableUrlMod, 'resolvePlayableUrl').mockImplementation(async (_path, id) => {
+      if (id === 't1') return 'blob:t1'
+      return new Promise<string>(() => {})
+    })
+    vi.spyOn(prefetchUpcomingMod, 'prefetchUpcoming').mockResolvedValue(undefined)
+
+    const wrapper = mount(AudioHost, {
+      global: { plugins: [pinia] },
+    })
+    const player = usePlayerStore(pinia)
+    const audio = wrapper.get('[data-testid="global-audio"]').element as HTMLAudioElement
+    vi.spyOn(audio, 'play').mockResolvedValue(undefined)
+    vi.spyOn(audio, 'pause').mockImplementation(() => {
+      audio.dispatchEvent(new Event('pause'))
+    })
+    vi.spyOn(audio, 'load').mockImplementation(() => undefined)
+
+    player.queue = ['t1', 't2']
+    player.originalQueue = ['t1', 't2']
+    player.currentId = 't1'
+    player.currentIndex = 0
+    player.pendingPlay = true
+    player.playing = true
+    player.loadToken += 1
+    await nextTick()
+    await flushPromises()
+    await flushPromises()
+    audio.dispatchEvent(new Event('loadedmetadata'))
+    await nextTick()
+
+    player.goToIndex(1, true)
+    await nextTick()
+    await flushPromises()
+    expect(player.currentTime).toBe(0)
+
+    Object.defineProperty(audio, 'currentTime', { configurable: true, value: 87 })
+    Object.defineProperty(audio, 'duration', { configurable: true, value: 200 })
+    audio.dispatchEvent(new Event('timeupdate'))
+    await nextTick()
+
+    expect(player.currentTime).toBe(0)
+    expect(player.currentId).toBe('t2')
+
+    wrapper.unmount()
+  })
+
   it('clears pendingPlay on external pause so toggle play can resume audio', async () => {
     const pinia = createPinia()
     const catalog = useCatalogStore(pinia)
@@ -376,18 +610,29 @@ describe('AudioHost', () => {
       },
     ]
 
+    vi.spyOn(resolvePlayableUrlMod, 'resolvePlayableUrl').mockResolvedValue('blob:audio')
+    vi.spyOn(prefetchUpcomingMod, 'prefetchUpcoming').mockResolvedValue(undefined)
+
     const wrapper = mount(AudioHost, {
       global: { plugins: [pinia] },
     })
     const player = usePlayerStore(pinia)
     const audio = wrapper.get('[data-testid="global-audio"]').element as HTMLAudioElement
+    vi.spyOn(audio, 'play').mockResolvedValue(undefined)
+    vi.spyOn(audio, 'load').mockImplementation(() => undefined)
 
     player.queue = ['t1']
     player.currentId = 't1'
     player.currentIndex = 0
     player.playing = true
+    player.pendingPlay = true
     player.duration = 100
     player.currentTime = 0
+    player.loadToken += 1
+    await nextTick()
+    await flushPromises()
+    await flushPromises()
+    audio.dispatchEvent(new Event('loadedmetadata'))
     await nextTick()
 
     setPositionState.mockClear()

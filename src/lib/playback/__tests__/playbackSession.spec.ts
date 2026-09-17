@@ -134,4 +134,103 @@ describe('playbackSession', () => {
     expect(skip).toHaveBeenCalledOnce()
     expect(pause).toHaveBeenCalledOnce()
   })
+
+  it('pauses the previous src before waiting for the next playable URL', async () => {
+    const audio = makeAudio()
+    audio.src = 'blob:old'
+    let release: ((url: string) => void) | null = null
+    const resolvePlayableUrl = vi
+      .fn<(path: string, id: string) => Promise<string>>()
+      .mockImplementation(
+        () =>
+          new Promise<string>((resolve) => {
+            release = resolve
+          }),
+      )
+    const onLoadStart = vi.fn<(id: string) => void>()
+    const session = createPlaybackSession(
+      () => audio,
+      {
+        getCurrentId: () => 't2',
+        getQueueLength: () => 2,
+        getSeekTo: () => null,
+        getPendingPlay: () => true,
+        clearSeekTo: () => {},
+        pause: vi.fn<() => void>(),
+        skip: vi.fn<() => void>(),
+        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3` }),
+      },
+      {
+        resolvePlayableUrl,
+        appendAppLog: vi.fn<(message: string) => void>(),
+        scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+        schedulePrefetch: vi.fn<() => void>(),
+        onLoadStart,
+      },
+    )
+
+    const loading = session.loadCurrent()
+    expect(onLoadStart).toHaveBeenCalledWith('t2')
+    expect(audio.pause).toHaveBeenCalledOnce()
+    expect(audio.src).toBe('blob:old')
+
+    expect(release).not.toBeNull()
+    release!('blob:t2')
+    await loading
+    expect(audio.src).toBe('blob:t2')
+  })
+
+  it('ignores a stale loadedmetadata after a newer loadCurrent started', async () => {
+    const audio = makeAudio()
+    let currentId = 't1'
+    let seekTo: number | null = 40
+    const resolvers = new Map<string, (url: string) => void>()
+    const resolvePlayableUrl = vi
+      .fn<(path: string, id: string) => Promise<string>>()
+      .mockImplementation((_path, id) => {
+        if (id === 't1') return Promise.resolve('blob:t1')
+        return new Promise<string>((resolve) => {
+          resolvers.set(id, resolve)
+        })
+      })
+    const session = createPlaybackSession(
+      () => audio,
+      {
+        getCurrentId: () => currentId,
+        getQueueLength: () => 2,
+        getSeekTo: () => seekTo,
+        getPendingPlay: () => true,
+        clearSeekTo: () => {
+          seekTo = null
+        },
+        pause: vi.fn<() => void>(),
+        skip: vi.fn<() => void>(),
+        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3` }),
+      },
+      {
+        resolvePlayableUrl,
+        appendAppLog: vi.fn<(message: string) => void>(),
+        scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+        schedulePrefetch: vi.fn<() => void>(),
+      },
+    )
+
+    await session.loadCurrent()
+    expect(audio.src).toBe('blob:t1')
+
+    currentId = 't2'
+    seekTo = 0
+    const loadT2 = session.loadCurrent()
+    ;(audio.play as ReturnType<typeof vi.fn>).mockClear()
+
+    audio.emit('loadedmetadata')
+    expect(audio.play).not.toHaveBeenCalled()
+    expect(audio.currentTime).toBe(0)
+
+    resolvers.get('t2')!('blob:t2')
+    await loadT2
+    audio.emit('loadedmetadata')
+    expect(audio.src).toBe('blob:t2')
+    expect(audio.play).toHaveBeenCalledOnce()
+  })
 })
