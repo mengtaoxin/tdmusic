@@ -1,0 +1,100 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import {
+  COVER_FILE_KEY,
+  getCachedFile,
+  isTrackCached,
+  listTrackMetas,
+  putFiles,
+  putMeta,
+  resetCacheDbForTests,
+  AUDIO_FILE_KEY,
+} from '../cacheStore'
+import { clearAllMusicCaches } from '../musicCache'
+
+describe('music cache', () => {
+  beforeEach(async () => {
+    await resetCacheDbForTests()
+    vi.restoreAllMocks()
+  })
+
+  it('stores and reads audio blobs', async () => {
+    const sourceUrl = 'https://example.com/a.mp3'
+    await putFiles(sourceUrl, [
+      { relativePath: AUDIO_FILE_KEY, blob: new Blob(['audio'], { type: 'audio/mpeg' }) },
+    ])
+    await putMeta({
+      sourceUrl,
+      id: 'a',
+      status: 'ready',
+      downloadedAt: Date.now(),
+    })
+
+    expect(await isTrackCached(sourceUrl)).toBe(true)
+    const blob = await getCachedFile(sourceUrl)
+    expect(blob).not.toBeNull()
+    expect(await blob!.text()).toBe('audio')
+  })
+
+  it('stores and reads cover blobs', async () => {
+    const sourceUrl = 'https://example.com/cover-track.mp3'
+    await putFiles(sourceUrl, [
+      { relativePath: COVER_FILE_KEY, blob: new Blob(['img'], { type: 'image/jpeg' }) },
+    ])
+    const cover = await getCachedFile(sourceUrl, COVER_FILE_KEY)
+    expect(cover).not.toBeNull()
+    expect(await cover!.text()).toBe('img')
+  })
+
+  it('pending status is not treated as cached', async () => {
+    const sourceUrl = 'https://example.com/pending.mp3'
+    await putMeta({
+      sourceUrl,
+      status: 'pending',
+      downloadedAt: Date.now(),
+    })
+    expect(await isTrackCached(sourceUrl)).toBe(false)
+  })
+
+  it('listTrackMetas returns all meta records', async () => {
+    await putMeta({
+      sourceUrl: 'https://example.com/1.mp3',
+      status: 'ready',
+      downloadedAt: 10,
+    })
+    await putMeta({
+      sourceUrl: 'https://example.com/2.mp3',
+      status: 'pending',
+      downloadedAt: 20,
+    })
+    const metas = await listTrackMetas()
+    expect(metas).toHaveLength(2)
+    expect(metas.map((m) => m.sourceUrl).sort()).toEqual([
+      'https://example.com/1.mp3',
+      'https://example.com/2.mp3',
+    ])
+  })
+
+  it('reuses db connection across successive operations', async () => {
+    const sourceUrl = 'https://example.com/reuse.mp3'
+    await putMeta({
+      sourceUrl,
+      status: 'ready',
+      downloadedAt: Date.now(),
+    })
+    expect(await isTrackCached(sourceUrl)).toBe(true)
+    expect(await isTrackCached(sourceUrl)).toBe(true)
+  })
+
+  it('clearAllMusicCaches removes records', async () => {
+    const sourceUrl = 'https://example.com/c.mp3'
+    await putFiles(sourceUrl, [{ relativePath: AUDIO_FILE_KEY, blob: new Blob(['x']) }])
+    await putMeta({
+      sourceUrl,
+      status: 'ready',
+      downloadedAt: Date.now(),
+    })
+    await clearAllMusicCaches()
+    expect(await isTrackCached(sourceUrl)).toBe(false)
+  })
+})

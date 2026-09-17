@@ -7,12 +7,12 @@ import {
   albumsForArtist,
   artistAlbumPath,
   artistPath,
-  decodeRouteParam,
   findArtistGroup,
-} from '@/lib/artistRoutes'
-import { localizeAlbumName, localizeArtistName } from '@/lib/displayLabels'
+} from '@/lib/routes/artistRoutes'
+import { decodeRouteParam } from '@/lib/routes/routeParams'
+import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels'
 import { useCatalogStore } from '@/stores/catalog'
-import { ensureCatalogLoaded } from '@/stores/catalogBootstrap'
+import { ensureCatalogLoaded } from '@/lib/catalog/catalogBootstrap'
 
 const { t } = useI18n()
 const route = useRoute()

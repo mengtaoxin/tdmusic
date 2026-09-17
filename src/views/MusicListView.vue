@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import TrackListItem from '@/components/TrackListItem.vue'
-import { useTrackListPlayback } from '@/lib/useTrackListPlayback'
+import { useTrackListPlayback } from '@/composables/useTrackListPlayback'
 import { capVirtualListHeight, virtualListNeedsScroll } from '@/lib/virtualListHeight'
 
 const { t } = useI18n()

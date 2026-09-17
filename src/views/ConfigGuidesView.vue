@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { configLlmPromptForLocale } from '@/lib/configLlmPrompt'
+import { configLlmPromptForLocale } from '@/lib/catalog/configLlmPrompt'
 
 const { t, locale } = useI18n()
 const llmPrompt = computed(() => configLlmPromptForLocale(String(locale.value)))

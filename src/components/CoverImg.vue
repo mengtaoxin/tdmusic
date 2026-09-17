@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, toRef } from 'vue'
 
-import { useLazyLoad } from '@/lib/useLazyLoad'
+import { useLazyLoad } from '@/composables/useLazyLoad'
 
 const props = withDefaults(
   defineProps<{

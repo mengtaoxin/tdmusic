@@ -15,9 +15,10 @@ import {
   prevIndex,
   removeAtIndex,
   serializePlayerState,
+  shuffleFromCurrent,
   shuffleUpcoming,
   type RepeatMode,
-} from '@/lib/playerLogic'
+} from '@/lib/playback/playerLogic'
 
 export const usePlayerStore = defineStore('player', () => {
   const queue = ref<string[]>([])
@@ -132,7 +133,8 @@ export const usePlayerStore = defineStore('player', () => {
       onDone: () => {
         cancelFill = null
         if (shuffle.value) {
-          queue.value = shuffleUpcoming(originalQueue.value, currentIndex.value)
+          queue.value = shuffleFromCurrent(originalQueue.value, currentIndex.value)
+          currentIndex.value = 0
         }
         flushPersist()
       },

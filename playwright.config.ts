@@ -1,6 +1,6 @@
 import process from 'node:process'
 import { defineConfig, devices } from '@playwright/test'
-import { resolveE2ePlatforms } from './src/lib/e2ePlatforms'
+import { resolveE2ePlatforms } from './scripts/lib/e2ePlatforms'
 
 /**
  * Read environment variables from file.

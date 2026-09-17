@@ -2,7 +2,36 @@
 # Stop Vite listener on :3000 only (no start).
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=_lib.sh
+source "$SCRIPT_DIR/_lib.sh"
+
 DEV_PORT=3000
+
+usage() {
+  cat <<'EOF'
+Usage:
+  ./scripts/dev-stop.sh
+
+Stop the Vite listener on :3000.
+Named flags only; this script accepts --help only.
+EOF
+  exit "${1:-1}"
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h | --help)
+      usage 0
+      ;;
+    --*)
+      tdmusic_unknown_arg "$1"
+      ;;
+    *)
+      tdmusic_unexpected_positional "$1"
+      ;;
+  esac
+done
 
 stop_port() {
   local port="$1"

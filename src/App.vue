@@ -4,7 +4,7 @@ import { onMounted } from 'vue'
 import AppHeader from './components/AppHeader.vue'
 import AudioHost from './components/AudioHost.vue'
 import NowPlayingFooter from './components/NowPlayingFooter.vue'
-import { loadCatalogAndHydratePlayer } from './stores/catalogBootstrap'
+import { loadCatalogAndHydratePlayer } from '@/lib/catalog/catalogBootstrap'
 
 onMounted(async () => {
   await loadCatalogAndHydratePlayer()

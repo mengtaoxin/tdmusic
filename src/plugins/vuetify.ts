@@ -5,6 +5,13 @@ import { aliases, mdi } from 'vuetify/iconsets/mdi'
 import '@mdi/font/css/materialdesignicons.css'
 
 export default createVuetify({
+  defaults: {
+    VMenu: {
+      // Default VDialogTransition sets pointer-events:none while opening (~225ms).
+      // Touch taps then fall through the menu to whatever is behind it.
+      transition: 'fade-transition',
+    },
+  },
   icons: {
     defaultSet: 'mdi',
     aliases,

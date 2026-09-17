@@ -5,8 +5,8 @@ import { nextTick } from 'vue'
 
 import AudioHost from '../AudioHost.vue'
 import { listAppLogs, resetAppLogDbForTests } from '@/lib/appLogStore'
-import * as prefetchUpcomingMod from '@/lib/prefetchUpcoming'
-import * as resolvePlayableUrlMod from '@/lib/resolvePlayableUrl'
+import * as prefetchUpcomingMod from '@/lib/playback/prefetchUpcoming'
+import * as resolvePlayableUrlMod from '@/lib/playback/resolvePlayableUrl'
 import { useCatalogStore, type DisplayTrack } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
 

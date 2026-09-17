@@ -4,8 +4,8 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
 import TrackList from '@/components/TrackList.vue'
-import { findPlaylistByName } from '@/lib/playlistRoutes'
-import { useTrackListPlayback } from '@/lib/useTrackListPlayback'
+import { findPlaylistByName } from '@/lib/routes/playlistRoutes'
+import { useTrackListPlayback } from '@/composables/useTrackListPlayback'
 import type { DisplayTrack } from '@/stores/catalog'
 
 const { t } = useI18n()
@@ -35,7 +35,8 @@ function playAllInOrder() {
 function shufflePlayAll() {
   if (!tracks.value.length) return
   player.shuffle = true
-  playAt(0)
+  const start = Math.floor(Math.random() * tracks.value.length)
+  playAt(start)
 }
 </script>
 

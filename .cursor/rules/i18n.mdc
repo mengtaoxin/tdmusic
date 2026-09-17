@@ -1,0 +1,10 @@
+---
+description: Keep en and zh locale keys in sync
+globs: src/locales/**
+alwaysApply: false
+---
+
+# i18n
+
+- Add, rename, or remove a UI string in **both** `src/locales/en.ts` and `src/locales/zh.ts`.
+- Do not leave a key in only one locale.

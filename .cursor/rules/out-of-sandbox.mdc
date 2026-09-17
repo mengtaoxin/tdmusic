@@ -1,0 +1,16 @@
+---
+description: Use Shell required_permissions ["all"] for test/dev scripts (signals, /Volumes)
+alwaysApply: true
+---
+
+# Shell / sandbox
+
+When running any of these, always use Shell with `required_permissions: ["all"]`
+(do not rely on the default sandbox):
+
+- `./scripts/test.sh`
+- `./scripts/dev-start.sh`
+- `./scripts/dev-stop.sh`
+
+Reason: they need process signals (kill) and/or writes under `/Volumes`.
+`format.sh`, `build.sh`, and `install-dependency.sh` may stay sandboxed.

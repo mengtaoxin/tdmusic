@@ -2,7 +2,11 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { clearMusicCachesAndRefresh, loadCatalogAndHydratePlayer } from '@/stores/catalogBootstrap'
+import { clearCachedConfigs } from '@/lib/catalog/loadConfigs'
+import {
+  clearMusicCachesAndRefresh,
+  loadCatalogAndHydratePlayer,
+} from '@/lib/catalog/catalogBootstrap'
 import { useSettingsStore } from '@/stores/settings'
 
 const { t } = useI18n()
@@ -11,6 +15,7 @@ const settings = useSettingsStore()
 const draftUrl = ref(settings.configUrl)
 const clearing = ref(false)
 const confirmClearOpen = ref(false)
+const confirmClearConfigsOpen = ref(false)
 const message = ref('')
 const snackbarOpen = computed({
   get: () => message.value.length > 0,
@@ -25,9 +30,14 @@ async function save() {
   message.value = t('settings.saved')
 }
 
-async function reload() {
-  await loadCatalogAndHydratePlayer()
-  message.value = t('settings.reloaded')
+function openClearConfigsCacheConfirm() {
+  confirmClearConfigsOpen.value = true
+}
+
+function confirmClearConfigsCache() {
+  confirmClearConfigsOpen.value = false
+  clearCachedConfigs()
+  message.value = t('settings.configsCacheCleared')
 }
 
 function openClearCacheConfirm() {
@@ -65,11 +75,13 @@ async function confirmClearCache() {
     <v-divider class="my-6" />
 
     <section class="setting">
-      <h2 class="text-subtitle-1 mb-1">{{ t('settings.reload') }}</h2>
+      <h2 class="text-subtitle-1 mb-1">{{ t('settings.clearConfigsCache') }}</h2>
       <p class="setting-hint text-body-2 text-medium-emphasis mb-3">
-        {{ t('settings.reloadHint') }}
+        {{ t('settings.clearConfigsCacheHint') }}
       </p>
-      <v-btn variant="tonal" @click="reload">{{ t('settings.reload') }}</v-btn>
+      <v-btn variant="tonal" @click="openClearConfigsCacheConfirm">
+        {{ t('settings.clearConfigsCache') }}
+      </v-btn>
     </section>
 
     <v-divider class="my-6" />
@@ -83,6 +95,22 @@ async function confirmClearCache() {
         {{ t('settings.clearCache') }}
       </v-btn>
     </section>
+
+    <v-dialog v-model="confirmClearConfigsOpen" max-width="420">
+      <v-card>
+        <v-card-title>{{ t('settings.clearConfigsCache') }}</v-card-title>
+        <v-card-text>{{ t('settings.clearConfigsCacheConfirm') }}</v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="confirmClearConfigsOpen = false">{{
+            t('settings.cancel')
+          }}</v-btn>
+          <v-btn color="primary" variant="tonal" @click="confirmClearConfigsCache">
+            {{ t('settings.confirm') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <v-dialog v-model="confirmClearOpen" max-width="420">
       <v-card>

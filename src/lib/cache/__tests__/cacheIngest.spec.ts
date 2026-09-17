@@ -1,0 +1,91 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { getCachedFile, isTrackCached, resetCacheDbForTests } from '../cacheStore'
+import { ensureTrackCached } from '../cacheIngest'
+
+function stubFetchBlob(body: string) {
+  return vi.fn<typeof fetch>().mockResolvedValue({
+    ok: true,
+    headers: new Headers({ 'Content-Type': 'audio/mpeg' }),
+    body: null,
+    blob: async () => new Blob([body], { type: 'audio/mpeg' }),
+  } as Response)
+}
+
+describe('ensureTrackCached', () => {
+  beforeEach(async () => {
+    await resetCacheDbForTests()
+    vi.restoreAllMocks()
+  })
+
+  it('downloads remote audio once', async () => {
+    const sourceUrl = 'https://example.com/b.mp3'
+    vi.stubGlobal('fetch', stubFetchBlob('bytes'))
+
+    await ensureTrackCached(sourceUrl, 'b')
+    expect(await isTrackCached(sourceUrl)).toBe(true)
+    expect(fetch).toHaveBeenCalledTimes(1)
+
+    await ensureTrackCached(sourceUrl, 'b')
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('retries after a failed download', async () => {
+    const sourceUrl = 'https://example.com/fail-then-ok.mp3'
+    const fetchMock = vi
+      .fn<
+        () => Promise<{
+          ok: boolean
+          status?: number
+          headers: Headers
+          body: null
+          blob: () => Promise<Blob>
+        }>
+      >()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        headers: new Headers(),
+        body: null,
+        blob: async () => new Blob([]),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers({ 'Content-Type': 'audio/mpeg' }),
+        body: null,
+        blob: async () => new Blob(['ok'], { type: 'audio/mpeg' }),
+      })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(ensureTrackCached(sourceUrl, 'x')).rejects.toThrow(/downloadFailed/)
+    expect(await isTrackCached(sourceUrl)).toBe(false)
+
+    await ensureTrackCached(sourceUrl, 'x')
+    expect(await isTrackCached(sourceUrl)).toBe(true)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('downloads site-absolute audio once', async () => {
+    const sourceUrl = '/sample-1.mp3'
+    vi.stubGlobal('fetch', stubFetchBlob('local-bytes'))
+
+    await ensureTrackCached(sourceUrl, 'local')
+    expect(await isTrackCached(sourceUrl)).toBe(true)
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledWith(sourceUrl)
+
+    await ensureTrackCached(sourceUrl, 'local')
+    expect(fetch).toHaveBeenCalledTimes(1)
+
+    const blob = await getCachedFile(sourceUrl)
+    expect(blob).not.toBeNull()
+    expect(await blob!.text()).toBe('local-bytes')
+  })
+
+  it('skips non-playable paths', async () => {
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>())
+    await ensureTrackCached('sample-1.mp3')
+    expect(fetch).not.toHaveBeenCalled()
+    expect(await isTrackCached('sample-1.mp3')).toBe(false)
+  })
+})

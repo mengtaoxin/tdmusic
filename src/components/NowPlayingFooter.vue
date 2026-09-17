@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import CoverImg from '@/components/CoverImg.vue'
-import { localizeArtistName } from '@/lib/displayLabels'
+import { localizeArtistName } from '@/lib/catalog/displayLabels'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
 

@@ -267,6 +267,7 @@ function childTitle(child: NavLink): string {
             v-model="openMenus[item.key]"
             location="bottom end"
             :close-on-content-click="true"
+            transition="fade-transition"
           >
             <template #activator="{ props: activatorProps }">
               <v-btn
@@ -281,11 +282,7 @@ function childTitle(child: NavLink): string {
                 {{ t(item.key) }}
               </v-btn>
             </template>
-            <v-list
-              density="compact"
-              :data-testid="`${item.menuTestId}-menu`"
-              min-width="160"
-            >
+            <v-list density="compact" :data-testid="`${item.menuTestId}-menu`" min-width="160">
               <v-list-item
                 v-for="child in item.children"
                 :key="child.key"

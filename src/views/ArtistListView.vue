@@ -2,10 +2,10 @@
 import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { artistAlbumsPath } from '@/lib/artistRoutes'
-import { localizeArtistName } from '@/lib/displayLabels'
+import { artistAlbumsPath } from '@/lib/routes/artistRoutes'
+import { localizeArtistName } from '@/lib/catalog/displayLabels'
 import { useCatalogStore } from '@/stores/catalog'
-import { ensureCatalogLoaded } from '@/stores/catalogBootstrap'
+import { ensureCatalogLoaded } from '@/lib/catalog/catalogBootstrap'
 
 const { t } = useI18n()
 const catalog = useCatalogStore()

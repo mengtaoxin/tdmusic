@@ -34,12 +34,12 @@ See [commands.md](commands.md). Run the relevant suite(s) on each Red/Green step
 
 ## Agent checklist (every behavior change)
 
-1. Read [file-structure.md](file-structure.md) and place files correctly.
+1. If adding or moving files, follow [file-structure.md](file-structure.md) placement.
 2. State the behavior in one sentence (observable outcome, not implementation).
 3. Add/adjust the failing test at the right layer (see [testing.md](testing.md)); run it; confirm **Red**.
 4. Implement the minimal fix; run the same test; confirm **Green**.
 5. Refactor if needed; keep tests green.
-6. Update docs only when project-specific contracts change (see [project-specific-docs.md](project-specific-docs.md)).
+6. Update docs only when project-specific contracts change (see [project-specific-docs.md](project-specific-docs.md)). Update [ui-chrome.md](ui-chrome.md) only when header / nav visual behavior changes.
 7. Run the full test suite. Do not mark the task done until it passes.
 
 ## Anti-patterns (do not)

@@ -2,6 +2,7 @@
 # Run unit and/or e2e tests.
 # Usage:
 #   ./scripts/test.sh                              # unit + e2e (chromium)
+#   ./scripts/test.sh --layer unit
 #   ./scripts/test.sh --platform chrome,firefox    # e2e platforms (comma-separated)
 #   ./scripts/test.sh --file src/__tests__/App.spec.ts
 #   ./scripts/test.sh --file e2e/vue.spec.ts --platform webkit
@@ -13,27 +14,21 @@ unset PLAYWRIGHT_BROWSERS_PATH
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# shellcheck source=_lib.sh
+source "$SCRIPT_DIR/_lib.sh"
 
 usage() {
   cat <<'EOF'
 Usage:
-  ./scripts/test.sh [--platform chrome|chromium|firefox|webkit|safari[,...]] [--file path/to/spec.ts]
+  ./scripts/test.sh [--layer unit|e2e|all] [--file path/to/spec.ts] [--platform chrome|chromium|firefox|webkit|safari[,...]]
 
-Default (no --file): unit, then e2e (chromium).
-E2E defaults to chromium only. Pass --platform with a comma-separated list to run more browsers.
-Pass --file to run a single spec (paths under e2e/ use Playwright; otherwise Vitest).
+Named flags only (--key value or --key=value); order does not matter.
+Default (no --file): --layer all (unit, then e2e on chromium).
+--file runs one spec (paths under e2e/ use Playwright; otherwise Vitest).
+--layer all cannot be combined with --file.
+--platform is e2e only.
 EOF
-  exit 1
-}
-
-# Require a non-empty value for --key / --key= forms. Reject another flag as the value.
-require_value() {
-  local flag="$1"
-  local value="${2:-}"
-  if [[ -z "$value" || "$value" == --* ]]; then
-    echo "error: ${flag} requires a value" >&2
-    usage
-  fi
+  exit "${1:-1}"
 }
 
 run_unit_all() {
@@ -45,75 +40,130 @@ run_unit_all() {
 }
 
 run_e2e_all() {
-  echo "test: e2e (npm run test:e2e)${TDMUSIC_E2E_PLATFORMS:+ [${TDMUSIC_E2E_PLATFORMS}]}"
+  echo "test: e2e (playwright test)${TDMUSIC_E2E_PLATFORMS:+ [${TDMUSIC_E2E_PLATFORMS}]}"
   (
     cd "$ROOT"
-    env -u PLAYWRIGHT_BROWSERS_PATH npm run test:e2e
+    env -u PLAYWRIGHT_BROWSERS_PATH npx playwright test
   )
 }
 
 run_one() {
   local target="$1"
-  if [[ "$target" == e2e/* ]]; then
+  local kind="$2"
+  if [[ "$kind" == e2e ]]; then
     echo "test: e2e (${target})${TDMUSIC_E2E_PLATFORMS:+ [${TDMUSIC_E2E_PLATFORMS}]}"
     (
       cd "$ROOT"
-      env -u PLAYWRIGHT_BROWSERS_PATH npm run test:e2e -- "$target"
+      env -u PLAYWRIGHT_BROWSERS_PATH npx playwright test -- "$target"
     )
   else
     echo "test: unit (${target})"
     (
       cd "$ROOT"
-      npx vitest run -- "$target"
+      npx vitest run "$target"
     )
   fi
 }
 
-PLATFORM_RAW=""
+LAYER_RAW=""
 FILE_RAW=""
+PLATFORM_RAW=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --layer)
+      tdmusic_require_value "$1" "${2:-}"
+      LAYER_RAW="$2"
+      shift 2
+      ;;
+    --layer=*)
+      LAYER_RAW="${1#--layer=}"
+      tdmusic_require_value "--layer" "$LAYER_RAW"
+      shift
+      ;;
     --platform)
-      require_value "$1" "${2:-}"
+      tdmusic_require_value "$1" "${2:-}"
       PLATFORM_RAW="$2"
       shift 2
       ;;
     --platform=*)
       PLATFORM_RAW="${1#--platform=}"
-      require_value "--platform" "$PLATFORM_RAW"
+      tdmusic_require_value "--platform" "$PLATFORM_RAW"
       shift
       ;;
     --file)
-      require_value "$1" "${2:-}"
+      tdmusic_require_value "$1" "${2:-}"
       FILE_RAW="$2"
       shift 2
       ;;
     --file=*)
       FILE_RAW="${1#--file=}"
-      require_value "--file" "$FILE_RAW"
+      tdmusic_require_value "--file" "$FILE_RAW"
       shift
       ;;
     -h | --help)
-      usage
+      usage 0
+      ;;
+    --*)
+      tdmusic_unknown_arg "$1"
       ;;
     *)
-      echo "error: unknown argument: $1" >&2
-      usage
+      tdmusic_unexpected_positional "$1"
       ;;
   esac
 done
 
+if [[ -n "$LAYER_RAW" ]]; then
+  case "$LAYER_RAW" in
+    unit | e2e | all) ;;
+    *)
+      echo "error: unknown layer: ${LAYER_RAW} (expected unit, e2e, or all)" >&2
+      usage 1
+      ;;
+  esac
+fi
+
 if [[ -n "$PLATFORM_RAW" ]]; then
+  tdmusic_node_cli resolve-platforms "$PLATFORM_RAW" >/dev/null
   export TDMUSIC_E2E_PLATFORMS="$PLATFORM_RAW"
 fi
 
-if [[ -z "$FILE_RAW" ]]; then
-  run_unit_all
-  run_e2e_all
-  echo "test: done"
-  exit 0
+FILE_KIND=""
+if [[ -n "$FILE_RAW" ]]; then
+  FILE_KIND="$(tdmusic_node_cli classify-file "$ROOT" "$FILE_RAW")"
 fi
 
-run_one "$FILE_RAW"
+if [[ -n "$FILE_RAW" && "$LAYER_RAW" == all ]]; then
+  echo "error: --layer all cannot be combined with --file" >&2
+  usage 1
+fi
+
+if [[ -n "$FILE_RAW" && -n "$LAYER_RAW" && "$LAYER_RAW" != "$FILE_KIND" ]]; then
+  echo "error: --layer ${LAYER_RAW} does not match --file (${FILE_KIND})" >&2
+  usage 1
+fi
+
+LAYER="${LAYER_RAW}"
+if [[ -n "$FILE_RAW" ]]; then
+  LAYER="$FILE_KIND"
+elif [[ -z "$LAYER" ]]; then
+  LAYER="all"
+fi
+
+if [[ -n "$PLATFORM_RAW" && "$LAYER" == unit ]]; then
+  echo "error: --platform is only valid when running e2e tests" >&2
+  usage 1
+fi
+
+if [[ -n "$FILE_RAW" ]]; then
+  run_one "$FILE_RAW" "$FILE_KIND"
+elif [[ "$LAYER" == unit ]]; then
+  run_unit_all
+elif [[ "$LAYER" == e2e ]]; then
+  run_e2e_all
+else
+  run_unit_all
+  run_e2e_all
+fi
+
 echo "test: done"

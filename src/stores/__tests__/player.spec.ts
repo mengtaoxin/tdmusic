@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 
-import { PLAYER_STORAGE_KEY } from '@/lib/playerLogic'
+import { PLAYER_STORAGE_KEY } from '@/lib/playback/playerLogic'
 import { usePlayerStore } from '../player'
 
 describe('playerStore', () => {
@@ -116,6 +116,20 @@ describe('playerStore', () => {
     await vi.runAllTimersAsync()
     expect(store.currentId).toBe('a')
     expect(store.queue).toEqual(['a', 'c', 'd', 'b'])
+    rnd.mockRestore()
+  })
+
+  it('playFrom with shuffle on from a middle track puts that track first and shuffles the rest', async () => {
+    const store = usePlayerStore()
+    store.shuffle = true
+    const values = [0, 0]
+    const rnd = vi.spyOn(Math, 'random').mockImplementation(() => values.shift() ?? 0)
+    store.playFrom(2, ['a', 'b', 'c', 'd'])
+    await vi.runAllTimersAsync()
+    expect(store.currentId).toBe('c')
+    expect(store.currentIndex).toBe(0)
+    expect(store.queue).toEqual(['c', 'b', 'd', 'a'])
+    expect(store.originalQueue).toEqual(['a', 'b', 'c', 'd'])
     rnd.mockRestore()
   })
 

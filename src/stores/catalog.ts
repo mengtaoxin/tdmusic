@@ -1,17 +1,17 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
-import { resolveDisplayAlbum, resolveDisplayArtist } from '@/lib/displayLabels'
-import { clearEnrichQueue, enqueueEnrich } from '@/lib/enrichQueue'
-import { enrichOneTrack } from '@/lib/enrichTracks'
-import { loadConfigsJson } from '@/lib/loadConfigs'
-import { mergeTrackDisplay } from '@/lib/mergeTrackMeta'
+import { resolveDisplayAlbum, resolveDisplayArtist } from '@/lib/catalog/displayLabels'
+import { clearEnrichQueue, enqueueEnrich } from '@/lib/catalog/enrichQueue'
+import { enrichOneTrack } from '@/lib/catalog/enrichTracks'
+import { loadConfigsJson } from '@/lib/catalog/loadConfigs'
+import { mergeTrackDisplay } from '@/lib/catalog/mergeTrackMeta'
 import {
   normalizeConfigs,
   type CatalogError,
   type MusicTrack,
   type NormalizedPlaylist,
-} from '@/lib/normalizeCatalog'
+} from '@/lib/catalog/normalizeCatalog'
 
 export type DisplayTrack = MusicTrack & {
   displayTitle: string

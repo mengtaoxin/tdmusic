@@ -70,15 +70,16 @@ export default {
     configUrlHint: '应用从这里加载音乐目录。留空则使用默认地址。',
     configGuidesLink: 'configs.json 指南',
     save: '保存',
-    reload: '重新加载配置',
-    reloadHint: '按当前配置地址重新拉取音乐目录。',
+    clearConfigsCache: '删除本地配置缓存',
+    clearConfigsCacheHint: '删除保存在本机的 configs.json 缓存。下次使用时会自动重新下载。',
+    clearConfigsCacheConfirm: '确定删除本地 configs.json 缓存？下次使用时会自动重新下载。',
     clearCache: '一键清除全部缓存',
     clearCacheHint: '清除已缓存的音频与元数据，不会清空正在播放队列。',
     clearCacheConfirm: '确定清除全部已缓存的音频与元数据？此操作无法撤销。',
     cancel: '取消',
     confirm: '确认',
     saved: '已保存并重新加载配置。',
-    reloaded: '配置已重新加载。',
+    configsCacheCleared: '已删除本地配置缓存。',
     cacheCleared: '已清除全部音乐缓存。',
   },
   configGuides: {
@@ -86,7 +87,7 @@ export default {
     intro: '应用从 JSON 配置文件（通常是 configs.json）加载音乐目录。本页说明该文件的写法。',
     whereTitle: '从哪里加载',
     whereBody:
-      '默认地址是 /configs.json（来自 public/configs.json）。可在设置页修改；留空则使用默认地址。',
+      '默认地址是 /configs.json（来自 public/configs.json）。可在设置页修改；留空则使用默认地址。加载后的 configs.json 会存入 localStorage；可在设置里删除该缓存以便下次重新下载。',
     musicListTitle: 'music-list',
     musicListBody:
       '曲目数组。每条必须有 id 和 path；缺少任一字段或 id 重复会被丢弃，并在音乐列表中显示错误。可选字段若填写，会覆盖从 ID3 提取的标签。',
@@ -115,6 +116,7 @@ export default {
   },
   logs: {
     clear: '清空日志',
+    clearConfirm: '确定清空全部日志？此操作无法撤销。',
     empty: '暂无日志。',
   },
 }

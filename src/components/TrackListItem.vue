@@ -2,7 +2,7 @@
 import { useI18n } from 'vue-i18n'
 
 import CoverImg from '@/components/CoverImg.vue'
-import { localizeAlbumName, localizeArtistName } from '@/lib/displayLabels'
+import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels'
 import type { DisplayTrack } from '@/stores/catalog'
 
 withDefaults(
@@ -41,7 +41,7 @@ const { t } = useI18n()
       </template>
     </v-list-item-subtitle>
     <template v-if="actions !== 'none'" #append>
-      <v-menu location="bottom end">
+      <v-menu location="bottom end" transition="fade-transition">
         <template #activator="{ props: menuProps }">
           <v-btn
             v-bind="menuProps"
@@ -50,6 +50,7 @@ const { t } = useI18n()
             variant="text"
             size="small"
             @click.stop
+            @pointerdown.stop
           />
         </template>
         <v-list density="compact" min-width="180">

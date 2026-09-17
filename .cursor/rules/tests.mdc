@@ -1,0 +1,12 @@
+---
+description: Unit and e2e test placement and naming
+globs: src/**/__tests__/**,scripts/**/__tests__/**,e2e/**
+alwaysApply: false
+---
+
+# Tests
+
+- Name specs `*.spec.ts`.
+- Put a new unit spec next to the module (`src/{lib,composables,views,components,stores}/**/__tests__/`, `scripts/lib/__tests__/`).
+- `src/__tests__/` is only Vitest setup and app-level specs — do not add module tests there.
+- E2E specs live in `e2e/`.

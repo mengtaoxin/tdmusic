@@ -2,9 +2,9 @@
 import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-import { playlistPath } from '@/lib/playlistRoutes'
+import { playlistPath } from '@/lib/routes/playlistRoutes'
 import { useCatalogStore } from '@/stores/catalog'
-import { ensureCatalogLoaded } from '@/stores/catalogBootstrap'
+import { ensureCatalogLoaded } from '@/lib/catalog/catalogBootstrap'
 
 const { t } = useI18n()
 const catalog = useCatalogStore()

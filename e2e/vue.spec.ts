@@ -31,7 +31,9 @@ test('desktop nav menu toggles match link button font size', async ({ page }) =>
 
 test('reserves scrollbar gutter on the right by default', async ({ page }) => {
   await page.goto('/')
-  const gutter = await page.evaluate(() => getComputedStyle(document.documentElement).scrollbarGutter)
+  const gutter = await page.evaluate(
+    () => getComputedStyle(document.documentElement).scrollbarGutter,
+  )
   expect(gutter).toContain('stable')
 })
 
@@ -43,7 +45,9 @@ test('settings links to config guides', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'configs.json guideline' })).toBeVisible()
   await expect(page.getByText('/configs.json', { exact: false }).first()).toBeVisible()
   await expect(page.getByRole('heading', { name: 'music-list' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Ask an AI to generate configs.json' })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Ask an AI to generate configs.json' }),
+  ).toBeVisible()
   await expect(page.getByTestId('copy-llm-prompt')).toBeVisible()
 })
 

@@ -4,9 +4,10 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 
 import TrackList from '@/components/TrackList.vue'
-import { decodeRouteParam, findArtistGroup } from '@/lib/artistRoutes'
-import { localizeArtistName } from '@/lib/displayLabels'
-import { useTrackListPlayback } from '@/lib/useTrackListPlayback'
+import { findArtistGroup } from '@/lib/routes/artistRoutes'
+import { decodeRouteParam } from '@/lib/routes/routeParams'
+import { localizeArtistName } from '@/lib/catalog/displayLabels'
+import { useTrackListPlayback } from '@/composables/useTrackListPlayback'
 import type { DisplayTrack } from '@/stores/catalog'
 
 const { t } = useI18n()

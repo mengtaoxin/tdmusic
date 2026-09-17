@@ -3,10 +3,10 @@ import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import CoverImg from '@/components/CoverImg.vue'
-import { albumPath, firstAlbumCoverSrc } from '@/lib/albumRoutes'
-import { localizeAlbumName } from '@/lib/displayLabels'
+import { albumPath, firstAlbumCoverSrc } from '@/lib/routes/albumRoutes'
+import { localizeAlbumName } from '@/lib/catalog/displayLabels'
 import { useCatalogStore } from '@/stores/catalog'
-import { ensureCatalogLoaded } from '@/stores/catalogBootstrap'
+import { ensureCatalogLoaded } from '@/lib/catalog/catalogBootstrap'
 
 const { t } = useI18n()
 const catalog = useCatalogStore()

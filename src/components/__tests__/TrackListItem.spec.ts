@@ -49,6 +49,34 @@ describe('TrackListItem', () => {
     expect(item.emitted('select')).toHaveLength(1)
   })
 
+  it('does not select the row when opening the overflow menu', async () => {
+    const item = mountItem()
+    await item.find('[data-testid="track-actions"]').trigger('click')
+    expect(item.emitted('select')).toBeFalsy()
+  })
+
+  it('keeps overflow-menu pointerdown on the control instead of the row', async () => {
+    const item = mountItem()
+    let rowSawPointerDown = false
+    item.find('.track-row').element.addEventListener('pointerdown', () => {
+      rowSawPointerDown = true
+    })
+    await item.find('[data-testid="track-actions"]').trigger('pointerdown')
+    expect(rowSawPointerDown).toBe(false)
+  })
+
+  it('does not use the dialog-scale menu transition that swallows touch taps', async () => {
+    const item = mountItem('playback')
+    const menu = item.findComponent({ name: 'VMenu' })
+    expect(menu.exists()).toBe(true)
+
+    const transition = menu.props('transition') as
+      { component?: { name?: string } } | string | boolean
+    const dialogScale =
+      typeof transition === 'object' && transition?.component?.name === 'VDialogTransition'
+    expect(dialogScale).toBe(false)
+  })
+
   it('emits play-next and add-to-queue from the playback menu', async () => {
     const item = mountItem('playback')
     await flushPromises()

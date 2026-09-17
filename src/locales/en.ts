@@ -70,15 +70,18 @@ export default {
     configUrlHint: 'Where the app loads the music catalog from. Leave empty for the default.',
     configGuidesLink: 'configs.json guideline',
     save: 'Save',
-    reload: 'Reload catalog',
-    reloadHint: 'Fetch the catalog again from the current config URL.',
+    clearConfigsCache: 'Delete local config cache',
+    clearConfigsCacheHint:
+      'Remove the cached configs.json from this browser. It will be downloaded again the next time the catalog loads.',
+    clearConfigsCacheConfirm:
+      'Delete the local configs.json cache? It will be downloaded again next time.',
     clearCache: 'Clear all cache',
     clearCacheHint: 'Remove cached audio and extracted metadata. Does not clear the play queue.',
     clearCacheConfirm: 'Clear all cached audio and extracted metadata? This cannot be undone.',
     cancel: 'Cancel',
     confirm: 'Confirm',
     saved: 'Settings saved and catalog reloaded.',
-    reloaded: 'Catalog reloaded.',
+    configsCacheCleared: 'Local config cache deleted.',
     cacheCleared: 'All music cache cleared.',
   },
   configGuides: {
@@ -87,7 +90,7 @@ export default {
       'The app loads its music catalog from a JSON file (usually configs.json). This page explains the shape of that file.',
     whereTitle: 'Where it loads from',
     whereBody:
-      'Default URL is /configs.json (from public/configs.json). Change it on the Settings page; leave empty to use the default.',
+      'Default URL is /configs.json (from public/configs.json). Change it on the Settings page; leave empty to use the default. Loaded configs.json is saved in localStorage; delete that cache in Settings to download it again.',
     musicListTitle: 'music-list',
     musicListBody:
       'An array of tracks. Each entry needs id and path. Missing either, or a duplicate id, drops that entry and shows an error in Music List. Optional fields override extracted ID3 tags when set.',
@@ -118,6 +121,7 @@ export default {
   },
   logs: {
     clear: 'Clear logs',
+    clearConfirm: 'Clear all logs? This cannot be undone.',
     empty: 'No logs yet.',
   },
 }

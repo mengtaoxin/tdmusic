@@ -4,10 +4,10 @@ import { useI18n } from 'vue-i18n'
 
 import CoverImg from '@/components/CoverImg.vue'
 import TrackListItem from '@/components/TrackListItem.vue'
-import { artistAlbumPath, artistAlbumsPath } from '@/lib/artistRoutes'
-import { localizeAlbumName, localizeArtistName } from '@/lib/displayLabels'
+import { artistAlbumPath, artistAlbumsPath } from '@/lib/routes/artistRoutes'
+import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels'
 import { useCatalogStore, type DisplayTrack } from '@/stores/catalog'
-import { ensureCatalogLoaded } from '@/stores/catalogBootstrap'
+import { ensureCatalogLoaded } from '@/lib/catalog/catalogBootstrap'
 import { usePlayerStore } from '@/stores/player'
 
 const { t } = useI18n()

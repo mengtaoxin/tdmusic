@@ -2,10 +2,10 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 
 import { appendAppLog } from '@/lib/appLogStore'
-import { syncMediaSession } from '@/lib/mediaSession'
-import { createPlaybackSession } from '@/lib/playbackSession'
-import { prefetchUpcoming } from '@/lib/prefetchUpcoming'
-import { resolvePlayableUrl } from '@/lib/resolvePlayableUrl'
+import { syncMediaSession } from '@/lib/playback/mediaSession'
+import { createPlaybackSession } from '@/lib/playback/playbackSession'
+import { prefetchUpcoming } from '@/lib/playback/prefetchUpcoming'
+import { resolvePlayableUrl } from '@/lib/playback/resolvePlayableUrl'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
 

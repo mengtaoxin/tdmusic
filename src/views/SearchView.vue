@@ -3,9 +3,9 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 import TrackListItem from '@/components/TrackListItem.vue'
-import { localizeAlbumName, localizeArtistName } from '@/lib/displayLabels'
+import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels'
 import { pushSearchHistory, readSearchHistory } from '@/lib/searchHistory'
-import { useTrackListPlayback } from '@/lib/useTrackListPlayback'
+import { useTrackListPlayback } from '@/composables/useTrackListPlayback'
 
 const { t } = useI18n()
 const query = ref('')

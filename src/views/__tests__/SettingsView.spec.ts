@@ -9,12 +9,20 @@ import vuetify from '@/plugins/vuetify'
 import en from '@/locales/en'
 import zh from '@/locales/zh'
 
-vi.mock('@/stores/catalogBootstrap', () => ({
+vi.mock('@/lib/catalog/catalogBootstrap', () => ({
   loadCatalogAndHydratePlayer: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
   clearMusicCachesAndRefresh: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
 }))
 
-import { clearMusicCachesAndRefresh } from '@/stores/catalogBootstrap'
+vi.mock('@/lib/catalog/loadConfigs', () => ({
+  clearCachedConfigs: vi.fn<() => void>(),
+}))
+
+import { clearCachedConfigs } from '@/lib/catalog/loadConfigs'
+import {
+  clearMusicCachesAndRefresh,
+  loadCatalogAndHydratePlayer,
+} from '@/lib/catalog/catalogBootstrap'
 
 function mountSettings(locale: 'en' | 'zh') {
   const i18n = createI18n({
@@ -41,6 +49,8 @@ describe('SettingsView', () => {
   beforeEach(() => {
     document.body.innerHTML = ''
     vi.mocked(clearMusicCachesAndRefresh).mockClear()
+    vi.mocked(loadCatalogAndHydratePlayer).mockClear()
+    vi.mocked(clearCachedConfigs).mockClear()
   })
 
   it('shows a short description for each setting in English', () => {
@@ -51,8 +61,11 @@ describe('SettingsView', () => {
     expect(text).toContain(
       'Where the app loads the music catalog from. Leave empty for the default.',
     )
-    expect(text).toContain('Reload catalog')
-    expect(text).toContain('Fetch the catalog again from the current config URL.')
+    expect(text).not.toContain('Reload catalog')
+    expect(text).toContain('Delete local config cache')
+    expect(text).toContain(
+      'Remove the cached configs.json from this browser. It will be downloaded again the next time the catalog loads.',
+    )
     expect(text).toContain('Clear all cache')
     expect(text).toContain(
       'Remove cached audio and extracted metadata. Does not clear the play queue.',
@@ -65,8 +78,9 @@ describe('SettingsView', () => {
 
     expect(text).toContain('配置地址')
     expect(text).toContain('应用从这里加载音乐目录。留空则使用默认地址。')
-    expect(text).toContain('重新加载配置')
-    expect(text).toContain('按当前配置地址重新拉取音乐目录。')
+    expect(text).not.toContain('重新加载配置')
+    expect(text).toContain('删除本地配置缓存')
+    expect(text).toContain('删除保存在本机的 configs.json 缓存。下次使用时会自动重新下载。')
     expect(text).toContain('一键清除全部缓存')
     expect(text).toContain('清除已缓存的音频与元数据，不会清空正在播放队列。')
   })
@@ -101,6 +115,51 @@ describe('SettingsView', () => {
     expect(snackbar.props('location')).toBe('bottom')
     expect(snackbar.props('modelValue')).toBe(true)
     expect(document.body.textContent).toContain('Settings saved and catalog reloaded.')
+  })
+
+  it('asks for confirmation before deleting local config cache', async () => {
+    const wrapper = mountSettings('en')
+    const clearBtn = wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('Delete local config cache'))
+    expect(clearBtn).toBeTruthy()
+    await clearBtn!.trigger('click')
+    await flushPromises()
+
+    expect(clearCachedConfigs).not.toHaveBeenCalled()
+    expect(document.body.textContent).toContain(
+      'Delete the local configs.json cache? It will be downloaded again next time.',
+    )
+
+    const cancelBtn = [...document.body.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('Cancel'),
+    )
+    expect(cancelBtn).toBeTruthy()
+    cancelBtn!.click()
+    await flushPromises()
+
+    expect(clearCachedConfigs).not.toHaveBeenCalled()
+  })
+
+  it('deletes local config cache only after confirm', async () => {
+    const wrapper = mountSettings('en')
+    const clearBtn = wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('Delete local config cache'))
+    expect(clearBtn).toBeTruthy()
+    await clearBtn!.trigger('click')
+    await flushPromises()
+
+    const confirmBtn = [...document.body.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('Confirm'),
+    )
+    expect(confirmBtn).toBeTruthy()
+    confirmBtn!.click()
+    await flushPromises()
+
+    expect(clearCachedConfigs).toHaveBeenCalledTimes(1)
+    expect(loadCatalogAndHydratePlayer).not.toHaveBeenCalled()
+    expect(document.body.textContent).toContain('Local config cache deleted.')
   })
 
   it('asks for confirmation before clearing cache', async () => {

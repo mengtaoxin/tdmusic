@@ -360,6 +360,24 @@ describe('AppHeader', () => {
     wrapper.unmount()
   })
 
+  it('does not use the dialog-scale menu transition that swallows touch taps', async () => {
+    const { wrapper } = await mountHeader()
+    applyLayoutWidths(wrapper, { toolbarWidth: 1200, brandWidth: 120, navContentWidth: 800 })
+    await measureNavLayout()
+
+    const menus = wrapper.findAllComponents({ name: 'VMenu' })
+    expect(menus.length).toBeGreaterThan(0)
+    for (const menu of menus) {
+      const transition = menu.props('transition') as
+        { component?: { name?: string } } | string | boolean
+      const dialogScale =
+        typeof transition === 'object' && transition?.component?.name === 'VDialogTransition'
+      expect(dialogScale).toBe(false)
+    }
+
+    wrapper.unmount()
+  })
+
   it('switches language from a desktop-nav dropdown that matches regular menu sizing', async () => {
     const { wrapper } = await mountHeader()
     applyLayoutWidths(wrapper, { toolbarWidth: 1200, brandWidth: 120, navContentWidth: 800 })

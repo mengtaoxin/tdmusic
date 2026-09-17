@@ -26,19 +26,20 @@
 
 打开 [http://localhost:3000](http://localhost:3000)。停止：`./scripts/dev-stop.sh`。
 
-日常开发请用 `./scripts/*`，不要直接跑 `npm run`（详见 [commands.md](commands.md)）。
+脚本参数见 [commands.md](commands.md)。
 
 | 脚本 | 用途 |
 | ---- | ---- |
 | `./scripts/install-dependency.sh` | 安装依赖 |
 | `./scripts/dev-start.sh` / `dev-stop.sh` | 启动 / 停止 Vite 开发服务器 |
 | `./scripts/build.sh` | 生产构建 |
-| `./scripts/format-and-lint.sh` | 格式化 + 检查 |
+| `./scripts/format.sh` | 格式化（**默认会改文件**；`--check` 只读） |
 | `./scripts/test.sh` | 完整测试（单元 + e2e） |
 
-只跑单个测试文件（e2e 默认仅 Chromium；用 `--platform` 追加浏览器）：
+只跑单个测试文件或一层（e2e 默认仅 Chromium；用 `--platform` 追加浏览器）：
 
 ```sh
+./scripts/test.sh --layer unit
 ./scripts/test.sh --file src/__tests__/App.spec.ts
 ./scripts/test.sh --file e2e/vue.spec.ts
 ./scripts/test.sh --platform chrome,firefox,webkit
@@ -66,6 +67,7 @@ Vue 3 · Vite · TypeScript · Pinia · Vue Router · vue-i18n · Vuetify 4 · V
 | [conventions.md](conventions.md) | 编码约定 |
 | [testing.md](testing.md) | 测试分层与命名 |
 | [project-specific-docs.md](project-specific-docs.md) | 曲库、缓存、播放行为 |
+| [ui-chrome.md](ui-chrome.md) | 顶栏布局与导航外观 |
 
 ## 许可
 

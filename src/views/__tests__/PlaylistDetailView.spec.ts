@@ -65,17 +65,19 @@ describe('PlaylistDetailView', () => {
     expect(playFrom).toHaveBeenCalledWith(0, ['t1', 't2'])
   })
 
-  it('shuffle all starts from the first track with shuffle on', async () => {
+  it('shuffle all starts from a random track with shuffle on', async () => {
     const { wrapper, playFrom, player } = await mountPlaylistDetail('My List')
     await flushPromises()
 
     player.shuffle = false
+    const rnd = vi.spyOn(Math, 'random').mockReturnValue(0.9)
     const shuffleAll = wrapper.findAll('button').find((b) => b.text().includes('Shuffle all'))
     expect(shuffleAll).toBeTruthy()
     await shuffleAll!.trigger('click')
 
     expect(player.shuffle).toBe(true)
-    expect(playFrom).toHaveBeenCalledWith(0, ['t1', 't2'])
+    expect(playFrom).toHaveBeenCalledWith(1, ['t1', 't2'])
+    rnd.mockRestore()
   })
 
   it('hides play-all controls when the playlist is missing', async () => {
