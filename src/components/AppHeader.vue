@@ -18,9 +18,9 @@ const desktopNavRef = ref<HTMLElement | null>(null)
 let resizeObserver: ResizeObserver | null = null
 
 type NavRouteLink = { to: string; key: string; icon: string }
-type NavExternalLink = { href: string; key: string; icon: string }
+type NavActionLink = { action: 'feedback'; key: string; icon: string }
 type NavLocaleLink = { locale: 'en' | 'zh'; key: string; icon: string }
-type NavLink = NavRouteLink | NavExternalLink | NavLocaleLink
+type NavLink = NavRouteLink | NavActionLink | NavLocaleLink
 type NavGroup = { key: string; icon: string; children: readonly NavLink[]; menuTestId: string }
 type NavItem = NavRouteLink | NavGroup
 
@@ -28,8 +28,8 @@ function isNavGroup(item: NavItem): item is NavGroup {
   return 'children' in item
 }
 
-function isExternalNavLink(item: NavLink): item is NavExternalLink {
-  return 'href' in item
+function isActionNavLink(item: NavLink): item is NavActionLink {
+  return 'action' in item
 }
 
 function isLocaleNavLink(item: NavLink): item is NavLocaleLink {
@@ -92,6 +92,7 @@ onBeforeUnmount(() => {
 })
 
 const GITHUB_ISSUES_URL = 'https://github.com/mengtaoxin/tdmusic/issues'
+const confirmFeedbackOpen = ref(false)
 
 const moreChildren: readonly NavLink[] = [
   { to: '/search', key: 'nav.search', icon: 'mdi-magnify' },
@@ -99,7 +100,7 @@ const moreChildren: readonly NavLink[] = [
   { to: '/config-guides', key: 'nav.configGuides', icon: 'mdi-file-document-outline' },
   { to: '/about', key: 'nav.about', icon: 'mdi-information-outline' },
   { to: '/logs', key: 'nav.logs', icon: 'mdi-text-box-outline' },
-  { href: GITHUB_ISSUES_URL, key: 'nav.feedback', icon: 'mdi-message-text-outline' },
+  { action: 'feedback', key: 'nav.feedback', icon: 'mdi-message-text-outline' },
 ]
 
 const localeChildren: readonly NavLocaleLink[] = [
@@ -123,7 +124,7 @@ const navItems: readonly NavItem[] = [
 ]
 
 const moreChildPaths: readonly string[] = moreChildren.flatMap((item) =>
-  isExternalNavLink(item) || isLocaleNavLink(item) ? [] : [item.to],
+  isActionNavLink(item) || isLocaleNavLink(item) ? [] : [item.to],
 )
 
 const moreGroupActive = computed(() => moreChildPaths.includes(route.path))
@@ -138,6 +139,15 @@ function setLocale(value: 'en' | 'zh') {
   locale.value = value
 }
 
+function openFeedbackConfirm() {
+  confirmFeedbackOpen.value = true
+}
+
+function confirmOpenFeedback() {
+  confirmFeedbackOpen.value = false
+  window.open(GITHUB_ISSUES_URL, '_blank', 'noopener,noreferrer')
+}
+
 function childBindings(child: NavLink) {
   if (isLocaleNavLink(child)) {
     return {
@@ -149,13 +159,12 @@ function childBindings(child: NavLink) {
       },
     }
   }
-  if (isExternalNavLink(child)) {
+  if (isActionNavLink(child)) {
     return {
-      href: child.href,
-      target: '_blank',
-      rel: 'noopener noreferrer',
+      'data-testid': 'nav-feedback',
       onClick: () => {
         drawerOpen.value = false
+        openFeedbackConfirm()
       },
     }
   }
@@ -175,8 +184,11 @@ function desktopChildBindings(child: NavLink) {
       onClick: () => setLocale(child.locale),
     }
   }
-  if (isExternalNavLink(child)) {
-    return { href: child.href, target: '_blank', rel: 'noopener noreferrer' }
+  if (isActionNavLink(child)) {
+    return {
+      'data-testid': 'nav-feedback',
+      onClick: openFeedbackConfirm,
+    }
   }
   return { to: child.to }
 }
@@ -224,6 +236,22 @@ function childTitle(child: NavLink): string {
       </template>
     </v-list>
   </v-navigation-drawer>
+
+  <v-dialog v-model="confirmFeedbackOpen" max-width="420">
+    <v-card>
+      <v-card-title>{{ t('nav.feedback') }}</v-card-title>
+      <v-card-text>{{ t('nav.feedbackConfirm') }}</v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn variant="text" @click="confirmFeedbackOpen = false">{{
+          t('settings.cancel')
+        }}</v-btn>
+        <v-btn color="primary" variant="tonal" @click="confirmOpenFeedback">
+          {{ t('settings.confirm') }}
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 
   <v-app-bar ref="appBarRef" flat class="app-bar" color="transparent">
     <v-app-bar-title class="brand text-secondary flex-grow-0 flex-shrink-0">
