@@ -113,13 +113,13 @@ const navItems: readonly NavItem[] = [
   { to: '/playlists', key: 'nav.playlist', icon: 'mdi-playlist-music' },
   { to: '/artists', key: 'nav.artistList', icon: 'mdi-account-music' },
   { to: '/albums', key: 'nav.albumList', icon: 'mdi-album' },
-  { key: 'nav.more', icon: 'mdi-dots-horizontal', children: moreChildren, menuTestId: 'nav-more' },
   {
     key: 'nav.language',
     icon: 'mdi-translate',
     children: localeChildren,
     menuTestId: 'nav-locale',
   },
+  { key: 'nav.more', icon: 'mdi-dots-horizontal', children: moreChildren, menuTestId: 'nav-more' },
 ]
 
 const moreChildPaths: readonly string[] = moreChildren.flatMap((item) =>
