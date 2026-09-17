@@ -153,14 +153,15 @@ function clearUpcoming() {
       {{ t('player.empty') }}
     </v-alert>
 
-    <div class="d-flex align-center justify-space-between mb-3 ga-3">
-      <h2 class="text-h6 ma-0">{{ t('player.queue') }}</h2>
+    <div class="d-flex align-center justify-space-between mb-3 ga-3 flex-wrap">
+      <h2 class="text-h6 ma-0 text-no-wrap flex-shrink-0">{{ t('player.queue') }}</h2>
       <v-btn
         v-if="queueRows.length > 1"
         data-testid="clear-upcoming"
         color="secondary"
         variant="flat"
         prepend-icon="mdi-playlist-remove"
+        class="flex-shrink-0"
         @click="clearUpcoming"
       >
         {{ t('player.clearUpcoming') }}

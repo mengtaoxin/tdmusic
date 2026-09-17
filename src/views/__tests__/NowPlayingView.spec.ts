@@ -118,6 +118,22 @@ describe('NowPlayingView', () => {
     expect(clearBtn.element.parentElement).toBe(queueHeading.element.parentElement)
   })
 
+  it('keeps the queue heading on one line on a narrow header row', async () => {
+    const { wrapper } = await mountNowPlaying(4)
+    await flushPromises()
+
+    const queueHeading = wrapper.find('h2')
+    const headerRow = queueHeading.element.parentElement
+    const clearBtn = wrapper.find('[data-testid="clear-upcoming"]')
+
+    expect(queueHeading.text()).toBe('Now playing queue')
+    expect(queueHeading.classes()).toContain('text-no-wrap')
+    expect(queueHeading.classes()).toContain('flex-shrink-0')
+    expect(headerRow).not.toBeNull()
+    expect(headerRow!.classList.contains('flex-wrap')).toBe(true)
+    expect(clearBtn.classes()).toContain('flex-shrink-0')
+  })
+
   it('clears upcoming tracks from the queue', async () => {
     const { wrapper, player } = await mountNowPlaying(4)
     player.goToIndex(1, false)
