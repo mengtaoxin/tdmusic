@@ -12,6 +12,7 @@ import {
   getCachedBlobUrl,
   getCachedFile,
   getExtractedTrackMeta,
+  getMusicCacheSizeBytes,
   isTrackCached,
   putExtractedTrackMeta,
   putFiles,
@@ -27,6 +28,7 @@ export {
   getCachedBlobUrl,
   getCachedFile,
   getExtractedTrackMeta,
+  getMusicCacheSizeBytes,
   isTrackCached,
   putExtractedTrackMeta,
 }

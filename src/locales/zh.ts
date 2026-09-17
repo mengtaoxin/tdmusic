@@ -76,6 +76,7 @@ export default {
     clearCache: '一键清除全部缓存',
     clearCacheHint: '清除已缓存的音频与元数据，不会清空正在播放队列。',
     clearCacheConfirm: '确定清除全部已缓存的音频与元数据？此操作无法撤销。',
+    cacheSize: '已缓存音乐：{size}',
     cancel: '取消',
     confirm: '确认',
     saved: '已保存并重新加载配置。',

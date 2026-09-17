@@ -25,8 +25,8 @@
 - `meta.status`: `pending` while downloading, `ready` when playable. Only `ready` counts as cached; failed downloads remove partial records and may be retried.
 - Audio blob key: `__audio__`. Cover art blob key: `__cover__` (not stored as data URLs in `trackMeta`).
 - Before writing large blobs, soft quota check via `navigator.storage.estimate()`: if `usage + size > quota * 0.85`, evict oldest `ready` tracks by `downloadedAt` until under the limit (no-op when quota unknown).
-- Settings → “Clear all cache” asks for confirmation, then clears audio/cover blobs + extracted metadata and the enrich queue (not the now-playing queue in localStorage), resets in-memory display fields to config-only, and re-enqueues enrichment.
-- Public cache API for app code: `lib/cache/musicCache` (including `putCoverFile`). `trackMetadata` / `cacheStore` / `cacheIngest` / `cacheEviction` are internal to the cache stack.
+- Settings → “Clear all cache” asks for confirmation, then clears audio/cover blobs + extracted metadata and the enrich queue (not the now-playing queue in localStorage), resets in-memory display fields to config-only, and re-enqueues enrichment. The same section shows the current size of cached audio and cover blobs (`getMusicCacheSizeBytes`); that figure refreshes after a successful clear.
+- Public cache API for app code: `lib/cache/musicCache` (including `putCoverFile` and `getMusicCacheSizeBytes`). `trackMetadata` / `cacheStore` / `cacheIngest` / `cacheEviction` are internal to the cache stack.
 
 ## Client persistence (`localStorage` via `clientStorage`)
 

@@ -78,6 +78,7 @@ export default {
     clearCache: 'Clear all cache',
     clearCacheHint: 'Remove cached audio and extracted metadata. Does not clear the play queue.',
     clearCacheConfirm: 'Clear all cached audio and extracted metadata? This cannot be undone.',
+    cacheSize: 'Cached music: {size}',
     cancel: 'Cancel',
     confirm: 'Confirm',
     saved: 'Settings saved and catalog reloaded.',
