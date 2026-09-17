@@ -44,19 +44,116 @@ describe('AudioHost', () => {
     wrapper.unmount()
   })
 
-  it('clears pendingPlay on external pause so toggle play can resume audio', async () => {
+  it('does not play the previous track src when switching queue items after pause', async () => {
     const pinia = createPinia()
+    const catalog = useCatalogStore(pinia)
+    catalog.tracks = [
+      {
+        id: 't1',
+        path: 'https://example.com/t1.mp3',
+        displayTitle: 'One',
+        displayArtist: 'A',
+        displayAlbum: 'B',
+      },
+      {
+        id: 't2',
+        path: 'https://example.com/t2.mp3',
+        displayTitle: 'Two',
+        displayArtist: 'A',
+        displayAlbum: 'B',
+      },
+    ]
+
+    let resolveT2: ((url: string) => void) | null = null
+    vi.spyOn(resolvePlayableUrlMod, 'resolvePlayableUrl').mockImplementation(async (_path, id) => {
+      if (id === 't1') return 'blob:t1'
+      return new Promise<string>((resolve) => {
+        resolveT2 = resolve
+      })
+    })
+    vi.spyOn(prefetchUpcomingMod, 'prefetchUpcoming').mockResolvedValue(undefined)
+
     const wrapper = mount(AudioHost, {
       global: { plugins: [pinia] },
     })
     const player = usePlayerStore(pinia)
     const audio = wrapper.get('[data-testid="global-audio"]').element as HTMLAudioElement
     const playSpy = vi.spyOn(audio, 'play').mockResolvedValue(undefined)
+    vi.spyOn(audio, 'load').mockImplementation(() => undefined)
 
-    player.currentId = 'smile-in-the-wind'
-    player.play()
+    // Load and pause on t1 (simulates long idle / OS interrupt).
+    player.queue = ['t1', 't2']
+    player.originalQueue = ['t1', 't2']
+    player.currentId = 't1'
+    player.pendingPlay = true
+    player.playing = true
+    player.loadToken += 1
     await nextTick()
     await flushPromises()
+    await flushPromises()
+    audio.dispatchEvent(new Event('loadedmetadata'))
+    await nextTick()
+    expect(audio.src).toContain('blob:t1')
+
+    audio.dispatchEvent(new Event('pause'))
+    await nextTick()
+    playSpy.mockClear()
+
+    // Click another queue item while paused; resolve for t2 is still pending.
+    player.goToIndex(1, true)
+    await nextTick()
+    await flushPromises()
+
+    // Must not resume the still-loaded previous track while the new one loads.
+    expect(playSpy).not.toHaveBeenCalled()
+    expect(audio.src).toContain('blob:t1')
+
+    resolveT2?.('blob:t2')
+    await flushPromises()
+    await flushPromises()
+    audio.dispatchEvent(new Event('loadedmetadata'))
+    await nextTick()
+
+    expect(audio.src).toContain('blob:t2')
+    expect(playSpy).toHaveBeenCalled()
+    expect(player.currentId).toBe('t2')
+
+    wrapper.unmount()
+  })
+
+  it('clears pendingPlay on external pause so toggle play can resume audio', async () => {
+    const pinia = createPinia()
+    const catalog = useCatalogStore(pinia)
+    catalog.tracks = [
+      {
+        id: 'smile-in-the-wind',
+        path: 'https://example.com/smile.mp3',
+        displayTitle: 'Smile',
+        displayArtist: 'A',
+        displayAlbum: 'B',
+      },
+    ]
+    vi.spyOn(resolvePlayableUrlMod, 'resolvePlayableUrl').mockResolvedValue('blob:smile')
+    vi.spyOn(prefetchUpcomingMod, 'prefetchUpcoming').mockResolvedValue(undefined)
+
+    const wrapper = mount(AudioHost, {
+      global: { plugins: [pinia] },
+    })
+    const player = usePlayerStore(pinia)
+    const audio = wrapper.get('[data-testid="global-audio"]').element as HTMLAudioElement
+    const playSpy = vi.spyOn(audio, 'play').mockResolvedValue(undefined)
+    vi.spyOn(audio, 'load').mockImplementation(() => undefined)
+
+    player.queue = ['smile-in-the-wind']
+    player.currentId = 'smile-in-the-wind'
+    player.pendingPlay = true
+    player.playing = true
+    player.loadToken += 1
+    await nextTick()
+    await flushPromises()
+    await flushPromises()
+    audio.dispatchEvent(new Event('loadedmetadata'))
+    await nextTick()
     expect(player.pendingPlay).toBe(true)
     expect(playSpy).toHaveBeenCalled()
     playSpy.mockClear()
