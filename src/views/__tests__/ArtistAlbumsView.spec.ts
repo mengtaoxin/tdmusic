@@ -4,26 +4,33 @@ import { createI18n } from 'vue-i18n'
 import { createPinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
 
+import CoverImg from '@/components/CoverImg.vue'
 import vuetify from '@/plugins/vuetify'
 import en from '@/locales/en'
 import zh from '@/locales/zh'
 import { useCatalogStore, type DisplayTrack } from '@/stores/catalog'
 import ArtistAlbumsView from '../ArtistAlbumsView.vue'
 
-function makeTrack(id: string, artist: string, album: string): DisplayTrack {
+function makeTrack(
+  id: string,
+  artist: string,
+  album: string,
+  extras: Partial<DisplayTrack> = {},
+): DisplayTrack {
   return {
     id,
     path: `/music/${id}.mp3`,
     displayTitle: id,
     displayArtist: artist,
     displayAlbum: album,
+    ...extras,
   }
 }
 
-async function mountArtistAlbums(name: string) {
+async function mountArtistAlbums(name: string, tracks?: DisplayTrack[]) {
   const pinia = createPinia()
   const catalog = useCatalogStore(pinia)
-  catalog.tracks = [
+  catalog.tracks = tracks ?? [
     makeTrack('t1', 'Artist One', 'Album A'),
     makeTrack('t2', 'Artist One', 'Album B'),
     makeTrack('t3', 'Artist Two', 'Album A'),
@@ -65,6 +72,26 @@ describe('ArtistAlbumsView', () => {
     expect(wrapper.find('a[href="/artists/Artist%20One/albums/Album%20A"]').text()).toContain(
       'Album A',
     )
+  })
+
+  it('lists albums as a cover gallery like the global album list', async () => {
+    const wrapper = await mountArtistAlbums('Artist One', [
+      makeTrack('t1', 'Artist One', 'Album A'),
+      makeTrack('t2', 'Artist One', 'Album A', { displayCover: 'https://example.com/a.jpg' }),
+      makeTrack('t3', 'Artist One', 'Album B'),
+    ])
+    await flushPromises()
+
+    expect(wrapper.find('.album-gallery').exists()).toBe(true)
+    expect(wrapper.findAll('.album-tile')).toHaveLength(2)
+
+    const covers = wrapper.findAllComponents(CoverImg)
+    expect(covers).toHaveLength(1)
+    expect(covers[0]!.props('src')).toBe('https://example.com/a.jpg')
+
+    const albumB = wrapper.find('a[href="/artists/Artist%20One/albums/Album%20B"]')
+    expect(albumB.findComponent(CoverImg).exists()).toBe(false)
+    expect(albumB.find('.album-tile__fallback').exists()).toBe(true)
   })
 
   it('shows not-found when the artist is missing', async () => {

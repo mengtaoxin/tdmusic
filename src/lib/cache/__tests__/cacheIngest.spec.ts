@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getCachedFile, isTrackCached, resetCacheDbForTests } from '../cacheStore'
 import { isTrackDownloading, resetCacheDownloadStateForTests } from '../cacheDownloadState'
+import { resetDownloadLimiterForTests } from '../downloadLimiter'
 import { ensureTrackCached } from '../cacheIngest'
 
 function stubFetchBlob(body: string) {
@@ -17,6 +18,7 @@ describe('ensureTrackCached', () => {
   beforeEach(async () => {
     await resetCacheDbForTests()
     resetCacheDownloadStateForTests()
+    resetDownloadLimiterForTests()
     vi.restoreAllMocks()
   })
 
@@ -140,5 +142,55 @@ describe('ensureTrackCached', () => {
 
     await expect(ensureTrackCached(sourceUrl, 'boom')).rejects.toThrow(/downloadFailed/)
     expect(isTrackDownloading(track)).toBe(false)
+  })
+
+  it('downloads at most three tracks at once', async () => {
+    const started: string[] = []
+    const releases = new Map<string, () => void>()
+    let inFlight = 0
+    let maxInFlight = 0
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(async (url: string) => {
+        started.push(url)
+        inFlight += 1
+        maxInFlight = Math.max(maxInFlight, inFlight)
+        await new Promise<void>((resolve) => {
+          releases.set(url, resolve)
+        })
+        inFlight -= 1
+        return {
+          ok: true,
+          headers: new Headers({ 'Content-Type': 'audio/mpeg' }),
+          body: null,
+          blob: async () => new Blob(['bytes'], { type: 'audio/mpeg' }),
+        }
+      }),
+    )
+
+    const urls = [
+      'https://example.com/1.mp3',
+      'https://example.com/2.mp3',
+      'https://example.com/3.mp3',
+      'https://example.com/4.mp3',
+    ]
+    const jobs = urls.map((url, index) => ensureTrackCached(url, String(index)))
+
+    await vi.waitFor(() => {
+      expect(started).toHaveLength(3)
+    })
+    expect(maxInFlight).toBe(3)
+
+    releases.get(urls[0]!)!()
+    await vi.waitFor(() => {
+      expect(started).toHaveLength(4)
+    })
+
+    for (const url of urls.slice(1)) {
+      releases.get(url)!()
+    }
+    await Promise.all(jobs)
+    expect(maxInFlight).toBe(3)
   })
 })

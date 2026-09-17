@@ -8,6 +8,7 @@ import {
 } from './cacheStore'
 import { ensureQuota } from './cacheEviction'
 import { reportCacheDownload, clearCacheDownloadState } from './cacheDownloadState'
+import { withAudioDownloadSlot } from './downloadLimiter'
 import { isPlayablePath } from '../paths'
 
 export type CacheProgress = {
@@ -128,9 +129,11 @@ export async function ensureTrackCached(
     return
   }
 
-  const job = downloadAndStore(sourceUrl, id, onProgress).finally(() => {
-    ensureInFlight.delete(sourceUrl)
-  })
+  const job = withAudioDownloadSlot(() => downloadAndStore(sourceUrl, id, onProgress)).finally(
+    () => {
+      ensureInFlight.delete(sourceUrl)
+    },
+  )
   ensureInFlight.set(sourceUrl, job)
   await job
 }

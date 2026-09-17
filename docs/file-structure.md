@@ -66,7 +66,7 @@ Repository layout for tdmusic. Library versions: [tech-stack.md](tech-stack.md).
 - Vue imports use `@/`.
 - Route-level pages → `src/views/`. Shared UI → `src/components/`. Vue composables (`use*`) → `src/composables/`.
 - Framework-agnostic helpers → `src/lib/`, grouped as `cache/`, `catalog/`, `playback/`, or `routes/` when they belong to those domains. Small shared utilities may stay at `src/lib/` root.
-- Cache internals (`cacheStore`, `cacheIngest`, `cacheEviction`, `trackMetadata`) stay inside `src/lib/cache/`; app code imports `musicCache`.
+- Cache internals (`cacheStore`, `cacheIngest`, `cacheEviction`, `trackMetadata`, `downloadLimiter`) stay inside `src/lib/cache/`; app code imports `musicCache`.
 - Catalog load+hydrate orchestration (`catalogBootstrap`) lives in `src/lib/catalog/`. It uses Pinia but is not a store.
 - Node helpers used only by `scripts/` or Playwright → `scripts/lib/`. Do not put them under `src/`.
 - Locale strings → `src/locales/`.
