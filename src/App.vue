@@ -14,7 +14,7 @@ onMounted(async () => {
 <template>
   <v-app class="tdmusic-app">
     <AppHeader />
-    <v-main>
+    <v-main scrollable>
       <router-view />
     </v-main>
     <NowPlayingFooter />
@@ -23,11 +23,15 @@ onMounted(async () => {
 </template>
 
 <style>
+html,
+body,
+#app {
+  height: 100%;
+  overflow: hidden;
+}
+
 html {
   color-scheme: dark;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(var(--v-theme-on-background), 0.28) transparent;
 }
 
 * {
@@ -54,14 +58,29 @@ html {
 }
 
 .tdmusic-app {
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
   background:
     radial-gradient(ellipse at top left, rgba(var(--v-theme-primary), 0.18), transparent 50%),
     radial-gradient(ellipse at bottom right, rgba(var(--v-theme-secondary), 0.08), transparent 45%),
     rgb(var(--v-theme-background));
 }
 
+.tdmusic-app .v-application__wrap {
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
 .tdmusic-app .v-main {
   padding-bottom: var(--v-footer-clearance);
+}
+
+.tdmusic-app .v-main__scroller {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--v-theme-on-background), 0.28) transparent;
 }
 
 .page {

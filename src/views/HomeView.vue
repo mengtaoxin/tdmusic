@@ -28,7 +28,7 @@ const { t } = useI18n()
 
 <style scoped>
 .page-home {
-  min-height: calc(100vh - var(--v-home-viewport-offset));
+  min-height: 100%;
   display: grid;
   place-items: center;
 }

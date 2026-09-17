@@ -70,8 +70,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  height: calc(100dvh - var(--v-app-bar-height) - var(--v-footer-clearance));
-  max-height: calc(100dvh - var(--v-app-bar-height) - var(--v-footer-clearance));
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
 }
 

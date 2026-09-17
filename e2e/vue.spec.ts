@@ -48,12 +48,19 @@ test('language menu opens on the first click after navigating', async ({ page })
   await expect(page.getByTestId('nav-locale-menu').getByTestId('locale-option-zh')).toBeVisible()
 })
 
-test('reserves scrollbar gutter on the right by default', async ({ page }) => {
+test('locks document scroll and reserves gutter on the main scroller', async ({ page }) => {
   await page.goto('/')
-  const gutter = await page.evaluate(
-    () => getComputedStyle(document.documentElement).scrollbarGutter,
-  )
-  expect(gutter).toContain('stable')
+  const metrics = await page.evaluate(() => {
+    const scroller = document.querySelector('.v-main__scroller')
+    return {
+      htmlOverflow: getComputedStyle(document.documentElement).overflow,
+      bodyOverflow: getComputedStyle(document.body).overflow,
+      gutter: scroller ? getComputedStyle(scroller).scrollbarGutter : null,
+    }
+  })
+  expect(metrics.htmlOverflow).toContain('hidden')
+  expect(metrics.bodyOverflow).toContain('hidden')
+  expect(metrics.gutter).toContain('stable')
 })
 
 test('settings links to config guides', async ({ page }) => {

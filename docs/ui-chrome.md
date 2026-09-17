@@ -19,3 +19,10 @@ Top-bar layout, menus, and related visual behavior. Domain contracts (catalog, c
 - Hamburger opens a temporary left drawer with the same `navItems` (including **More** and **Language** groups). Navigating or choosing a locale closes the drawer.
 - Every nav route and locale option shows a prepend MDI icon (drawer and desktop nav). Locale options use `mdi-translate`.
 - Brand title (`tdmusic` + icon) does not shrink under desktop nav; the title stays fully visible.
+
+## Document scroll (mobile browser chrome)
+
+- `html` / `body` / `#app` are height-locked with `overflow: hidden` so the **document** does not scroll.
+- Page scroll lives in `v-main` (`scrollable` → `.v-main__scroller`) or in list hosts that use their own virtual scrollers. Scrollbar gutter styling applies to `.v-main__scroller`.
+- Locked list shells (Music / Artists / Albums / artist albums) fill the main content box (`height: 100%`) rather than `calc(100dvh − …)`.
+- This reduces mobile browser address/tool bar show/hide on swipe. It does **not** force browser chrome to stay permanently expanded or collapsed — that remains browser-controlled.

@@ -61,7 +61,7 @@ describe('App', () => {
     expect(wrapper.text()).toContain('tdmusic')
   })
 
-  it('styles the document scrollbar to blend with the page theme', async () => {
+  it('locks document scroll so mobile browser chrome does not thrash', async () => {
     const router = createRouter({
       history: createMemoryHistory(),
       routes: [{ path: '/', name: 'home', component: HomeView }],
@@ -77,7 +77,32 @@ describe('App', () => {
       },
     })
 
-    const style = getComputedStyle(document.documentElement)
+    expect(getComputedStyle(document.documentElement).overflow).toContain('hidden')
+    expect(getComputedStyle(document.body).overflow).toContain('hidden')
+    expect(wrapper.find('.v-main--scrollable').exists()).toBe(true)
+    expect(wrapper.find('.v-main__scroller').exists()).toBe(true)
+
+    wrapper.unmount()
+  })
+
+  it('styles the main scroller scrollbar to blend with the page theme', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/', name: 'home', component: HomeView }],
+    })
+
+    router.push('/')
+    await router.isReady()
+
+    const wrapper = mount(App, {
+      attachTo: document.body,
+      global: {
+        plugins: [createPinia(), router, vuetify, createTestI18n()],
+      },
+    })
+
+    const scroller = wrapper.find('.v-main__scroller').element
+    const style = getComputedStyle(scroller)
     expect(style.scrollbarGutter).toContain('stable')
     expect(style.scrollbarColor).not.toBe('auto')
     expect(style.scrollbarColor.toLowerCase()).toMatch(/rgba?\(/)
