@@ -196,6 +196,8 @@ describe('AppHeader', () => {
       brand.element.contains(beta.element) &&
         brand.text().indexOf('tdmusic') < brand.text().indexOf('Beta'),
     ).toBe(true)
+    // One step smaller than the previous 0.625rem (10px) badge.
+    expect(getComputedStyle(beta.element).fontSize).toBe('8px')
 
     wrapper.unmount()
   })
