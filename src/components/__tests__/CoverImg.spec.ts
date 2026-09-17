@@ -99,11 +99,15 @@ describe('CoverImg', () => {
   })
 
   it('shows a downloading animation instead of the cover image', async () => {
-    const wrapper = mountCover({ eager: true, downloading: true, downloadPercent: 40 })
+    const wrapper = mountCover({ eager: true, downloading: true })
     await nextTick()
 
     expect(wrapper.find('[data-testid="cover-downloading"]').exists()).toBe(true)
     expect(wrapper.find(`img[src="${COVER}"]`).exists()).toBe(false)
+    expect(wrapper.find('.cover-img__aurora').exists()).toBe(false)
+    const spinner = wrapper.findComponent({ name: 'VProgressCircular' })
+    expect(spinner.exists()).toBe(true)
+    expect(spinner.props('indeterminate')).toBe(true)
     expect(wrapper.find('.cover-img').attributes('aria-busy')).toBe('true')
     expect(wrapper.find('.cover-img').attributes('aria-label')).toBe('Downloading')
 

@@ -27,7 +27,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 const player = usePlayerStore()
-const { downloading, percent } = useTrackDownload(() => props.track)
+const { downloading } = useTrackDownload(() => props.track)
 const coverBusy = computed(() => downloading.value && player.currentId === props.track.id)
 </script>
 
@@ -39,7 +39,6 @@ const coverBusy = computed(() => downloading.value && player.currentId === props
           v-if="track.displayCover || coverBusy"
           :src="track.displayCover"
           :downloading="coverBusy"
-          :download-percent="coverBusy ? percent : null"
         />
         <v-icon v-else icon="mdi-music" />
       </v-avatar>

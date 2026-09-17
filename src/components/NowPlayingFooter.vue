@@ -18,7 +18,7 @@ const current = computed(() =>
   player.currentId ? catalog.trackById.get(player.currentId) : undefined,
 )
 
-const { downloading, percent } = useTrackDownload(current)
+const { downloading } = useTrackDownload(current)
 
 const visible = computed(() => Boolean(current.value))
 
@@ -67,7 +67,6 @@ function onProgressClick(event: MouseEvent) {
           v-if="current?.displayCover || downloading"
           :src="current?.displayCover"
           :downloading="downloading"
-          :download-percent="percent"
         />
         <v-icon v-else icon="mdi-music-note" />
       </v-avatar>

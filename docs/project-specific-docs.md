@@ -55,7 +55,7 @@
 
 - Extracted covers are stored as Blobs in IndexedDB (`files` / `__cover__`) and surfaced to the UI as `blob:` object URLs.
 - All cover art goes through `CoverImg`, which loads the image only after the element enters the viewport (`IntersectionObserver`). Pass `eager` only when the image must load immediately.
-- While the **current** track’s audio is downloading into IndexedDB, `CoverImg` replaces the still cover (or the music-note placeholder) with an animated placeholder. When ingest finishes (`meta.status` `ready`), the real cover is shown (config URL or extracted `__cover__` blob). Prefetch downloads do not animate other rows.
+- While the **current** track’s audio is downloading into IndexedDB, `CoverImg` replaces the still cover (or the music-note placeholder) with a simple circular loading indicator. When ingest finishes (`meta.status` `ready`), the real cover is shown (config URL or extracted `__cover__` blob). Prefetch downloads do not animate other rows.
 - Music List also virtualizes rows (`v-virtual-scroll`), so off-screen track rows (and their covers) are not mounted.
 
 ## Playback

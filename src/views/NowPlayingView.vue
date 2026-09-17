@@ -19,7 +19,7 @@ const current = computed(() =>
   player.currentId ? catalog.trackById.get(player.currentId) : undefined,
 )
 
-const { downloading, percent } = useTrackDownload(current)
+const { downloading } = useTrackDownload(current)
 
 const TRACK_ROW_HEIGHT = 64
 
@@ -91,7 +91,6 @@ function clearUpcoming() {
           :src="current.displayCover"
           :aspect-ratio="1"
           :downloading="downloading"
-          :download-percent="percent"
           class="cover-art"
         />
         <div v-else class="cover-fallback">
