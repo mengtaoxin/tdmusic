@@ -2,14 +2,12 @@
 
 ## Rules
 
-- Install, format, dev, build, and tests in [docs/commands.md](docs/commands.md).
-- Behavior changes follow the `test-driven-development` skill.
-- Place new files per [docs/file-structure.md](docs/file-structure.md).
-- i18n: update both `src/locales/en.ts` and `src/locales/zh.ts`.
+- Changing code (structure, TDD, tests, format/check, i18n): [docs/change-code-steps.md](docs/change-code-steps.md).
 - Views that need the catalog rely on root `beforeLoad` / `ensureCatalogLoaded` — do not fetch `configs.json` from views.
 
 ## Read when
 
+- Changing code → [docs/change-code-steps.md](docs/change-code-steps.md)
 - Running scripts or a test layer → [docs/commands.md](docs/commands.md)
 - Test placement and naming → [docs/testing.md](docs/testing.md)
 - Adding or moving files → [docs/file-structure.md](docs/file-structure.md)
