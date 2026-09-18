@@ -1,5 +1,4 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { create } from 'zustand'
 
 import { getItem, removeItem, setItem } from '@/lib/clientStorage'
 import {
@@ -20,35 +19,55 @@ import {
   type RepeatMode,
 } from '@/lib/playback/playerLogic'
 
-export const usePlayerStore = defineStore('player', () => {
-  const queue = ref<string[]>([])
-  /** Linear order from playFrom; used to restore when shuffle turns off. */
-  const originalQueue = ref<string[]>([])
-  const currentId = ref<string | null>(null)
-  /** Playing occurrence in `queue` (supports duplicate ids). */
-  const currentIndex = ref(-1)
-  const currentTime = ref(0)
-  const duration = ref(0)
-  const playing = ref(false)
-  const repeatMode = ref<RepeatMode>('off')
-  const shuffle = ref(false)
-  /** Signal for App audio element: bump to load/seek current track. */
-  const loadToken = ref(0)
-  const seekTo = ref<number | null>(null)
-  const pendingPlay = ref(false)
+type PlayerState = {
+  queue: string[]
+  originalQueue: string[]
+  currentId: string | null
+  currentIndex: number
+  currentTime: number
+  duration: number
+  playing: boolean
+  repeatMode: RepeatMode
+  shuffle: boolean
+  loadToken: number
+  seekTo: number | null
+  pendingPlay: boolean
+  playFrom: (startIndex: number, sourceIds: string[]) => void
+  play: () => void
+  pause: () => void
+  togglePlay: () => void
+  setCurrentTime: (time: number) => void
+  seek: (time: number) => void
+  next: () => void
+  skip: () => void
+  prev: () => void
+  toggleRepeat: () => void
+  toggleShuffle: () => void
+  playNext: (id: string) => void
+  addToQueue: (id: string) => void
+  removeAt: (index: number) => void
+  clearUpcoming: () => void
+  clearNowPlaying: () => void
+  onEnded: () => void
+  hydrate: (knownIds: Set<string>) => boolean
+  flushPersist: () => void
+  goToIndex: (index: number, autoPlay: boolean) => void
+}
 
+export const usePlayerStore = create<PlayerState>((set, get) => {
   let cancelFill: (() => void) | null = null
   let persistTimer: ReturnType<typeof setTimeout> | null = null
 
   function persistNow() {
+    const s = get()
     const payload = serializePlayerState({
-      queue: queue.value,
-      originalQueue: originalQueue.value,
-      currentId: currentId.value,
-      currentIndex: currentIndex.value,
-      currentTime: currentTime.value,
-      repeatMode: repeatMode.value,
-      shuffle: shuffle.value,
+      queue: s.queue,
+      originalQueue: s.originalQueue,
+      currentId: s.currentId,
+      currentIndex: s.currentIndex,
+      currentTime: s.currentTime,
+      repeatMode: s.repeatMode,
+      shuffle: s.shuffle,
     })
     setItem(PLAYER_STORAGE_KEY, payload)
   }
@@ -61,10 +80,6 @@ export const usePlayerStore = defineStore('player', () => {
     }, 400)
   }
 
-  function persistTimeThrottled() {
-    schedulePersist()
-  }
-
   function flushPersist() {
     if (persistTimer) {
       clearTimeout(persistTimer)
@@ -74,333 +89,340 @@ export const usePlayerStore = defineStore('player', () => {
   }
 
   function clearPlayback() {
-    currentId.value = null
-    currentIndex.value = -1
-    currentTime.value = 0
-  }
-
-  function hydrate(knownIds: Set<string>) {
-    const persisted = parsePlayerState(getItem(PLAYER_STORAGE_KEY))
-    if (!persisted) return false
-    const next = hydratePlayerState(persisted, knownIds)
-    if (!next) {
-      removeItem(PLAYER_STORAGE_KEY)
-      queue.value = []
-      originalQueue.value = []
-      clearPlayback()
-      return false
-    }
-    queue.value = next.queue
-    originalQueue.value = next.originalQueue
-    currentId.value = next.currentId
-    currentIndex.value = next.currentIndex
-    currentTime.value = next.currentTime
-    repeatMode.value = next.repeatMode
-    shuffle.value = next.shuffle
-    playing.value = false
-    pendingPlay.value = false
-    seekTo.value = next.currentTime
-    loadToken.value += 1
-    return true
-  }
-
-  function playFrom(startIndex: number, sourceIds: string[]) {
-    cancelFill?.()
-    cancelFill = null
-
-    if (startIndex < 0 || startIndex >= sourceIds.length) return
-
-    queue.value = []
-    originalQueue.value = []
-    currentTime.value = 0
-    seekTo.value = 0
-
-    const job = buildQueueFrom(sourceIds, startIndex, {
-      onHead: (headId) => {
-        currentId.value = headId
-        currentIndex.value = startIndex
-        pendingPlay.value = true
-        playing.value = true
-        loadToken.value += 1
-        schedulePersist()
-      },
-      onChunk: (chunk) => {
-        originalQueue.value = originalQueue.value.concat(chunk)
-        // Mirror original while filling; shuffle applies onDone when enabled.
-        queue.value = [...originalQueue.value]
-        schedulePersist()
-      },
-      onDone: () => {
-        cancelFill = null
-        if (shuffle.value) {
-          queue.value = shuffleFromCurrent(originalQueue.value, currentIndex.value)
-          currentIndex.value = 0
-        }
-        flushPersist()
-      },
-    })
-    cancelFill = job.cancel
-  }
-
-  function play() {
-    if (!currentId.value) return
-    pendingPlay.value = true
-    playing.value = true
-  }
-
-  function pause() {
-    pendingPlay.value = false
-    playing.value = false
-    flushPersist()
-  }
-
-  function togglePlay() {
-    if (playing.value) pause()
-    else play()
-  }
-
-  function setCurrentTime(time: number) {
-    currentTime.value = time
-    persistTimeThrottled()
-  }
-
-  function seek(time: number) {
-    currentTime.value = time
-    seekTo.value = time
-    flushPersist()
+    set({ currentId: null, currentIndex: -1, currentTime: 0 })
   }
 
   function goToIndex(index: number, autoPlay: boolean) {
-    if (index < 0 || index >= queue.value.length) return
-    currentIndex.value = index
-    currentId.value = queue.value[index]!
-    currentTime.value = 0
-    seekTo.value = 0
-    pendingPlay.value = autoPlay
-    playing.value = autoPlay
-    loadToken.value += 1
+    const { queue } = get()
+    if (index < 0 || index >= queue.length) return
+    set({
+      currentIndex: index,
+      currentId: queue[index]!,
+      currentTime: 0,
+      seekTo: 0,
+      pendingPlay: autoPlay,
+      playing: autoPlay,
+      loadToken: get().loadToken + 1,
+    })
     flushPersist()
   }
 
-  /** Manual next / failure skip: advance past current; repeat-one still leaves the track. */
+  function pause() {
+    set({ pendingPlay: false, playing: false })
+    flushPersist()
+  }
+
+  function play() {
+    if (!get().currentId) return
+    set({ pendingPlay: true, playing: true })
+  }
+
   function next() {
-    const index = currentIndex.value
-    const modeForAdvance = repeatMode.value === 'one' ? 'off' : repeatMode.value
-    const nextIdx = nextIndex(index, queue.value.length, {
+    const { currentIndex, queue, repeatMode, shuffle } = get()
+    const modeForAdvance = repeatMode === 'one' ? 'off' : repeatMode
+    const nextIdx = nextIndex(currentIndex, queue.length, {
       repeatMode: modeForAdvance,
-      shuffle: shuffle.value,
+      shuffle,
     })
-    if (nextIdx == null || nextIdx === index) {
+    if (nextIdx == null || nextIdx === currentIndex) {
       pause()
       return
     }
     goToIndex(nextIdx, true)
   }
 
-  /** Advance past the current track (e.g. download failure). Same as next. */
-  function skip() {
-    next()
-  }
-
-  function prev() {
-    if (currentTime.value > 3) {
-      seek(0)
-      return
-    }
-    const index = currentIndex.value
-    const modeForAdvance = repeatMode.value === 'one' ? 'off' : repeatMode.value
-    const prevIdx = prevIndex(index, queue.value.length, {
-      repeatMode: modeForAdvance,
-    })
-    if (prevIdx == null) {
-      seek(0)
-      return
-    }
-    goToIndex(prevIdx, true)
-  }
-
-  function toggleRepeat() {
-    const order: RepeatMode[] = ['off', 'all', 'one']
-    const i = order.indexOf(repeatMode.value)
-    repeatMode.value = order[(i + 1) % order.length]!
-    flushPersist()
-  }
-
-  function toggleShuffle() {
-    shuffle.value = !shuffle.value
-    if (shuffle.value) {
-      if (originalQueue.value.length === 0) {
-        originalQueue.value = [...queue.value]
-      }
-      queue.value = shuffleUpcoming(queue.value, currentIndex.value)
-    } else if (originalQueue.value.length > 0) {
-      const id = currentId.value
-      const playingIndex = currentIndex.value
-      const fromQueue = queue.value
-      queue.value = [...originalQueue.value]
-      if (id) {
-        const restored = mapOccurrenceIndex(fromQueue, playingIndex, originalQueue.value)
-        if (restored >= 0) {
-          currentIndex.value = restored
-          currentId.value = id
-        } else {
-          const fallback = originalQueue.value.indexOf(id)
-          if (fallback >= 0) {
-            currentIndex.value = fallback
-            currentId.value = id
-          }
-        }
-      }
-    }
-    flushPersist()
-  }
-
-  function playNext(id: string) {
-    if (!id) return
-    if (queue.value.length === 0 || !currentId.value) {
-      playFrom(0, [id])
-      return
-    }
-    const idx = currentIndex.value
-    const origIdx = mapOccurrenceIndex(queue.value, idx, originalQueue.value)
-    queue.value = insertAfterCurrent(queue.value, idx, id)
-    originalQueue.value = insertAfterCurrent(
-      originalQueue.value,
-      origIdx >= 0 ? origIdx : originalQueue.value.length - 1,
-      id,
-    )
-    flushPersist()
-  }
-
-  function addToQueue(id: string) {
-    if (!id) return
-    if (queue.value.length === 0 || !currentId.value) {
-      playFrom(0, [id])
-      return
-    }
-    queue.value = appendToQueue(queue.value, id)
-    originalQueue.value = appendToQueue(originalQueue.value, id)
-    flushPersist()
-  }
-
-  function removeAt(index: number) {
-    if (index < 0 || index >= queue.value.length) return
-    const playingIndex = currentIndex.value
-    const removingCurrent = index === playingIndex
-    const origPos = mapOccurrenceIndex(queue.value, index, originalQueue.value)
-
-    if (removingCurrent) {
-      if (queue.value.length === 1) {
-        cancelFill?.()
-        cancelFill = null
-        queue.value = []
-        originalQueue.value = []
-        clearPlayback()
-        seekTo.value = 0
-        pause()
-        flushPersist()
-        return
-      }
-      const modeForAdvance = repeatMode.value === 'one' ? 'off' : repeatMode.value
-      const nextIdx = nextIndex(index, queue.value.length, {
-        repeatMode: modeForAdvance,
-        shuffle: shuffle.value,
-      })
-      // Prefer the track after current; if none, the previous one.
-      const targetIdx =
-        nextIdx != null && nextIdx !== index ? nextIdx : index > 0 ? index - 1 : null
-      if (targetIdx == null) {
-        pause()
-        return
-      }
-      const nextQueue = removeAtIndex(queue.value, index, index).queue
-      queue.value = nextQueue
-      if (origPos >= 0) {
-        originalQueue.value = removeAtIndex(originalQueue.value, origPos, origPos).queue
-      }
-      const newIdx = targetIdx > index ? targetIdx - 1 : targetIdx
-      goToIndex(newIdx, true)
-      return
-    }
-
-    const { queue: nextQueue } = removeAtIndex(queue.value, index, playingIndex)
-    queue.value = nextQueue
-    if (index < playingIndex) {
-      currentIndex.value = playingIndex - 1
-    }
-    if (origPos >= 0) {
-      originalQueue.value = removeAtIndex(originalQueue.value, origPos, origPos).queue
-    }
-    flushPersist()
-  }
-
-  function clearUpcomingTracks() {
-    const idx = currentIndex.value
-    if (idx < 0) return
-    const origIdx = mapOccurrenceIndex(queue.value, idx, originalQueue.value)
-    const kept = clearUpcoming(queue.value, idx)
-    queue.value = kept
-    if (origIdx >= 0) {
-      originalQueue.value = clearUpcoming(originalQueue.value, origIdx)
-    } else {
-      originalQueue.value = [...kept]
-    }
-    flushPersist()
-  }
-
-  /** Stop playback and empty the now-playing queue (in memory + localStorage). */
-  function clearNowPlaying() {
-    cancelFill?.()
-    cancelFill = null
-    queue.value = []
-    originalQueue.value = []
-    clearPlayback()
-    seekTo.value = 0
-    pause()
-    flushPersist()
-  }
-
-  function onEnded() {
-    if (repeatMode.value === 'one') {
-      seek(0)
-      play()
-      return
-    }
-    next()
-  }
-
   return {
-    queue,
-    originalQueue,
-    currentId,
-    currentTime,
-    duration,
-    playing,
-    repeatMode,
-    shuffle,
-    loadToken,
-    seekTo,
-    pendingPlay,
-    currentIndex,
-    playFrom,
+    queue: [],
+    originalQueue: [],
+    currentId: null,
+    currentIndex: -1,
+    currentTime: 0,
+    duration: 0,
+    playing: false,
+    repeatMode: 'off',
+    shuffle: false,
+    loadToken: 0,
+    seekTo: null,
+    pendingPlay: false,
+
+    flushPersist,
+
+    hydrate(knownIds: Set<string>) {
+      const persisted = parsePlayerState(getItem(PLAYER_STORAGE_KEY))
+      if (!persisted) return false
+      const next = hydratePlayerState(persisted, knownIds)
+      if (!next) {
+        removeItem(PLAYER_STORAGE_KEY)
+        set({ queue: [], originalQueue: [] })
+        clearPlayback()
+        return false
+      }
+      set({
+        queue: next.queue,
+        originalQueue: next.originalQueue,
+        currentId: next.currentId,
+        currentIndex: next.currentIndex,
+        currentTime: next.currentTime,
+        repeatMode: next.repeatMode,
+        shuffle: next.shuffle,
+        playing: false,
+        pendingPlay: false,
+        seekTo: next.currentTime,
+        loadToken: get().loadToken + 1,
+      })
+      return true
+    },
+
+    playFrom(startIndex: number, sourceIds: string[]) {
+      cancelFill?.()
+      cancelFill = null
+
+      if (startIndex < 0 || startIndex >= sourceIds.length) return
+
+      set({
+        queue: [],
+        originalQueue: [],
+        currentTime: 0,
+        seekTo: 0,
+      })
+
+      const job = buildQueueFrom(sourceIds, startIndex, {
+        onHead: (headId) => {
+          set({
+            currentId: headId,
+            currentIndex: startIndex,
+            pendingPlay: true,
+            playing: true,
+            loadToken: get().loadToken + 1,
+          })
+          schedulePersist()
+        },
+        onChunk: (chunk) => {
+          const originalQueue = get().originalQueue.concat(chunk)
+          set({
+            originalQueue,
+            queue: [...originalQueue],
+          })
+          schedulePersist()
+        },
+        onDone: () => {
+          cancelFill = null
+          if (get().shuffle) {
+            const shuffled = shuffleFromCurrent(get().originalQueue, get().currentIndex)
+            set({ queue: shuffled, currentIndex: 0 })
+          }
+          flushPersist()
+        },
+      })
+      cancelFill = job.cancel
+    },
+
     play,
     pause,
-    togglePlay,
-    setCurrentTime,
-    seek,
-    next,
-    skip,
-    prev,
-    toggleRepeat,
-    toggleShuffle,
-    playNext,
-    addToQueue,
-    removeAt,
-    clearUpcoming: clearUpcomingTracks,
-    clearNowPlaying,
-    onEnded,
-    hydrate,
-    flushPersist,
+
+    togglePlay() {
+      if (get().playing) pause()
+      else play()
+    },
+
+    setCurrentTime(time: number) {
+      set({ currentTime: time })
+      schedulePersist()
+    },
+
+    seek(time: number) {
+      set({ currentTime: time, seekTo: time })
+      flushPersist()
+    },
+
     goToIndex,
+    next,
+    skip() {
+      next()
+    },
+
+    prev() {
+      if (get().currentTime > 3) {
+        get().seek(0)
+        return
+      }
+      const { currentIndex, queue, repeatMode } = get()
+      const modeForAdvance = repeatMode === 'one' ? 'off' : repeatMode
+      const prevIdx = prevIndex(currentIndex, queue.length, {
+        repeatMode: modeForAdvance,
+      })
+      if (prevIdx == null) {
+        get().seek(0)
+        return
+      }
+      goToIndex(prevIdx, true)
+    },
+
+    toggleRepeat() {
+      const order: RepeatMode[] = ['off', 'all', 'one']
+      const i = order.indexOf(get().repeatMode)
+      set({ repeatMode: order[(i + 1) % order.length]! })
+      flushPersist()
+    },
+
+    toggleShuffle() {
+      const s = get()
+      const shuffle = !s.shuffle
+      if (shuffle) {
+        let originalQueue = s.originalQueue
+        if (originalQueue.length === 0) {
+          originalQueue = [...s.queue]
+        }
+        set({
+          shuffle: true,
+          originalQueue,
+          queue: shuffleUpcoming(s.queue, s.currentIndex),
+        })
+      } else if (s.originalQueue.length > 0) {
+        const id = s.currentId
+        const playingIndex = s.currentIndex
+        const fromQueue = s.queue
+        const queue = [...s.originalQueue]
+        let currentIndex = s.currentIndex
+        let currentId = s.currentId
+        if (id) {
+          const restored = mapOccurrenceIndex(fromQueue, playingIndex, s.originalQueue)
+          if (restored >= 0) {
+            currentIndex = restored
+            currentId = id
+          } else {
+            const fallback = s.originalQueue.indexOf(id)
+            if (fallback >= 0) {
+              currentIndex = fallback
+              currentId = id
+            }
+          }
+        }
+        set({ shuffle: false, queue, currentIndex, currentId })
+      } else {
+        set({ shuffle: false })
+      }
+      flushPersist()
+    },
+
+    playNext(id: string) {
+      if (!id) return
+      const s = get()
+      if (s.queue.length === 0 || !s.currentId) {
+        get().playFrom(0, [id])
+        return
+      }
+      const idx = s.currentIndex
+      const origIdx = mapOccurrenceIndex(s.queue, idx, s.originalQueue)
+      set({
+        queue: insertAfterCurrent(s.queue, idx, id),
+        originalQueue: insertAfterCurrent(
+          s.originalQueue,
+          origIdx >= 0 ? origIdx : s.originalQueue.length - 1,
+          id,
+        ),
+      })
+      flushPersist()
+    },
+
+    addToQueue(id: string) {
+      if (!id) return
+      const s = get()
+      if (s.queue.length === 0 || !s.currentId) {
+        get().playFrom(0, [id])
+        return
+      }
+      set({
+        queue: appendToQueue(s.queue, id),
+        originalQueue: appendToQueue(s.originalQueue, id),
+      })
+      flushPersist()
+    },
+
+    removeAt(index: number) {
+      const s = get()
+      if (index < 0 || index >= s.queue.length) return
+      const playingIndex = s.currentIndex
+      const removingCurrent = index === playingIndex
+      const origPos = mapOccurrenceIndex(s.queue, index, s.originalQueue)
+
+      if (removingCurrent) {
+        if (s.queue.length === 1) {
+          cancelFill?.()
+          cancelFill = null
+          set({ queue: [], originalQueue: [], seekTo: 0 })
+          clearPlayback()
+          pause()
+          flushPersist()
+          return
+        }
+        const modeForAdvance = s.repeatMode === 'one' ? 'off' : s.repeatMode
+        const nextIdx = nextIndex(index, s.queue.length, {
+          repeatMode: modeForAdvance,
+          shuffle: s.shuffle,
+        })
+        const targetIdx =
+          nextIdx != null && nextIdx !== index ? nextIdx : index > 0 ? index - 1 : null
+        if (targetIdx == null) {
+          pause()
+          return
+        }
+        const nextQueue = removeAtIndex(s.queue, index, index).queue
+        let originalQueue = s.originalQueue
+        if (origPos >= 0) {
+          originalQueue = removeAtIndex(s.originalQueue, origPos, origPos).queue
+        }
+        set({ queue: nextQueue, originalQueue })
+        const newIdx = targetIdx > index ? targetIdx - 1 : targetIdx
+        goToIndex(newIdx, true)
+        return
+      }
+
+      const { queue: nextQueue } = removeAtIndex(s.queue, index, playingIndex)
+      const patch: Partial<PlayerState> = { queue: nextQueue }
+      if (index < playingIndex) {
+        patch.currentIndex = playingIndex - 1
+      }
+      if (origPos >= 0) {
+        patch.originalQueue = removeAtIndex(s.originalQueue, origPos, origPos).queue
+      }
+      set(patch)
+      flushPersist()
+    },
+
+    clearUpcoming() {
+      const s = get()
+      const idx = s.currentIndex
+      if (idx < 0) return
+      const origIdx = mapOccurrenceIndex(s.queue, idx, s.originalQueue)
+      const kept = clearUpcoming(s.queue, idx)
+      if (origIdx >= 0) {
+        set({
+          queue: kept,
+          originalQueue: clearUpcoming(s.originalQueue, origIdx),
+        })
+      } else {
+        set({ queue: kept, originalQueue: [...kept] })
+      }
+      flushPersist()
+    },
+
+    clearNowPlaying() {
+      cancelFill?.()
+      cancelFill = null
+      set({ queue: [], originalQueue: [], seekTo: 0 })
+      clearPlayback()
+      pause()
+      flushPersist()
+    },
+
+    onEnded() {
+      if (get().repeatMode === 'one') {
+        get().seek(0)
+        play()
+        return
+      }
+      next()
+    },
   }
 })

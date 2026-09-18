@@ -39,9 +39,9 @@ npx playwright install chromium firefox webkit
 
 ```sh
 npm run test:unit
-npm run test:unit -- src/__tests__/App.spec.ts
+npm run test:unit -- src/__tests__/App.spec.tsx
 npm run test:e2e -- --project chromium
-npm run test:e2e -- --project chromium -- e2e/vue.spec.ts
+npm run test:e2e -- --project chromium -- e2e/app.spec.ts
 ```
 
 ## 曲库配置
@@ -54,7 +54,7 @@ npm run test:e2e -- --project chromium -- e2e/vue.spec.ts
 
 ## 技术栈
 
-Vue 3 · Vite · TypeScript · Pinia · Vue Router · vue-i18n · Vuetify 4 · Vitest · Playwright
+React · Vite · TypeScript · Zustand · TanStack Router · react-i18next · MUI · Vitest · Playwright
 
 ## 文档
 

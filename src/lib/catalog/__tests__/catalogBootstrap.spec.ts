@@ -34,10 +34,10 @@ describe('catalogBootstrap', () => {
   })
 
   it('loadCatalogAndHydratePlayer loads catalog then hydrates player', async () => {
-    const catalog = useCatalogStore()
-    const player = usePlayerStore()
+    const catalog = useCatalogStore.getState()
+    const player = usePlayerStore.getState()
     const load = vi.spyOn(catalog, 'load').mockImplementation(async () => {
-      catalog.tracks = sampleTracks()
+      useCatalogStore.getState().setTracks(sampleTracks())
     })
     const hydrate = vi.spyOn(player, 'hydrate').mockReturnValue(true)
 
@@ -48,9 +48,9 @@ describe('catalogBootstrap', () => {
   })
 
   it('ensureCatalogLoaded is a no-op when tracks are already present', async () => {
-    const catalog = useCatalogStore()
-    const player = usePlayerStore()
-    catalog.tracks = sampleTracks()
+    useCatalogStore.getState().setTracks(sampleTracks())
+    const catalog = useCatalogStore.getState()
+    const player = usePlayerStore.getState()
     const load = vi.spyOn(catalog, 'load')
     const hydrate = vi.spyOn(player, 'hydrate')
 
@@ -61,15 +61,15 @@ describe('catalogBootstrap', () => {
   })
 
   it('ensureCatalogLoaded joins an in-flight loadCatalogAndHydratePlayer', async () => {
-    const catalog = useCatalogStore()
-    const player = usePlayerStore()
+    const catalog = useCatalogStore.getState()
+    const player = usePlayerStore.getState()
     let finishLoad!: () => void
     const loadGate = new Promise<void>((resolve) => {
       finishLoad = resolve
     })
     const load = vi.spyOn(catalog, 'load').mockImplementation(async () => {
       await loadGate
-      catalog.tracks = sampleTracks()
+      useCatalogStore.getState().setTracks(sampleTracks())
     })
     const hydrate = vi.spyOn(player, 'hydrate').mockReturnValue(true)
 
@@ -93,8 +93,7 @@ describe('catalogBootstrap', () => {
       updatedAt: Date.now(),
     })
 
-    const catalog = useCatalogStore()
-    catalog.tracks = [
+    useCatalogStore.getState().setTracks([
       {
         id: 't1',
         path: sourceUrl,
@@ -104,14 +103,16 @@ describe('catalogBootstrap', () => {
         displayAlbum: 'Extracted Album',
         displayCover: 'blob:http://tdmusic.test/old-cover',
       },
-    ] as DisplayTrack[]
+    ] as DisplayTrack[])
 
+    const catalog = useCatalogStore.getState()
     const schedule = vi.spyOn(catalog, 'scheduleEnrichment').mockImplementation(() => {})
 
     await clearMusicCachesAndRefresh()
 
     expect(await getExtractedTrackMeta(sourceUrl)).toBeNull()
-    expect(catalog.tracks[0]).toMatchObject({
+    const track = useCatalogStore.getState().snapshot.tracks[0]
+    expect(track).toMatchObject({
       id: 't1',
       path: sourceUrl,
       title: 'Config',
@@ -119,24 +120,24 @@ describe('catalogBootstrap', () => {
       displayArtist: 'Unknown artist',
       displayAlbum: 'Unknown album',
     })
-    expect(catalog.tracks[0]!.displayCover).toBeUndefined()
+    expect(track!.displayCover).toBeUndefined()
     expect(schedule).toHaveBeenCalledOnce()
   })
 
   it('clearMusicCachesAndRefresh also clears now playing and the play queue', async () => {
-    const catalog = useCatalogStore()
-    catalog.tracks = sampleTracks()
-    vi.spyOn(catalog, 'scheduleEnrichment').mockImplementation(() => {})
+    useCatalogStore.getState().setTracks(sampleTracks())
+    vi.spyOn(useCatalogStore.getState(), 'scheduleEnrichment').mockImplementation(() => {})
 
-    const player = usePlayerStore()
+    const player = usePlayerStore.getState()
     player.playFrom(0, ['a'])
-    player.playing = true
+    usePlayerStore.setState({ playing: true })
 
     await clearMusicCachesAndRefresh()
 
-    expect(player.queue).toEqual([])
-    expect(player.originalQueue).toEqual([])
-    expect(player.currentId).toBeNull()
-    expect(player.playing).toBe(false)
+    const after = usePlayerStore.getState()
+    expect(after.queue).toEqual([])
+    expect(after.originalQueue).toEqual([])
+    expect(after.currentId).toBeNull()
+    expect(after.playing).toBe(false)
   })
 })

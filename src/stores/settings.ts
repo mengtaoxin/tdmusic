@@ -1,5 +1,4 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { create } from 'zustand'
 
 import {
   readStoredConfigUrl,
@@ -7,17 +6,21 @@ import {
   resolveConfigUrl,
 } from '@/lib/catalog/configUrl'
 
-export const useSettingsStore = defineStore('settings', () => {
-  const configUrl = ref(readStoredConfigUrl())
+type SettingsState = {
+  configUrl: string
+  saveConfigUrl: (value: string) => void
+  resolvedConfigUrl: () => string
+}
 
-  function saveConfigUrl(value: string) {
+export const useSettingsStore = create<SettingsState>((set) => ({
+  configUrl: readStoredConfigUrl(),
+
+  saveConfigUrl(value: string) {
     writeStoredConfigUrl(value)
-    configUrl.value = readStoredConfigUrl()
-  }
+    set({ configUrl: readStoredConfigUrl() })
+  },
 
-  function resolvedConfigUrl() {
+  resolvedConfigUrl() {
     return resolveConfigUrl()
-  }
-
-  return { configUrl, saveConfigUrl, resolvedConfigUrl }
-})
+  },
+}))

@@ -10,10 +10,9 @@ export async function loadCatalogAndHydratePlayer(): Promise<void> {
   if (loadInFlight) return loadInFlight
 
   loadInFlight = (async () => {
-    const catalog = useCatalogStore()
-    const player = usePlayerStore()
-    await catalog.load()
-    player.hydrate(new Set(catalog.tracks.map((track) => track.id)))
+    await useCatalogStore.getState().load()
+    const ids = new Set(useCatalogStore.getState().snapshot.tracks.map((track) => track.id))
+    usePlayerStore.getState().hydrate(ids)
   })().finally(() => {
     loadInFlight = null
   })
@@ -26,8 +25,7 @@ export async function loadCatalogAndHydratePlayer(): Promise<void> {
  * exist; joins an in-flight bootstrap/load instead of starting a second fetch.
  */
 export async function ensureCatalogLoaded(): Promise<void> {
-  const catalog = useCatalogStore()
-  if (catalog.tracks.length) return
+  if (useCatalogStore.getState().snapshot.tracks.length) return
   await loadCatalogAndHydratePlayer()
 }
 
@@ -37,8 +35,8 @@ export async function ensureCatalogLoaded(): Promise<void> {
  */
 export async function clearMusicCachesAndRefresh(): Promise<void> {
   await clearAllMusicCaches()
-  const catalog = useCatalogStore()
+  const catalog = useCatalogStore.getState()
   catalog.resetDisplayFromConfig()
   catalog.scheduleEnrichment()
-  usePlayerStore().clearNowPlaying()
+  usePlayerStore.getState().clearNowPlaying()
 }

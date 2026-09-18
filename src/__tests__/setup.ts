@@ -1,7 +1,15 @@
 import 'fake-indexeddb/auto'
+import '@testing-library/jest-dom/vitest'
+import { cleanup } from '@testing-library/react'
 import { Blob as NodeBlob, File as NodeFile } from 'node:buffer'
-import { beforeAll, beforeEach } from 'vitest'
-import { createPinia, setActivePinia } from 'pinia'
+import { afterEach, beforeAll, beforeEach } from 'vitest'
+
+import '@/i18n'
+import { useCatalogStore } from '@/stores/catalog'
+import { usePlayerStore } from '@/stores/player'
+import { useSettingsStore } from '@/stores/settings'
+import { buildCatalogSnapshot } from '@/lib/catalog/catalogIndex'
+import { readStoredConfigUrl } from '@/lib/catalog/configUrl'
 
 // jsdom Blob is not structured-cloneable into fake-indexeddb reliably.
 globalThis.Blob = NodeBlob as unknown as typeof globalThis.Blob
@@ -15,8 +23,35 @@ URL.createObjectURL = () => {
 }
 URL.revokeObjectURL = () => {}
 
+afterEach(() => {
+  cleanup()
+})
+
 beforeEach(() => {
-  setActivePinia(createPinia())
+  useCatalogStore.setState({
+    snapshot: buildCatalogSnapshot([]),
+    playlists: [],
+    errors: [],
+    loading: false,
+    loadError: null,
+  })
+  usePlayerStore.setState({
+    queue: [],
+    originalQueue: [],
+    currentId: null,
+    currentIndex: -1,
+    currentTime: 0,
+    duration: 0,
+    playing: false,
+    repeatMode: 'off',
+    shuffle: false,
+    loadToken: 0,
+    seekTo: null,
+    pendingPlay: false,
+  })
+  useSettingsStore.setState({
+    configUrl: readStoredConfigUrl(),
+  })
 })
 
 beforeAll(() => {
@@ -26,23 +61,6 @@ beforeAll(() => {
     disconnect() {}
   }
 
-  // Vuetify overlays read visualViewport in jsdom
-  Object.defineProperty(window, 'visualViewport', {
-    writable: true,
-    value: {
-      width: 1024,
-      height: 768,
-      offsetLeft: 0,
-      offsetTop: 0,
-      pageLeft: 0,
-      pageTop: 0,
-      scale: 1,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-    },
-  })
-
-  // Vuetify layout checks matchMedia in jsdom
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
     value: (query: string) => ({

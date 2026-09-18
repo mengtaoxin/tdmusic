@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Tests
 
-- Name specs `*.spec.ts`.
-- Put a new unit spec next to the module (`src/{lib,composables,views,components,stores}/**/__tests__/`).
-- `src/__tests__/` is only Vitest setup and app-level specs — do not add module tests there.
+- Name specs `*.spec.ts` or `*.spec.tsx`.
+- Put a new unit spec next to the module (`src/{lib,hooks,components,stores,routes}/**/__tests__/`).
+- `src/__tests__/` is only Vitest setup, render helpers, and app-level specs — do not add module tests there.
 - E2E specs live in `e2e/`.

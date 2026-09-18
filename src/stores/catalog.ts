@@ -1,5 +1,4 @@
-import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { create } from 'zustand'
 
 import {
   buildCatalogSnapshot,
@@ -22,93 +21,93 @@ import {
 
 export type { DisplayTrack, CatalogTrackGroup, CatalogSearchResult }
 
-export const useCatalogStore = defineStore('catalog', () => {
-  const snapshot = ref<CatalogSnapshot>(buildCatalogSnapshot([]))
-  const playlists = ref<NormalizedPlaylist[]>([])
-  const errors = ref<CatalogError[]>([])
-  const loading = ref(false)
-  const loadError = ref<string | null>(null)
+type CatalogState = {
+  snapshot: CatalogSnapshot
+  playlists: NormalizedPlaylist[]
+  errors: CatalogError[]
+  loading: boolean
+  loadError: string | null
+  load: () => Promise<void>
+  search: (query: string) => CatalogSearchResult
+  scheduleEnrichment: () => void
+  scheduleEnrichTrack: (id: string) => void
+  resetDisplayFromConfig: () => void
+  /** Replace track list and rebuild indexes (tests / direct assignment). */
+  setTracks: (next: DisplayTrack[]) => void
+}
 
-  function applySnapshot(next: CatalogSnapshot) {
-    snapshot.value = next
-  }
+async function applyEnrichment(
+  get: () => CatalogState,
+  set: (partial: Partial<Pick<CatalogState, 'snapshot'>>) => void,
+  track: DisplayTrack,
+  options?: { network?: boolean },
+) {
+  const patch = await enrichOneTrack(track, options)
+  if (!patch) return
+  const result = patchCatalogTrack(get().snapshot, track.id, patch)
+  if (!result) return
+  set({ snapshot: result.snapshot })
+}
 
-  /** Writable so tests/callers can assign `catalog.tracks = […]` and rebuild indexes. */
-  const tracks = computed({
-    get: () => snapshot.value.tracks,
-    set: (next: DisplayTrack[]) => {
-      applySnapshot(buildCatalogSnapshot(next))
-    },
-  })
+export const useCatalogStore = create<CatalogState>((set, get) => ({
+  snapshot: buildCatalogSnapshot([]),
+  playlists: [],
+  errors: [],
+  loading: false,
+  loadError: null,
 
-  const trackById = computed(() => snapshot.value.trackById)
-  const artists = computed(() => snapshot.value.artists)
-  const albums = computed(() => snapshot.value.albums)
+  setTracks(next: DisplayTrack[]) {
+    set({ snapshot: buildCatalogSnapshot(next) })
+  },
 
-  async function applyEnrichment(track: DisplayTrack, options?: { network?: boolean }) {
-    const patch = await enrichOneTrack(track, options)
-    if (!patch) return
-    const result = patchCatalogTrack(snapshot.value, track.id, patch)
-    if (!result) return
-    applySnapshot(result.snapshot)
-  }
-
-  /** Enqueue best-effort enrich for the current track list (no network audio fetch). */
-  function scheduleEnrichment() {
-    for (const track of snapshot.value.tracks) {
-      void enqueueEnrich(() => applyEnrichment(track))
+  scheduleEnrichment() {
+    for (const track of get().snapshot.tracks) {
+      void enqueueEnrich(() => applyEnrichment(get, set, track))
     }
-  }
+  },
 
-  /** After play download, re-enrich one track (may use cached audio for ID3). */
-  function scheduleEnrichTrack(id: string) {
-    const track = snapshot.value.trackById.get(id)
+  scheduleEnrichTrack(id: string) {
+    const track = get().snapshot.trackById.get(id)
     if (!track) return
-    void enqueueEnrich(() => applyEnrichment(track, { network: true }))
-  }
+    void enqueueEnrich(() => applyEnrichment(get, set, track, { network: true }))
+  },
 
-  /** Reset display fields to config-only (drop extracted covers/meta in memory). */
-  function resetDisplayFromConfig() {
-    applySnapshot(buildCatalogSnapshot(snapshot.value.tracks.map((track) => toDisplayTrack(track))))
-  }
+  resetDisplayFromConfig() {
+    set({
+      snapshot: buildCatalogSnapshot(get().snapshot.tracks.map((track) => toDisplayTrack(track))),
+    })
+  },
 
-  async function load() {
-    loading.value = true
-    loadError.value = null
+  async load() {
+    set({ loading: true, loadError: null })
     clearEnrichQueue()
     try {
       const raw = await loadConfigsJson()
       const normalized = normalizeConfigs(raw)
-      errors.value = normalized.errors
-      playlists.value = normalized.playlists
-      applySnapshot(buildCatalogSnapshot(normalized.tracks.map(toDisplayTrack)))
-      scheduleEnrichment()
+      set({
+        errors: normalized.errors,
+        playlists: normalized.playlists,
+        snapshot: buildCatalogSnapshot(normalized.tracks.map(toDisplayTrack)),
+      })
+      get().scheduleEnrichment()
     } catch (error) {
-      loadError.value = error instanceof Error ? error.message : String(error)
-      applySnapshot(buildCatalogSnapshot([]))
-      playlists.value = []
+      set({
+        loadError: error instanceof Error ? error.message : String(error),
+        playlists: [],
+        snapshot: buildCatalogSnapshot([]),
+      })
     } finally {
-      loading.value = false
+      set({ loading: false })
     }
-  }
+  },
 
-  function search(query: string): CatalogSearchResult {
-    return searchCatalog(snapshot.value, query)
-  }
+  search(query: string): CatalogSearchResult {
+    return searchCatalog(get().snapshot, query)
+  },
+}))
 
-  return {
-    tracks,
-    playlists,
-    errors,
-    loading,
-    loadError,
-    trackById,
-    artists,
-    albums,
-    load,
-    search,
-    scheduleEnrichment,
-    scheduleEnrichTrack,
-    resetDisplayFromConfig,
-  }
-})
+/** Convenience selectors for React components. */
+export const selectTracks = (s: CatalogState) => s.snapshot.tracks
+export const selectTrackById = (s: CatalogState) => s.snapshot.trackById
+export const selectArtists = (s: CatalogState) => s.snapshot.artists
+export const selectAlbums = (s: CatalogState) => s.snapshot.albums

@@ -1,26 +1,41 @@
 import { globalIgnores } from 'eslint/config'
-import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
-import pluginVue from 'eslint-plugin-vue'
+import js from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import pluginReactHooks from 'eslint-plugin-react-hooks'
+import pluginReactRefresh from 'eslint-plugin-react-refresh'
 import pluginPlaywright from 'eslint-plugin-playwright'
 import pluginVitest from '@vitest/eslint-plugin'
 import pluginOxlint from 'eslint-plugin-oxlint'
 import skipFormatting from 'eslint-config-prettier/flat'
 
-// To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
-// import { configureVueProject } from '@vue/eslint-config-typescript'
-// configureVueProject({ scriptLangs: ['ts', 'tsx'] })
-// More info at https://github.com/vuejs/eslint-config-typescript/#advanced-setup
-
-export default defineConfigWithVueTs(
+export default tseslint.config(
   {
     name: 'app/files-to-lint',
-    files: ['**/*.{vue,ts,mts,tsx}'],
+    files: ['**/*.{ts,mts,tsx}'],
   },
 
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/src/routeTree.gen.ts']),
 
-  ...pluginVue.configs['flat/essential'],
-  vueTsConfigs.recommended,
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+
+  {
+    plugins: {
+      'react-hooks': pluginReactHooks,
+      'react-refresh': pluginReactRefresh,
+    },
+    rules: {
+      ...pluginReactHooks.configs.recommended.rules,
+      // Legitimate mount sync / lazy transport init patterns trip these Compiler rules.
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/refs': 'off',
+      'react-hooks/incompatible-library': 'off',
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true, allowExportNames: ['Route'] },
+      ],
+    },
+  },
 
   {
     ...pluginPlaywright.configs['flat/recommended'],

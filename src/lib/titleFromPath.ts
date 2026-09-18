@@ -25,7 +25,7 @@ export function titleFromPath(path: string): string {
   try {
     decoded = decodeURIComponent(last)
   } catch {
-    decoded = last
+    // keep raw segment
   }
 
   return decoded.replace(/\.[^/.]+$/, '')

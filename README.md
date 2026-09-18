@@ -39,9 +39,9 @@ Commands and options: [docs/commands.md](docs/commands.md).
 
 ```sh
 npm run test:unit
-npm run test:unit -- src/__tests__/App.spec.ts
+npm run test:unit -- src/__tests__/App.spec.tsx
 npm run test:e2e -- --project chromium
-npm run test:e2e -- --project chromium -- e2e/vue.spec.ts
+npm run test:e2e -- --project chromium -- e2e/app.spec.ts
 ```
 
 ## Catalog
@@ -54,7 +54,7 @@ Field-by-field help is in the app under **More → Guidelines for configs.json**
 
 ## Stack
 
-Vue 3 · Vite · TypeScript · Pinia · Vue Router · vue-i18n · Vuetify 4 · Vitest · Playwright
+React · Vite · TypeScript · Zustand · TanStack Router · react-i18next · MUI · Vitest · Playwright
 
 ## Docs
 
