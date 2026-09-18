@@ -6,7 +6,7 @@
 - Behavior changes follow the `test-driven-development` skill.
 - Place new files per [docs/file-structure.md](docs/file-structure.md).
 - i18n: update both `src/locales/en.ts` and `src/locales/zh.ts`.
-- Views that need the catalog rely on root `beforeLoad` / `ensureCatalogLoaded` — never `catalog.load()` alone.
+- Views that need the catalog rely on root `beforeLoad` / `ensureCatalogLoaded` — do not fetch `configs.json` from views.
 
 ## Read when
 

@@ -9,14 +9,10 @@ import {
   type CatalogSnapshot,
   type DisplayTrack,
 } from '@/lib/catalog/catalogIndex'
-import { clearEnrichQueue, enqueueEnrich } from '@/lib/catalog/enrichQueue'
+import { enqueueEnrich } from '@/lib/catalog/enrichQueue'
 import { enrichOneTrack } from '@/lib/catalog/enrichTracks'
-import { loadConfigsJson } from '@/lib/catalog/loadConfigs'
-import {
-  normalizeConfigs,
-  type CatalogError,
-  type NormalizedPlaylist,
-} from '@/lib/catalog/normalizeCatalog'
+import type { CatalogError, NormalizedPlaylist } from '@/lib/catalog/normalizeCatalog'
+import type { NormalizedCatalog } from '@/lib/catalog/runCatalogLoad'
 
 type CatalogState = {
   snapshot: CatalogSnapshot
@@ -24,11 +20,14 @@ type CatalogState = {
   errors: CatalogError[]
   loading: boolean
   loadError: string | null
-  load: () => Promise<void>
   search: (query: string) => CatalogSearchResult
   scheduleEnrichment: () => void
   scheduleEnrichTrack: (id: string) => void
   resetDisplayFromConfig: () => void
+  beginLoad: () => void
+  applyNormalized: (normalized: NormalizedCatalog) => void
+  failLoad: (message: string) => void
+  finishLoad: () => void
   /** Replace track list and rebuild indexes (tests / direct assignment). */
   setTracks: (next: DisplayTrack[]) => void
 }
@@ -57,6 +56,30 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
     set({ snapshot: buildCatalogSnapshot(next) })
   },
 
+  beginLoad() {
+    set({ loading: true, loadError: null })
+  },
+
+  applyNormalized(normalized: NormalizedCatalog) {
+    set({
+      errors: normalized.errors,
+      playlists: normalized.playlists,
+      snapshot: buildCatalogSnapshot(normalized.tracks.map(toDisplayTrack)),
+    })
+  },
+
+  failLoad(message: string) {
+    set({
+      loadError: message,
+      playlists: [],
+      snapshot: buildCatalogSnapshot([]),
+    })
+  },
+
+  finishLoad() {
+    set({ loading: false })
+  },
+
   scheduleEnrichment() {
     for (const track of get().snapshot.tracks) {
       void enqueueEnrich(() => applyEnrichment(get, set, track))
@@ -73,29 +96,6 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
     set({
       snapshot: buildCatalogSnapshot(get().snapshot.tracks.map((track) => toDisplayTrack(track))),
     })
-  },
-
-  async load() {
-    set({ loading: true, loadError: null })
-    clearEnrichQueue()
-    try {
-      const raw = await loadConfigsJson()
-      const normalized = normalizeConfigs(raw)
-      set({
-        errors: normalized.errors,
-        playlists: normalized.playlists,
-        snapshot: buildCatalogSnapshot(normalized.tracks.map(toDisplayTrack)),
-      })
-      get().scheduleEnrichment()
-    } catch (error) {
-      set({
-        loadError: error instanceof Error ? error.message : String(error),
-        playlists: [],
-        snapshot: buildCatalogSnapshot([]),
-      })
-    } finally {
-      set({ loading: false })
-    }
   },
 
   search(query: string): CatalogSearchResult {

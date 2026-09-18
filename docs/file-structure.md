@@ -19,11 +19,14 @@ Repository layout for tdmusic. Library versions: [tech-stack.md](tech-stack.md).
 │   ├── lib/                      Framework-agnostic helpers + colocated __tests__/
 │   │   ├── cache/                IndexedDB audio cache (public: musicCache)
 │   │   ├── catalog/              configs.json load, normalize, enrich, labels, index, bootstrap
-│   │   ├── playback/             player math, session, transport, media session, prefetch
+│   ├── lib/                      Framework-agnostic helpers + colocated __tests__/
+│   │   ├── cache/                IndexedDB audio cache (public: musicCache)
+│   │   ├── catalog/              configs.json load, normalize, enrich, labels, index, bootstrap
+│   │   ├── playback/             queue session, persist codec, transport, media session, prefetch
 │   │   └── routes/               album / artist / playlist path helpers
 │   ├── locales/                  i18n message modules (en, zh)
 │   ├── routes/                   TanStack Router file routes + routeTree.gen.ts
-│   ├── stores/                   Zustand stores + catalog bootstrap bind + colocated __tests__/
+│   ├── stores/                   Zustand stores + catalog/playback bind + colocated __tests__/
 │   ├── styles/                   Global app CSS
 │   ├── theme/                    MUI theme
 │   └── main.tsx
@@ -46,7 +49,7 @@ Repository layout for tdmusic. Library versions: [tech-stack.md](tech-stack.md).
 | `src/lib/` | Framework-agnostic helpers (small shared utilities at the root) |
 | `src/lib/cache/` | IndexedDB audio cache; app code imports `musicCache` only |
 | `src/lib/catalog/` | configs.json load, normalize, enrich, display labels, catalog index, load+hydrate orchestration |
-| `src/lib/playback/` | Player math, playback session, transport, media session, prefetch |
+| `src/lib/playback/` | Queue session, player math, persist codec, transport, media session, prefetch |
 | `src/lib/routes/` | Album / artist / playlist route helpers |
 | `src/stores/` | Zustand stores |
 | `src/locales/` | Locale message modules (wired via `src/i18n/`) |
@@ -65,7 +68,7 @@ Repository layout for tdmusic. Library versions: [tech-stack.md](tech-stack.md).
 - Framework-agnostic helpers → `src/lib/`, grouped as `cache/`, `catalog/`, `playback/`, or `routes/` when they belong to those domains. Small shared utilities may stay at `src/lib/` root.
 - Cache internals (`cacheStore`, `cacheIngest`, `cacheEviction`, `trackMetadata`, `downloadLimiter`) stay inside `src/lib/cache/`; app code imports `musicCache`.
 - Catalog query/index helpers (`catalogIndex`: `DisplayTrack`, grouping, search, enrich patches) live in `src/lib/catalog/`; the catalog store holds the snapshot and schedules enrich.
-- Catalog load+hydrate orchestration (`createCatalogBootstrap`) lives in `src/lib/catalog/` and is framework-agnostic. App/test startup binds Zustand ports via `bindAppCatalogBootstrap` (`src/stores/bindAppCatalog.ts`). Public `ensureCatalogLoaded` / `loadCatalogAndHydratePlayer` stay on `catalogBootstrap.ts`.
-- Playback transport (`playbackTransport`) binds the queue/player store to a single `<audio>` element; `AudioHost` only wires React effects and the element.
+- Catalog load+hydrate orchestration (`createCatalogBootstrap`, `runCatalogLoad`) lives in `src/lib/catalog/` and is framework-agnostic. App/test startup binds Zustand ports via `bindAppCatalogBootstrap` (`src/stores/bindAppCatalog.ts`). Public `ensureCatalogLoaded` / `loadCatalogAndHydratePlayer` stay on `catalogBootstrap.ts`.
+- Playback queue mutations (`playbackQueue`) and persist codec (`playerStateCodec`) live in `src/lib/playback/`. Transport ports bind at `src/stores/bindAppPlayback.ts` (`createAppPlaybackTransport`); `AudioHost` only wires the element and React effects.
 - Locale strings → `src/locales/`; i18n bootstrap → `src/i18n/`.
 - Unit tests colocate next to the module: `src/{hooks,lib,routes,components,stores}/**/__tests__/*.{spec,test}.{ts,tsx}`. Do not put new specs in `src/__tests__/` unless they are app-level (see [testing.md](testing.md)).

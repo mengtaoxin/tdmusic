@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { PLAYER_STORAGE_KEY, serializePlayerState } from '../playerLogic'
+import { PLAYER_STORAGE_KEY, serializePlayerState } from '../playerStateCodec'
 import { createPlayerPersist } from '../playerPersist'
 
 describe('createPlayerPersist', () => {

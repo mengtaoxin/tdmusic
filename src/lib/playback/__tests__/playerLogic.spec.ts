@@ -2,21 +2,19 @@ import { describe, expect, it } from 'vitest'
 
 import {
   appendToQueue,
-  buildQueueFrom,
   clearUpcoming,
-  hydratePlayerState,
   insertAfterCurrent,
   mapOccurrenceIndex,
   nextIndex,
-  parsePlayerState,
   prevIndex,
   removeAtIndex,
   repeatModeForManualAdvance,
-  serializePlayerState,
   shuffleFromCurrent,
   shuffleUpcoming,
   upcomingQueueIds,
 } from '../playerLogic'
+import { hydratePlayerState, parsePlayerState, serializePlayerState } from '../playerStateCodec'
+import { buildQueueFrom } from '../playFromSession'
 
 describe('repeatModeForManualAdvance', () => {
   it('treats repeat one as off so skip/next leave the current track', () => {

@@ -16,8 +16,8 @@ export function useTrackListPlayback(sourceIds: string[] | (() => string[])) {
 
   return {
     currentId,
-    playAt: (index: number) => {
-      usePlayerStore.getState().playFrom(index, ids)
+    playAt: (index: number, options?: { shuffle?: boolean }) => {
+      usePlayerStore.getState().playFrom(index, ids, options)
     },
     playById: (id: string) => {
       const index = ids.indexOf(id)

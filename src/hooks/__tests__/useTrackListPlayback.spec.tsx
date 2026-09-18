@@ -37,7 +37,10 @@ describe('useTrackListPlayback', () => {
     const addToQueue = vi.spyOn(usePlayerStore.getState(), 'addToQueue')
 
     api.playAt(1)
-    expect(playFrom).toHaveBeenCalledWith(1, ['a', 'b', 'c'])
+    expect(playFrom).toHaveBeenCalledWith(1, ['a', 'b', 'c'], undefined)
+
+    api.playAt(0, { shuffle: true })
+    expect(playFrom).toHaveBeenCalledWith(0, ['a', 'b', 'c'], { shuffle: true })
 
     api.playNextTrack('b')
     expect(playNext).toHaveBeenCalledWith('b')
@@ -46,6 +49,6 @@ describe('useTrackListPlayback', () => {
     expect(addToQueue).toHaveBeenCalledWith('c')
 
     api.playById('b')
-    expect(playFrom).toHaveBeenCalledWith(1, ['a', 'b', 'c'])
+    expect(playFrom).toHaveBeenCalledWith(1, ['a', 'b', 'c'], undefined)
   })
 })
