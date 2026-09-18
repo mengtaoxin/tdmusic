@@ -1,6 +1,6 @@
 # File structure
 
-Repository layout for tdmusic. Library versions: [tech-stack.md](tech-stack.md). Agent entry: `AGENTS.md`.
+Repository layout for tdmusic. Changing code: [change-code-steps.md](change-code-steps.md). Library versions: [tech-stack.md](tech-stack.md). Agent entry: `AGENTS.md`.
 
 ```
 .

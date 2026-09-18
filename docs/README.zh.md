@@ -60,6 +60,7 @@ React · Vite · TypeScript · Zustand · TanStack Router · react-i18next · MU
 
 | 文档 | 内容 |
 | ---- | ---- |
+| [change-code-steps.md](change-code-steps.md) | 改代码步骤：TDD、结构、测试、format/check |
 | [file-structure.md](file-structure.md) | 仓库目录结构 |
 | [tech-stack.md](tech-stack.md) | 版本与依赖 |
 | [commands.md](commands.md) | 脚本约定 |

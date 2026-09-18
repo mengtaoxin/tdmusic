@@ -1,5 +1,7 @@
 # Commands
 
+When to run these while changing code: [change-code-steps.md](change-code-steps.md).
+
 ```sh
 npm install
 npx playwright install chromium firefox webkit
