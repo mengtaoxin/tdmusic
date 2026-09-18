@@ -36,8 +36,6 @@ export default {
     empty: '暂无播放列表。请在配置中添加 playlists 数组。',
     trackCount: '{count} 首',
     notFound: '未找到该播放列表。',
-    playAll: '顺序播放全部',
-    shuffleAll: '随机播放全部',
   },
   artist: {
     allMusic: '该歌手的全部音乐',
@@ -59,6 +57,8 @@ export default {
     removeFromQueue: '从队列移除',
     clearUpcoming: '清除后续',
     downloading: '正在下载',
+    playAll: '顺序播放全部',
+    shuffleAll: '随机播放全部',
   },
   search: {
     placeholder: '搜索歌曲、歌手、专辑',

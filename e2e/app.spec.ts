@@ -82,6 +82,8 @@ test('settings links to config guides', async ({ page }) => {
 test('music list shows catalog tracks', async ({ page }) => {
   await page.goto('/music')
   await expect(page.getByRole('heading', { name: 'Music List' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Play all' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Shuffle all' })).toBeVisible()
   await expect(page.getByText('Smile in the Wind')).toBeVisible()
 })
 
