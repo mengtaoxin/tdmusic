@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import * as musicCache from '../../cache/musicCache'
 import {
   AUDIO_FILE_KEY,
   getCachedFile,
@@ -53,5 +54,16 @@ describe('resolvePlayableUrl', () => {
     const blob = await getCachedFile(path)
     expect(blob).not.toBeNull()
     expect(await blob!.text()).toBe('local')
+  })
+
+  it('requests a high-priority download slot for play', async () => {
+    const ensure = vi.spyOn(musicCache, 'ensureTrackCached').mockResolvedValue(undefined)
+    vi.spyOn(musicCache, 'getCachedBlobUrl').mockResolvedValue('blob:play')
+
+    await resolvePlayableUrl('https://example.com/now.mp3', 'now')
+
+    expect(ensure).toHaveBeenCalledWith('https://example.com/now.mp3', 'now', {
+      priority: 'high',
+    })
   })
 })
