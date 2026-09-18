@@ -8,6 +8,7 @@ declare module '@mui/material/styles' {
       heroMaxWidth: string
       coverMaxWidth: string
       footerClearance: string
+      pageTopInset: string
       appBarHeight: string
       homeViewportOffset: string
       musicListHeight: string
@@ -72,6 +73,7 @@ export const muiTheme = createTheme({
     heroMaxWidth: '28rem',
     coverMaxWidth: '16rem',
     footerClearance: '88px',
+    pageTopInset: '24px',
     appBarHeight: '64px',
     homeViewportOffset: '120px',
     musicListHeight: 'calc(100dvh - 64px - 88px - 6rem)',

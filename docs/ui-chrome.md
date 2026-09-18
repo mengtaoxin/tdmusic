@@ -24,5 +24,6 @@ Top-bar layout, menus, and related visual behavior. Domain contracts: [catalog.m
 
 - `html` / `body` / `#root` are height-locked with `overflow: hidden` so the **document** does not scroll.
 - Page scroll lives in `main.main-scroller` (`data-testid="main-scroller"`) or in list hosts that use their own virtual scrollers. Scrollbar gutter styling applies to `.main-scroller`.
+- Direct children of `main.main-scroller` get `--td-page-top-inset` (`24px`) so page content is not flush with the header menu. Locked-height shells keep `box-sizing: border-box` so the inset is inside `height: 100%`.
 - Locked list shells (Music / Artists / Albums / artist albums) fill the main content box (`height: 100%`) rather than `calc(100dvh − …)`.
 - This reduces mobile browser address/tool bar show/hide on swipe. It does **not** force browser chrome to stay permanently expanded or collapsed — that remains browser-controlled.

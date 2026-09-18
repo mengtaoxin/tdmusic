@@ -4,6 +4,7 @@
   --td-secondary: #ffc107;
   --td-on-bg: #e8f1f0;
   --td-footer-clearance: 88px;
+  --td-page-top-inset: 24px;
   --td-page-max-width: 52rem;
   --td-content-max-width: 40rem;
   --td-footer-start: #0d3b3a;
@@ -83,6 +84,11 @@ html {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--td-on-bg) 28%, transparent) transparent;
   padding-bottom: var(--td-footer-clearance);
+}
+
+.main-scroller > * {
+  box-sizing: border-box;
+  padding-top: var(--td-page-top-inset);
 }
 
 .page {
