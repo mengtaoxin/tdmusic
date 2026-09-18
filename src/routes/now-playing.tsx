@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
@@ -24,6 +24,7 @@ import { VirtualRowList } from '@/components/VirtualRowList'
 import { useTrackDownload } from '@/hooks/useTrackDownload'
 import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels'
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
+import { playingQueueRowIndex } from '@/lib/playback/queueListScroll'
 import { artistAlbumPath, artistAlbumsPath } from '@/lib/routes/artistRoutes'
 import { selectTrackById, useCatalogStore } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
@@ -74,6 +75,12 @@ function NowPlayingPage() {
     })
     return rows
   }, [queue, trackById])
+
+  const playingRowIndex = playingQueueRowIndex(queueRows, currentIndex)
+  const entryScrollIndexRef = useRef<number | null>(null)
+  if (entryScrollIndexRef.current == null && playingRowIndex != null) {
+    entryScrollIndexRef.current = playingRowIndex
+  }
 
   const queueListHeight = `min(${Math.max(queueRows.length, 1) * TRACK_ROW_HEIGHT}px, ${'calc(100dvh - 64px - 88px - 6rem)'})`
 
@@ -266,6 +273,7 @@ function NowPlayingPage() {
         itemHeight={TRACK_ROW_HEIGHT}
         height={queueListHeight}
         listClassName="queue-list"
+        scrollToIndex={entryScrollIndexRef.current}
         getItemKey={(item) => item.key}
         renderRow={(item) => (
           <TrackListItem
