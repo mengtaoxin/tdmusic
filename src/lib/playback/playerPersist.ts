@@ -1,4 +1,8 @@
-import { PLAYER_STORAGE_KEY, serializePlayerState, type PersistedPlayerState } from './playerLogic'
+import {
+  PLAYER_STORAGE_KEY,
+  serializePlayerState,
+  type PersistedPlayerState,
+} from './playerStateCodec'
 
 export function createPlayerPersist(options: {
   getPayload: () => PersistedPlayerState

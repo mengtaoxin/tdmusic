@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { PLAYER_STORAGE_KEY } from '@/lib/playback/playerLogic'
+import { PLAYER_STORAGE_KEY } from '@/lib/playback/playerStateCodec'
 import { usePlayerStore } from '../player'
 
 describe('playerStore', () => {
@@ -111,21 +111,20 @@ describe('playerStore', () => {
   })
 
   it('playFrom with shuffle on builds a shuffled upcoming queue', async () => {
-    usePlayerStore.setState({ shuffle: true })
     const values = [0, 0]
     const rnd = vi.spyOn(Math, 'random').mockImplementation(() => values.shift() ?? 0)
-    usePlayerStore.getState().playFrom(0, ['a', 'b', 'c', 'd'])
+    usePlayerStore.getState().playFrom(0, ['a', 'b', 'c', 'd'], { shuffle: true })
     await vi.runAllTimersAsync()
     expect(usePlayerStore.getState().currentId).toBe('a')
+    expect(usePlayerStore.getState().shuffle).toBe(true)
     expect(usePlayerStore.getState().queue).toEqual(['a', 'c', 'd', 'b'])
     rnd.mockRestore()
   })
 
   it('playFrom with shuffle on from a middle track puts that track first and shuffles the rest', async () => {
-    usePlayerStore.setState({ shuffle: true })
     const values = [0, 0]
     const rnd = vi.spyOn(Math, 'random').mockImplementation(() => values.shift() ?? 0)
-    usePlayerStore.getState().playFrom(2, ['a', 'b', 'c', 'd'])
+    usePlayerStore.getState().playFrom(2, ['a', 'b', 'c', 'd'], { shuffle: true })
     await vi.runAllTimersAsync()
     expect(usePlayerStore.getState().currentId).toBe('c')
     expect(usePlayerStore.getState().currentIndex).toBe(0)

@@ -14,7 +14,6 @@ import { useTrackListPlayback } from '@/hooks/useTrackListPlayback'
 import { findPlaylistByName } from '@/lib/routes/playlistRoutes'
 import { selectTrackById, useCatalogStore } from '@/stores/catalog'
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
-import { usePlayerStore } from '@/stores/player'
 
 export const Route = createFileRoute('/playlists/$name')({
   component: PlaylistDetailPage,
@@ -40,15 +39,13 @@ function PlaylistDetailPage() {
 
   function playAllInOrder() {
     if (!tracks.length) return
-    usePlayerStore.setState({ shuffle: false })
-    playAt(0)
+    playAt(0, { shuffle: false })
   }
 
   function shufflePlayAll() {
     if (!tracks.length) return
-    usePlayerStore.setState({ shuffle: true })
     const start = Math.floor(Math.random() * tracks.length)
-    playAt(start)
+    playAt(start, { shuffle: true })
   }
 
   return (

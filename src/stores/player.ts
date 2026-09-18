@@ -2,38 +2,41 @@ import { create } from 'zustand'
 
 import { getItem, removeItem, setItem } from '@/lib/clientStorage'
 import {
-  appendToQueue,
-  clearUpcoming,
+  addToQueue as enqueueAdd,
+  advanceNext,
+  advancePrev,
+  applyPlayFromChunk,
+  applyPlayFromDone,
+  applyPlayFromHead,
+  applyPlayFromReset,
+  clearQueue,
+  clearUpcomingTracks,
+  emptyQueueSession,
+  goToIndex as sessionGoToIndex,
+  playNext as enqueuePlayNext,
+  removeAt as sessionRemoveAt,
+  toggleShuffle as sessionToggleShuffle,
+  withRepeatMode,
+  withShuffleFlag,
+  type QueueSession,
+} from '@/lib/playback/playbackQueue'
+import {
   hydratePlayerState,
-  insertAfterCurrent,
-  mapOccurrenceIndex,
-  nextIndex,
   parsePlayerState,
   PLAYER_STORAGE_KEY,
-  prevIndex,
-  removeAtIndex,
-  repeatModeForManualAdvance,
-  shuffleFromCurrent,
-  shuffleUpcoming,
-  type RepeatMode,
-} from '@/lib/playback/playerLogic'
+} from '@/lib/playback/playerStateCodec'
 import { createPlayFromSession } from '@/lib/playback/playFromSession'
+import type { RepeatMode } from '@/lib/playback/playerLogic'
 import { createPlayerPersist } from '@/lib/playback/playerPersist'
 
-type PlayerState = {
-  queue: string[]
-  originalQueue: string[]
-  currentId: string | null
-  currentIndex: number
+type PlayerState = QueueSession & {
   currentTime: number
   duration: number
   playing: boolean
-  repeatMode: RepeatMode
-  shuffle: boolean
   loadToken: number
   seekTo: number | null
   pendingPlay: boolean
-  playFrom: (startIndex: number, sourceIds: string[]) => void
+  playFrom: (startIndex: number, sourceIds: string[], options?: { shuffle?: boolean }) => void
   play: () => void
   pause: () => void
   togglePlay: () => void
@@ -55,6 +58,17 @@ type PlayerState = {
   goToIndex: (index: number, autoPlay: boolean) => void
 }
 
+function readQueueSession(s: PlayerState): QueueSession {
+  return {
+    queue: s.queue,
+    originalQueue: s.originalQueue,
+    currentId: s.currentId,
+    currentIndex: s.currentIndex,
+    shuffle: s.shuffle,
+    repeatMode: s.repeatMode,
+  }
+}
+
 export const usePlayerStore = create<PlayerState>((set, get) => {
   const playFromSession = createPlayFromSession()
   const persist = createPlayerPersist({
@@ -74,22 +88,24 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
   })
   const { schedulePersist, flushPersist } = persist
 
-  function clearPlayback() {
-    set({ currentId: null, currentIndex: -1, currentTime: 0 })
+  function applyCue(
+    session: QueueSession,
+    options: { autoPlay: boolean; bumpLoad: boolean; currentTime?: number; seekTo?: number | null },
+  ) {
+    set({
+      ...session,
+      currentTime: options.currentTime ?? 0,
+      seekTo: options.seekTo ?? 0,
+      pendingPlay: options.autoPlay,
+      playing: options.autoPlay,
+      ...(options.bumpLoad ? { loadToken: get().loadToken + 1 } : {}),
+    })
   }
 
   function goToIndex(index: number, autoPlay: boolean) {
-    const { queue } = get()
-    if (index < 0 || index >= queue.length) return
-    set({
-      currentIndex: index,
-      currentId: queue[index]!,
-      currentTime: 0,
-      seekTo: 0,
-      pendingPlay: autoPlay,
-      playing: autoPlay,
-      loadToken: get().loadToken + 1,
-    })
+    const result = sessionGoToIndex(readQueueSession(get()), index, autoPlay)
+    if (!result) return
+    applyCue(result.session, { autoPlay: result.autoPlay, bumpLoad: true, seekTo: 0 })
     flushPersist()
   }
 
@@ -104,29 +120,24 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
   }
 
   function next() {
-    const { currentIndex, queue, repeatMode, shuffle } = get()
-    const modeForAdvance = repeatModeForManualAdvance(repeatMode)
-    const nextIdx = nextIndex(currentIndex, queue.length, {
-      repeatMode: modeForAdvance,
-      shuffle,
-    })
-    if (nextIdx == null || nextIdx === currentIndex) {
+    const result = advanceNext(readQueueSession(get()))
+    if (result.kind === 'pause') {
       pause()
       return
     }
-    goToIndex(nextIdx, true)
+    applyCue(result.session, { autoPlay: result.autoPlay, bumpLoad: true, seekTo: 0 })
+    flushPersist()
+  }
+
+  function clearPlaybackFields() {
+    set({ currentTime: 0, seekTo: 0 })
   }
 
   return {
-    queue: [],
-    originalQueue: [],
-    currentId: null,
-    currentIndex: -1,
+    ...emptyQueueSession(),
     currentTime: 0,
     duration: 0,
     playing: false,
-    repeatMode: 'off',
-    shuffle: false,
     loadToken: 0,
     seekTo: null,
     pendingPlay: false,
@@ -139,8 +150,8 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       const next = hydratePlayerState(persisted, knownIds)
       if (!next) {
         removeItem(PLAYER_STORAGE_KEY)
-        set({ queue: [], originalQueue: [] })
-        clearPlayback()
+        set(clearQueue(readQueueSession(get())))
+        clearPlaybackFields()
         return false
       }
       set({
@@ -159,20 +170,18 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       return true
     },
 
-    playFrom(startIndex: number, sourceIds: string[]) {
+    playFrom(startIndex: number, sourceIds: string[], options?: { shuffle?: boolean }) {
+      if (options?.shuffle != null) {
+        set(withShuffleFlag(readQueueSession(get()), options.shuffle))
+      }
       playFromSession.start(startIndex, sourceIds, {
         onReset: () => {
-          set({
-            queue: [],
-            originalQueue: [],
-            currentTime: 0,
-            seekTo: 0,
-          })
+          const reset = applyPlayFromReset(readQueueSession(get()))
+          set({ ...reset, currentTime: 0, seekTo: 0 })
         },
         onHead: (headId, index) => {
           set({
-            currentId: headId,
-            currentIndex: index,
+            ...applyPlayFromHead(readQueueSession(get()), headId, index),
             pendingPlay: true,
             playing: true,
             loadToken: get().loadToken + 1,
@@ -180,18 +189,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
           schedulePersist()
         },
         onChunk: (chunk) => {
-          const originalQueue = get().originalQueue.concat(chunk)
-          set({
-            originalQueue,
-            queue: [...originalQueue],
-          })
+          set(applyPlayFromChunk(readQueueSession(get()), chunk))
           schedulePersist()
         },
         onDone: () => {
-          if (get().shuffle) {
-            const shuffled = shuffleFromCurrent(get().originalQueue, get().currentIndex)
-            set({ queue: shuffled, currentIndex: 0 })
-          }
+          set(applyPlayFromDone(readQueueSession(get())))
           flushPersist()
         },
       })
@@ -222,174 +224,82 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     },
 
     prev() {
-      if (get().currentTime > 3) {
+      const result = advancePrev(readQueueSession(get()), get().currentTime)
+      if (result.kind === 'seekZero') {
         get().seek(0)
         return
       }
-      const { currentIndex, queue, repeatMode } = get()
-      const modeForAdvance = repeatModeForManualAdvance(repeatMode)
-      const prevIdx = prevIndex(currentIndex, queue.length, {
-        repeatMode: modeForAdvance,
-      })
-      if (prevIdx == null) {
-        get().seek(0)
-        return
-      }
-      goToIndex(prevIdx, true)
+      applyCue(result.session, { autoPlay: result.autoPlay, bumpLoad: true, seekTo: 0 })
+      flushPersist()
     },
 
     toggleRepeat() {
       const order: RepeatMode[] = ['off', 'all', 'one']
       const i = order.indexOf(get().repeatMode)
-      set({ repeatMode: order[(i + 1) % order.length]! })
+      set(withRepeatMode(readQueueSession(get()), order[(i + 1) % order.length]!))
       flushPersist()
     },
 
     toggleShuffle() {
-      const s = get()
-      const shuffle = !s.shuffle
-      if (shuffle) {
-        let originalQueue = s.originalQueue
-        if (originalQueue.length === 0) {
-          originalQueue = [...s.queue]
-        }
-        set({
-          shuffle: true,
-          originalQueue,
-          queue: shuffleUpcoming(s.queue, s.currentIndex),
-        })
-      } else if (s.originalQueue.length > 0) {
-        const id = s.currentId
-        const playingIndex = s.currentIndex
-        const fromQueue = s.queue
-        const queue = [...s.originalQueue]
-        let currentIndex = s.currentIndex
-        let currentId = s.currentId
-        if (id) {
-          const restored = mapOccurrenceIndex(fromQueue, playingIndex, s.originalQueue)
-          if (restored >= 0) {
-            currentIndex = restored
-            currentId = id
-          } else {
-            const fallback = s.originalQueue.indexOf(id)
-            if (fallback >= 0) {
-              currentIndex = fallback
-              currentId = id
-            }
-          }
-        }
-        set({ shuffle: false, queue, currentIndex, currentId })
-      } else {
-        set({ shuffle: false })
-      }
+      set(sessionToggleShuffle(readQueueSession(get())))
       flushPersist()
     },
 
     playNext(id: string) {
-      if (!id) return
-      const s = get()
-      if (s.queue.length === 0 || !s.currentId) {
-        get().playFrom(0, [id])
+      const result = enqueuePlayNext(readQueueSession(get()), id)
+      if (result.kind === 'playFrom') {
+        get().playFrom(0, result.sourceIds)
         return
       }
-      const idx = s.currentIndex
-      const origIdx = mapOccurrenceIndex(s.queue, idx, s.originalQueue)
-      set({
-        queue: insertAfterCurrent(s.queue, idx, id),
-        originalQueue: insertAfterCurrent(
-          s.originalQueue,
-          origIdx >= 0 ? origIdx : s.originalQueue.length - 1,
-          id,
-        ),
-      })
+      set(result.session)
       flushPersist()
     },
 
     addToQueue(id: string) {
-      if (!id) return
-      const s = get()
-      if (s.queue.length === 0 || !s.currentId) {
-        get().playFrom(0, [id])
+      const result = enqueueAdd(readQueueSession(get()), id)
+      if (result.kind === 'playFrom') {
+        get().playFrom(0, result.sourceIds)
         return
       }
-      set({
-        queue: appendToQueue(s.queue, id),
-        originalQueue: appendToQueue(s.originalQueue, id),
-      })
+      set(result.session)
       flushPersist()
     },
 
     removeAt(index: number) {
-      const s = get()
-      if (index < 0 || index >= s.queue.length) return
-      const playingIndex = s.currentIndex
-      const removingCurrent = index === playingIndex
-      const origPos = mapOccurrenceIndex(s.queue, index, s.originalQueue)
-
-      if (removingCurrent) {
-        if (s.queue.length === 1) {
-          playFromSession.cancel()
-          set({ queue: [], originalQueue: [], seekTo: 0 })
-          clearPlayback()
-          pause()
-          flushPersist()
-          return
-        }
-        const modeForAdvance = repeatModeForManualAdvance(s.repeatMode)
-        const nextIdx = nextIndex(index, s.queue.length, {
-          repeatMode: modeForAdvance,
-          shuffle: s.shuffle,
-        })
-        const targetIdx =
-          nextIdx != null && nextIdx !== index ? nextIdx : index > 0 ? index - 1 : null
-        if (targetIdx == null) {
-          pause()
-          return
-        }
-        const nextQueue = removeAtIndex(s.queue, index, index).queue
-        let originalQueue = s.originalQueue
-        if (origPos >= 0) {
-          originalQueue = removeAtIndex(s.originalQueue, origPos, origPos).queue
-        }
-        set({ queue: nextQueue, originalQueue })
-        const newIdx = targetIdx > index ? targetIdx - 1 : targetIdx
-        goToIndex(newIdx, true)
+      const result = sessionRemoveAt(readQueueSession(get()), index)
+      if (result.kind === 'noop') return
+      if (result.kind === 'pause') {
+        pause()
         return
       }
-
-      const { queue: nextQueue } = removeAtIndex(s.queue, index, playingIndex)
-      const patch: Partial<PlayerState> = { queue: nextQueue }
-      if (index < playingIndex) {
-        patch.currentIndex = playingIndex - 1
+      if (result.kind === 'clear') {
+        playFromSession.cancel()
+        set({ ...clearQueue(readQueueSession(get())), seekTo: 0 })
+        clearPlaybackFields()
+        pause()
+        flushPersist()
+        return
       }
-      if (origPos >= 0) {
-        patch.originalQueue = removeAtIndex(s.originalQueue, origPos, origPos).queue
+      if (result.kind === 'goTo') {
+        set(result.session)
+        goToIndex(result.index, true)
+        return
       }
-      set(patch)
+      set(result.session)
       flushPersist()
     },
 
     clearUpcoming() {
-      const s = get()
-      const idx = s.currentIndex
-      if (idx < 0) return
-      const origIdx = mapOccurrenceIndex(s.queue, idx, s.originalQueue)
-      const kept = clearUpcoming(s.queue, idx)
-      if (origIdx >= 0) {
-        set({
-          queue: kept,
-          originalQueue: clearUpcoming(s.originalQueue, origIdx),
-        })
-      } else {
-        set({ queue: kept, originalQueue: [...kept] })
-      }
+      const nextSession = clearUpcomingTracks(readQueueSession(get()))
+      if (!nextSession) return
+      set(nextSession)
       flushPersist()
     },
 
     clearNowPlaying() {
       playFromSession.cancel()
-      set({ queue: [], originalQueue: [], seekTo: 0 })
-      clearPlayback()
+      set({ ...clearQueue(readQueueSession(get())), seekTo: 0 })
+      clearPlaybackFields()
       pause()
       flushPersist()
     },
