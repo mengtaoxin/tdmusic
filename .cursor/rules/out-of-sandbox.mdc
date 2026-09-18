@@ -1,5 +1,5 @@
 ---
-description: Use Shell required_permissions ["all"] for dev scripts and e2e
+description: Use Shell required_permissions ["all"] for e2e and Playwright
 alwaysApply: true
 ---
 
@@ -8,14 +8,11 @@ alwaysApply: true
 When running any of these, always use Shell with `required_permissions: ["all"]`
 (do not rely on the default sandbox):
 
-- `./scripts/dev-start.sh`
-- `./scripts/dev-stop.sh`
 - `npm run test:e2e` / `npx playwright …`
 - `npx playwright install …`
 
 Reason:
 
-- `dev-*.sh`: process signals (kill) and/or writes under `/Volumes`
 - Playwright: browsers install/run against `~/Library/Caches/ms-playwright`
   (unset `PLAYWRIGHT_BROWSERS_PATH` if a sandbox injected it).
   A sandboxed shell cannot create the lock/cache dirs there → `EPERM`.

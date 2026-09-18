@@ -8,7 +8,6 @@ Repository layout for tdmusic. Library versions: [tech-stack.md](tech-stack.md).
 ├── .cursor/mcp.json              Shared MCP servers
 ├── .cursor/rules/                Shared Cursor rules (sandbox, path-scoped)
 ├── docs/                         Project docs (this file, commands, conventions, …)
-├── scripts/                      Dev start/stop + _lib.sh (install/format/build/test via package.json)
 ├── e2e/                          Playwright specs
 ├── public/                       Static assets + default configs.json
 ├── src/
@@ -41,7 +40,6 @@ Repository layout for tdmusic. Library versions: [tech-stack.md](tech-stack.md).
 | ---- | ---- |
 | `.cursor/mcp.json` | Shared MCP server config (API keys via env) |
 | `.cursor/rules/` | Versioned Cursor rules |
-| `scripts/` | Dev server start/stop wrappers (`_lib.sh` shared helpers) |
 | `src/` | React SPA source |
 | `src/components/` | Shared React components (`.tsx`) |
 | `src/hooks/` | React hooks (`use*`) |

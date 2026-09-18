@@ -3,22 +3,14 @@
 ```sh
 npm install
 npx playwright install chromium firefox webkit
-./scripts/dev-start.sh
-./scripts/dev-stop.sh
+npm run dev
 npm run build
 npm run format && npm run lint && npm run type-check
 npm run test:unit
 npm run test:e2e -- --project chromium
 ```
 
-Prefer `./scripts/dev-start.sh` / `./scripts/dev-stop.sh` for the Vite server (do not run `npm run dev` directly for day-to-day work). Use `package.json` scripts for install, format, build, and tests.
-
-## Flags (shell scripts)
-
-Named flags only (`--key value` or `--key=value`); order does not matter. No positional arguments.
-
-- Switches are the flag name itself (e.g. `--check`), not `--check true`.
-- Every script accepts `-h` / `--help` (prints usage, exit 0). Unknown flags, missing values, and positionals exit 1.
+Use `package.json` scripts for day-to-day work. Do not add `scripts/*.sh` wrappers.
 
 ## Install
 
@@ -40,9 +32,13 @@ npx prettier --check --experimental-cli src/ e2e/ \
 
 `npm run format` and `npm run lint` write files by default.
 
-## dev-start.sh / dev-stop.sh
+## Dev server
 
-No tunables; `--help` only. Dev server is Vite on port 3000. `dev-start.sh` waits until the port is listening (or fails).
+```sh
+npm run dev
+```
+
+Vite on port 3000. Stop with Ctrl+C.
 
 ## Build
 

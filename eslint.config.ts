@@ -44,7 +44,7 @@ export default tseslint.config(
 
   {
     ...pluginVitest.configs.recommended,
-    files: ['src/**/__tests__/*', 'scripts/**/__tests__/*'],
+    files: ['src/**/__tests__/*'],
   },
 
   ...pluginOxlint.buildFromOxlintConfigFile('.oxlintrc.json'),
