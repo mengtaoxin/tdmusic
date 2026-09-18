@@ -4,6 +4,7 @@
 
 - Install, format, dev, build, and tests in [docs/commands.md](docs/commands.md).
 - Behavior changes follow the `test-driven-development` skill.
+- React performance (components, bundle, re-renders, client fetching) follows `.agents/skills/react-best-practices` — SPA overlay in that `SKILL.md` wins over Next.js/SWR examples.
 - Place new files per [docs/file-structure.md](docs/file-structure.md).
 - i18n: update both `src/locales/en.ts` and `src/locales/zh.ts`.
 - Views that need the catalog rely on root `beforeLoad` / `ensureCatalogLoaded` — do not fetch `configs.json` from views.
@@ -14,6 +15,7 @@
 - Test placement and naming → [docs/testing.md](docs/testing.md)
 - Adding or moving files → [docs/file-structure.md](docs/file-structure.md)
 - Style, MUI, log language → [docs/conventions.md](docs/conventions.md)
+- React performance rules → `.agents/skills/react-best-practices`
 - `configs.json`, catalog routes, enrich, `ensureCatalogLoaded` → [docs/catalog.md](docs/catalog.md)
 - IndexedDB audio cache, covers, download limiter → [docs/cache.md](docs/cache.md)
 - Queue, shuffle, repeat, Media Session → [docs/playback.md](docs/playback.md)

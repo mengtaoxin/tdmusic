@@ -22,3 +22,5 @@ tdmusic is a React SPA (Vite) at the repo root — no separate `api/` or `web/` 
 | Node          | see `package.json` `engines`                |
 
 Prefer MUI components and theme/`sx`; use CSS modules or `src/styles/` for local tweaks. No Vue, Nuxt, or Tailwind.
+
+React performance guidance for agents: `.agents/skills/react-best-practices` (Vite SPA overlay; skip Next.js/RSC/SWR).

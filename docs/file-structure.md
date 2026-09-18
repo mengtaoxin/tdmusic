@@ -5,6 +5,7 @@ Repository layout for tdmusic. Library versions: [tech-stack.md](tech-stack.md).
 ```
 .
 ├── AGENTS.md
+├── .agents/skills/               Agent skills (TDD, React performance, …)
 ├── .cursor/mcp.json              Shared MCP servers
 ├── .cursor/rules/                Shared Cursor rules (sandbox, path-scoped)
 ├── docs/                         Project docs (this file, commands, conventions, …)
@@ -41,6 +42,7 @@ Repository layout for tdmusic. Library versions: [tech-stack.md](tech-stack.md).
 
 | Path | Role |
 | ---- | ---- |
+| `.agents/skills/` | Versioned agent skills (`SKILL.md` + optional `rules/`) |
 | `.cursor/mcp.json` | Shared MCP server config (API keys via env) |
 | `.cursor/rules/` | Versioned Cursor rules |
 | `src/` | React SPA source |
