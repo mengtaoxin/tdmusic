@@ -1,13 +1,11 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 
-import { ensureCatalogLoaded } from '@/lib/catalog/catalogBootstrap'
 import { useCatalogStore, selectTracks } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
 
-/** Ensure catalog is loaded, then expose play helpers bound to a source id list. */
+/** Play helpers bound to a source id list. Catalog load lives on the root route. */
 export function useTrackListPlayback(sourceIds: string[] | (() => string[])) {
-  const catalog = useCatalogStore()
-  const player = usePlayerStore()
+  const currentId = usePlayerStore((s) => s.currentId)
   const tracks = useCatalogStore(selectTracks)
 
   const ids = useMemo(
@@ -16,26 +14,21 @@ export function useTrackListPlayback(sourceIds: string[] | (() => string[])) {
     [typeof sourceIds === 'function' ? tracks : sourceIds],
   )
 
-  useEffect(() => {
-    void ensureCatalogLoaded()
-  }, [])
-
   return {
-    catalog,
-    player,
+    currentId,
     playAt: (index: number) => {
-      player.playFrom(index, ids)
+      usePlayerStore.getState().playFrom(index, ids)
     },
     playById: (id: string) => {
       const index = ids.indexOf(id)
       if (index < 0) return
-      player.playFrom(index, ids)
+      usePlayerStore.getState().playFrom(index, ids)
     },
     playNextTrack: (id: string) => {
-      player.playNext(id)
+      usePlayerStore.getState().playNext(id)
     },
     addTrackToQueue: (id: string) => {
-      player.addToQueue(id)
+      usePlayerStore.getState().addToQueue(id)
     },
   }
 }

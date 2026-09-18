@@ -24,7 +24,7 @@ Repository layout for tdmusic. Library versions: [tech-stack.md](tech-stack.md).
 │   │   └── routes/               album / artist / playlist path helpers
 │   ├── locales/                  i18n message modules (en, zh)
 │   ├── routes/                   TanStack Router file routes + routeTree.gen.ts
-│   ├── stores/                   Zustand stores + colocated __tests__/
+│   ├── stores/                   Zustand stores + catalog bootstrap bind + colocated __tests__/
 │   ├── styles/                   Global app CSS
 │   ├── theme/                    MUI theme
 │   └── main.tsx
@@ -67,7 +67,7 @@ Repository layout for tdmusic. Library versions: [tech-stack.md](tech-stack.md).
 - Framework-agnostic helpers → `src/lib/`, grouped as `cache/`, `catalog/`, `playback/`, or `routes/` when they belong to those domains. Small shared utilities may stay at `src/lib/` root.
 - Cache internals (`cacheStore`, `cacheIngest`, `cacheEviction`, `trackMetadata`, `downloadLimiter`) stay inside `src/lib/cache/`; app code imports `musicCache`.
 - Catalog query/index helpers (`catalogIndex`: `DisplayTrack`, grouping, search, enrich patches) live in `src/lib/catalog/`; the catalog store holds the snapshot and schedules enrich.
-- Catalog load+hydrate orchestration (`catalogBootstrap`) lives in `src/lib/catalog/`. It uses Zustand stores but is not a store.
+- Catalog load+hydrate orchestration (`createCatalogBootstrap`) lives in `src/lib/catalog/` and is framework-agnostic. App/test startup binds Zustand ports via `bindAppCatalogBootstrap` (`src/stores/bindAppCatalog.ts`). Public `ensureCatalogLoaded` / `loadCatalogAndHydratePlayer` stay on `catalogBootstrap.ts`.
 - Playback transport (`playbackTransport`) binds the queue/player store to a single `<audio>` element; `AudioHost` only wires React effects and the element.
 - Locale strings → `src/locales/`; i18n bootstrap → `src/i18n/`.
 - Unit tests colocate next to the module: `src/{hooks,lib,routes,components,stores}/**/__tests__/*.{spec,test}.{ts,tsx}`. Do not put new specs in `src/__tests__/` unless they are app-level (see [testing.md](testing.md)).

@@ -7,7 +7,6 @@ import {
   toDisplayTrack,
   type CatalogSearchResult,
   type CatalogSnapshot,
-  type CatalogTrackGroup,
   type DisplayTrack,
 } from '@/lib/catalog/catalogIndex'
 import { clearEnrichQueue, enqueueEnrich } from '@/lib/catalog/enrichQueue'
@@ -18,8 +17,6 @@ import {
   type CatalogError,
   type NormalizedPlaylist,
 } from '@/lib/catalog/normalizeCatalog'
-
-export type { DisplayTrack, CatalogTrackGroup, CatalogSearchResult }
 
 type CatalogState = {
   snapshot: CatalogSnapshot

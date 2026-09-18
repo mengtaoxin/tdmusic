@@ -1,23 +1,30 @@
-import { clearAllMusicCaches } from '@/lib/cache/musicCache'
-import { useCatalogStore } from '@/stores/catalog'
-import { usePlayerStore } from '@/stores/player'
+import {
+  createCatalogBootstrap,
+  type CatalogBootstrapPorts,
+} from '@/lib/catalog/createCatalogBootstrap'
 
-/** Shared in-flight load so App bootstrap and route views do not race. */
-let loadInFlight: Promise<void> | null = null
+export { createCatalogBootstrap }
+export type { CatalogBootstrapPorts }
+
+type CatalogBootstrapApi = ReturnType<typeof createCatalogBootstrap>
+
+let bound: CatalogBootstrapApi | null = null
+
+/** Wire store/cache ports once at app (or test) startup. `lib` does not import Zustand. */
+export function bindCatalogBootstrap(ports: CatalogBootstrapPorts) {
+  bound = createCatalogBootstrap(ports)
+}
+
+function api(): CatalogBootstrapApi {
+  if (!bound) {
+    throw new Error('Catalog bootstrap is not bound')
+  }
+  return bound
+}
 
 /** Load catalog from the current config URL, then hydrate player from known ids. */
 export async function loadCatalogAndHydratePlayer(): Promise<void> {
-  if (loadInFlight) return loadInFlight
-
-  loadInFlight = (async () => {
-    await useCatalogStore.getState().load()
-    const ids = new Set(useCatalogStore.getState().snapshot.tracks.map((track) => track.id))
-    usePlayerStore.getState().hydrate(ids)
-  })().finally(() => {
-    loadInFlight = null
-  })
-
-  return loadInFlight
+  return api().loadCatalogAndHydratePlayer()
 }
 
 /**
@@ -25,8 +32,7 @@ export async function loadCatalogAndHydratePlayer(): Promise<void> {
  * exist; joins an in-flight bootstrap/load instead of starting a second fetch.
  */
 export async function ensureCatalogLoaded(): Promise<void> {
-  if (useCatalogStore.getState().snapshot.tracks.length) return
-  await loadCatalogAndHydratePlayer()
+  return api().ensureCatalogLoaded()
 }
 
 /**
@@ -34,9 +40,5 @@ export async function ensureCatalogLoaded(): Promise<void> {
  * clear now playing / the play queue, and re-enqueue enrichment.
  */
 export async function clearMusicCachesAndRefresh(): Promise<void> {
-  await clearAllMusicCaches()
-  const catalog = useCatalogStore.getState()
-  catalog.resetDisplayFromConfig()
-  catalog.scheduleEnrichment()
-  usePlayerStore.getState().clearNowPlaying()
+  return api().clearMusicCachesAndRefresh()
 }

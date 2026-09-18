@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next'
 import { CoverImg } from '@/components/CoverImg'
 import { useTrackDownload } from '@/hooks/useTrackDownload'
 import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels'
-import type { DisplayTrack } from '@/stores/catalog'
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
 import { usePlayerStore } from '@/stores/player'
 
 export type TrackListItemProps = {

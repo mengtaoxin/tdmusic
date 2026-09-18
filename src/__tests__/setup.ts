@@ -5,11 +5,14 @@ import { Blob as NodeBlob, File as NodeFile } from 'node:buffer'
 import { afterEach, beforeAll, beforeEach } from 'vitest'
 
 import '@/i18n'
+import { bindAppCatalogBootstrap } from '@/stores/bindAppCatalog'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
 import { useSettingsStore } from '@/stores/settings'
 import { buildCatalogSnapshot } from '@/lib/catalog/catalogIndex'
 import { readStoredConfigUrl } from '@/lib/catalog/configUrl'
+
+bindAppCatalogBootstrap()
 
 // jsdom Blob is not structured-cloneable into fake-indexeddb reliably.
 globalThis.Blob = NodeBlob as unknown as typeof globalThis.Blob

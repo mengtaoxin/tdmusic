@@ -5,7 +5,7 @@ import { act } from 'react'
 import { AudioHost } from '@/components/AudioHost'
 import { renderWithProviders } from '@/__tests__/renderWithProviders'
 import { listAppLogs, resetAppLogDbForTests } from '@/lib/appLogStore'
-import type { DisplayTrack } from '@/stores/catalog'
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
 

@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 
 import { TrackListItem } from '@/components/TrackListItem'
 import { renderWithProviders } from '@/__tests__/renderWithProviders'
-import type { DisplayTrack } from '@/stores/catalog'
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
 
 function makeTrack(): DisplayTrack {
   return {

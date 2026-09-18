@@ -7,7 +7,8 @@ import {
   putFiles,
   resetCacheDbForTests,
 } from '@/lib/cache/cacheStore'
-import { useCatalogStore, type DisplayTrack } from '@/stores/catalog'
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
+import { useCatalogStore } from '@/stores/catalog'
 import {
   clearMusicCachesAndRefresh,
   ensureCatalogLoaded,

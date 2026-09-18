@@ -11,7 +11,7 @@ import { localizeAlbumName } from '@/lib/catalog/displayLabels'
 import { findAlbumGroup } from '@/lib/routes/albumRoutes'
 import { decodeRouteParam } from '@/lib/routes/routeParams'
 import { selectAlbums, useCatalogStore } from '@/stores/catalog'
-import type { DisplayTrack } from '@/stores/catalog'
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
 
 export const Route = createFileRoute('/albums/$album')({
   component: AlbumDetailPage,
@@ -27,7 +27,7 @@ function AlbumDetailPage() {
   const album = findAlbumGroup(albums, albumName)
   const tracks = album?.tracks ?? ([] as DisplayTrack[])
 
-  const { player, playAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(
+  const { currentId, playAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(
     tracks.map((track) => track.id),
   )
 
@@ -48,7 +48,7 @@ function AlbumDetailPage() {
       ) : album ? (
         <TrackList
           tracks={tracks}
-          currentId={player.currentId}
+          currentId={currentId}
           onSelect={playAt}
           onPlayNext={playNextTrack}
           onAddToQueue={addTrackToQueue}

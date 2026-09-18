@@ -5,7 +5,7 @@ import {
   subscribeCacheDownloads,
   trackDownloadPercent,
 } from '@/lib/cache/musicCache'
-import type { DisplayTrack } from '@/stores/catalog'
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
 
 export function useTrackDownload(track: DisplayTrack | null | undefined) {
   const [downloading, setDownloading] = useState(() => (track ? isTrackDownloading(track) : false))

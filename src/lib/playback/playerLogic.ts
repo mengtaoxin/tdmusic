@@ -1,5 +1,10 @@
 export type RepeatMode = 'off' | 'all' | 'one'
 
+/** Manual next/prev/skip leave the current track even when repeat is one. */
+export function repeatModeForManualAdvance(repeatMode: RepeatMode): RepeatMode {
+  return repeatMode === 'one' ? 'off' : repeatMode
+}
+
 export function nextIndex(
   currentIndex: number,
   queueLength: number,

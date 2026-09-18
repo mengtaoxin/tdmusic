@@ -3,7 +3,6 @@ import { render, waitFor } from '@testing-library/react'
 import { useEffect } from 'react'
 
 import { useTrackListPlayback } from '@/hooks/useTrackListPlayback'
-import * as catalogBootstrap from '@/lib/catalog/catalogBootstrap'
 import { usePlayerStore } from '@/stores/player'
 
 type Api = ReturnType<typeof useTrackListPlayback>
@@ -17,8 +16,7 @@ function Harness({ ids, onReady }: { ids: string[]; onReady: (api: Api) => void 
 }
 
 describe('useTrackListPlayback', () => {
-  it('ensures catalog on mount and wires playAt / playNext / addToQueue', async () => {
-    const ensure = vi.spyOn(catalogBootstrap, 'ensureCatalogLoaded').mockResolvedValue(undefined)
+  it('wires playAt / playNext / addToQueue to the player store', async () => {
     let api!: Api
 
     render(
@@ -31,7 +29,6 @@ describe('useTrackListPlayback', () => {
     )
 
     await waitFor(() => {
-      expect(ensure).toHaveBeenCalled()
       expect(api).toBeDefined()
     })
 
