@@ -88,7 +88,6 @@ export function createPlaybackSession(
       audio.src = url
       audio.load()
       hooks.scheduleEnrichTrack(id)
-      hooks.schedulePrefetch()
       const seek = player.getSeekTo()
       const onLoaded = () => {
         if (!isCurrentLoad(generation, id)) return
@@ -101,6 +100,7 @@ export function createPlaybackSession(
             player.pause()
           })
         }
+        hooks.schedulePrefetch()
         audio.removeEventListener('loadedmetadata', onLoaded)
         if (loadedMetadataHandler === onLoaded) loadedMetadataHandler = null
       }

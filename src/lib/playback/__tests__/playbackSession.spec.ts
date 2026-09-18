@@ -82,11 +82,12 @@ describe('playbackSession', () => {
     expect(audio.src).toBe('blob:good')
     expect(audio.load).toHaveBeenCalledOnce()
     expect(scheduleEnrichTrack).toHaveBeenCalledWith('t1')
-    expect(schedulePrefetch).toHaveBeenCalledOnce()
+    expect(schedulePrefetch).not.toHaveBeenCalled()
     expect(skip).not.toHaveBeenCalled()
     expect(appendAppLog).not.toHaveBeenCalled()
 
     audio.emit('loadedmetadata')
+    expect(schedulePrefetch).toHaveBeenCalledOnce()
     expect(audio.currentTime).toBe(12)
     expect(seekTo).toBeNull()
     expect(audio.play).toHaveBeenCalledOnce()
@@ -194,6 +195,7 @@ describe('playbackSession', () => {
           resolvers.set(id, resolve)
         })
       })
+    const schedulePrefetch = vi.fn<() => void>()
     const session = createPlaybackSession(
       () => audio,
       {
@@ -212,7 +214,7 @@ describe('playbackSession', () => {
         resolvePlayableUrl,
         appendAppLog: vi.fn<(message: string) => void>(),
         scheduleEnrichTrack: vi.fn<(id: string) => void>(),
-        schedulePrefetch: vi.fn<() => void>(),
+        schedulePrefetch,
       },
     )
 
@@ -227,11 +229,13 @@ describe('playbackSession', () => {
     audio.emit('loadedmetadata')
     expect(audio.play).not.toHaveBeenCalled()
     expect(audio.currentTime).toBe(0)
+    expect(schedulePrefetch).not.toHaveBeenCalled()
 
     resolvers.get('t2')!('blob:t2')
     await loadT2
     audio.emit('loadedmetadata')
     expect(audio.src).toBe('blob:t2')
     expect(audio.play).toHaveBeenCalledOnce()
+    expect(schedulePrefetch).toHaveBeenCalledOnce()
   })
 })
