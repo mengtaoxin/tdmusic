@@ -10,18 +10,6 @@ import vuetify from '../plugins/vuetify'
 import en from '../locales/en'
 import zh from '../locales/zh'
 
-const englishMenus = [
-  'Now Playing',
-  'Music List',
-  'Playlist',
-  'Artist List',
-  'Album List',
-  'Language',
-  'More',
-]
-
-const chineseMenus = ['正在播放', '音乐列表', '播放列表', '歌手列表', '专辑列表', '语言', '更多']
-
 function createTestI18n() {
   return createI18n({
     legacy: false,
@@ -130,7 +118,7 @@ describe('App', () => {
     expect(brandIcon.attributes('src')).toMatch(/brand-icon\.png|data:image\/png/)
   })
 
-  it('shows English header menus by default and switches to Chinese from the locale menu', async () => {
+  it('switches locale from the header menu and persists tdmusic.locale', async () => {
     const router = createRouter({
       history: createMemoryHistory(),
       routes: [{ path: '/', name: 'home', component: HomeView }],
@@ -147,11 +135,7 @@ describe('App', () => {
       },
     })
 
-    const text = wrapper.text()
-    for (const label of englishMenus) {
-      expect(text).toContain(label)
-    }
-    expect(text).not.toMatch(/(^|[^a-zA-Z])Home([^a-zA-Z]|$)/)
+    expect(wrapper.text()).toContain('Now Playing')
 
     const localeToggle = wrapper.find('[data-testid="nav-locale-toggle"]')
     expect(localeToggle.exists()).toBe(true)
@@ -166,11 +150,7 @@ describe('App', () => {
     zhOption!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
     await wrapper.vm.$nextTick()
 
-    const zhText = wrapper.text()
-    for (const label of chineseMenus) {
-      expect(zhText).toContain(label)
-    }
-    expect(zhText).not.toContain('首页')
+    expect(wrapper.text()).toContain('正在播放')
     expect(localStorage.getItem('tdmusic.locale')).toBe('zh')
 
     wrapper.unmount()

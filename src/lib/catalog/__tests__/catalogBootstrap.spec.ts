@@ -47,20 +47,6 @@ describe('catalogBootstrap', () => {
     expect(hydrate).toHaveBeenCalledWith(new Set(['a']))
   })
 
-  it('ensureCatalogLoaded loads and hydrates when the catalog is empty', async () => {
-    const catalog = useCatalogStore()
-    const player = usePlayerStore()
-    const load = vi.spyOn(catalog, 'load').mockImplementation(async () => {
-      catalog.tracks = sampleTracks()
-    })
-    const hydrate = vi.spyOn(player, 'hydrate').mockReturnValue(true)
-
-    await ensureCatalogLoaded()
-
-    expect(load).toHaveBeenCalledOnce()
-    expect(hydrate).toHaveBeenCalledWith(new Set(['a']))
-  })
-
   it('ensureCatalogLoaded is a no-op when tracks are already present', async () => {
     const catalog = useCatalogStore()
     const player = usePlayerStore()

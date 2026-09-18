@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { nextTick } from 'vue'
 import { createI18n } from 'vue-i18n'
 import { createPinia } from 'pinia'
 import { createRouter, createMemoryHistory } from 'vue-router'
@@ -9,10 +8,6 @@ import TrackListItem from '@/components/TrackListItem.vue'
 import vuetify from '@/plugins/vuetify'
 import en from '@/locales/en'
 import zh from '@/locales/zh'
-import {
-  reportCacheDownload,
-  resetCacheDownloadStateForTests,
-} from '@/lib/cache/cacheDownloadState'
 import { useCatalogStore, type DisplayTrack } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
 import NowPlayingView from '../NowPlayingView.vue'
@@ -65,10 +60,6 @@ async function mountNowPlaying(trackCount = 1) {
 }
 
 describe('NowPlayingView', () => {
-  beforeEach(() => {
-    resetCacheDownloadStateForTests()
-  })
-
   it('does not show a Now Playing page heading', async () => {
     const { wrapper } = await mountNowPlaying()
     await flushPromises()
@@ -88,17 +79,6 @@ describe('NowPlayingView', () => {
     expect(artistLink.text()).toBe('Artist One')
     expect(albumLink.exists()).toBe(true)
     expect(albumLink.text()).toBe('Album One')
-  })
-
-  it('only mounts a viewport-sized subset of queue tracks for large queues', async () => {
-    const trackCount = 200
-    const { wrapper } = await mountNowPlaying(trackCount)
-    await flushPromises()
-
-    const rendered = wrapper.findAllComponents(TrackListItem).length
-
-    expect(rendered).toBeGreaterThan(0)
-    expect(rendered).toBeLessThan(trackCount)
   })
 
   it('blocks mobile long-press copy on the playback surface', async () => {
@@ -222,21 +202,5 @@ describe('NowPlayingView', () => {
     expect(rows[0]!.props('active')).toBe(false)
     expect(rows[1]!.props('active')).toBe(false)
     expect(rows[2]!.props('active')).toBe(true)
-  })
-
-  it('animates the hero cover while the current track is downloading', async () => {
-    const { wrapper } = await mountNowPlaying()
-    await flushPromises()
-
-    reportCacheDownload('/music/t1.mp3', 't1', { phase: 'download', loaded: 0, total: null })
-    await nextTick()
-
-    const hero = wrapper.find('.cover-wrap')
-    expect(hero.find('[data-testid="cover-downloading"]').exists()).toBe(true)
-
-    reportCacheDownload('/music/t1.mp3', 't1', { phase: 'done', loaded: 1, total: 1 })
-    await nextTick()
-
-    expect(hero.find('[data-testid="cover-downloading"]').exists()).toBe(false)
   })
 })

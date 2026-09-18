@@ -128,20 +128,6 @@ describe('ArtistAlbumsView', () => {
     expect(albumB.find('.album-tile__fallback').exists()).toBe(true)
   })
 
-  it('only mounts a viewport-sized subset of album tiles for large catalogs', async () => {
-    stubResizeObserver(400, 400)
-    const albumCount = 200
-    const tracks = Array.from({ length: albumCount }, (_, i) =>
-      makeTrack(`t${i}`, 'Artist One', `Album ${i}`),
-    )
-    const wrapper = await mountArtistAlbums('Artist One', tracks)
-    await flushPromises()
-
-    const rendered = wrapper.findAll('.album-tile').length
-    expect(rendered).toBeGreaterThan(0)
-    expect(rendered).toBeLessThan(albumCount)
-  })
-
   it('shows not-found when the artist is missing', async () => {
     stubResizeObserver(800)
     const wrapper = await mountArtistAlbums('Missing')

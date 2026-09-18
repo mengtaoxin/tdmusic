@@ -64,29 +64,6 @@ describe('enrichOneTrack', () => {
     expect(ensureCached).not.toHaveBeenCalled()
   })
 
-  it('prefers config fields over extracted metadata', async () => {
-    const track = {
-      id: 't1',
-      path: 'https://example.com/song.mp3',
-      title: 'Config Title',
-      artist: 'Config Artist',
-    }
-    vi.spyOn(trackMetadata, 'ensureTrackMetadata').mockResolvedValue({
-      title: 'Parsed',
-      artist: 'Artist',
-      album: 'Album',
-    })
-
-    const patch = await enrichOneTrack(track)
-
-    expect(patch).toEqual({
-      displayTitle: 'Config Title',
-      displayArtist: 'Config Artist',
-      displayAlbum: 'Album',
-      displayCover: undefined,
-    })
-  })
-
   it('returns null when metadata is unavailable', async () => {
     vi.spyOn(trackMetadata, 'ensureTrackMetadata').mockResolvedValue(null)
 

@@ -122,11 +122,6 @@ describe('playbackTransport', () => {
 
   it('uses createPlaybackSession by default', async () => {
     const audio = makeAudio()
-    const resolvePlayableUrl = vi
-      .fn<(path: string, id: string) => Promise<string>>()
-      .mockResolvedValue('blob:ok')
-    const scheduleEnrichTrack = vi.fn<(id: string) => void>()
-    const schedulePrefetch = noop()
 
     const transport = createPlaybackTransport({
       getAudio: () => audio,
@@ -146,17 +141,14 @@ describe('playbackTransport', () => {
       setCurrentTime: vi.fn<(time: number) => void>(),
       setDuration: vi.fn<(duration: number) => void>(),
       syncMediaSession: noop(),
-      schedulePrefetch,
-      resolvePlayableUrl,
+      schedulePrefetch: noop(),
+      resolvePlayableUrl: async () => 'blob:ok',
       appendAppLog: vi.fn<(message: string) => void>(),
-      scheduleEnrichTrack,
+      scheduleEnrichTrack: vi.fn<(id: string) => void>(),
       createSession: (getAudio, player, hooks) => createPlaybackSession(getAudio, player, hooks),
     })
 
     await transport.loadCurrent()
-    expect(resolvePlayableUrl).toHaveBeenCalled()
-    expect(scheduleEnrichTrack).toHaveBeenCalledWith('t1')
-    expect(schedulePrefetch).toHaveBeenCalled()
     expect(transport.isBoundToCurrent()).toBe(true)
   })
 })

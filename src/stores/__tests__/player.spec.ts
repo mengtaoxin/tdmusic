@@ -167,17 +167,12 @@ describe('playerStore', () => {
     expect(store.originalQueue).toEqual(['a', 'b', 'z'])
   })
 
-  it('playNext on empty queue starts playback with that track', () => {
+  it.each([
+    ['playNext', (store: ReturnType<typeof usePlayerStore>, id: string) => store.playNext(id)],
+    ['addToQueue', (store: ReturnType<typeof usePlayerStore>, id: string) => store.addToQueue(id)],
+  ] as const)('%s on empty queue starts playback with that track', (_name, enqueue) => {
     const store = usePlayerStore()
-    store.playNext('solo')
-    expect(store.queue).toEqual(['solo'])
-    expect(store.currentId).toBe('solo')
-    expect(store.playing).toBe(true)
-  })
-
-  it('addToQueue on empty queue starts playback with that track', () => {
-    const store = usePlayerStore()
-    store.addToQueue('solo')
+    enqueue(store, 'solo')
     expect(store.queue).toEqual(['solo'])
     expect(store.currentId).toBe('solo')
     expect(store.playing).toBe(true)

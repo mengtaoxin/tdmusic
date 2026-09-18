@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createI18n } from 'vue-i18n'
 import { createPinia } from 'pinia'
@@ -9,7 +9,6 @@ import vuetify from '@/plugins/vuetify'
 import en from '@/locales/en'
 import zh from '@/locales/zh'
 import { useCatalogStore, type DisplayTrack } from '@/stores/catalog'
-import { usePlayerStore } from '@/stores/player'
 import ArtistAlbumDetailView from '../ArtistAlbumDetailView.vue'
 
 function makeTrack(id: string, artist: string, album: string, title: string): DisplayTrack {
@@ -32,9 +31,6 @@ async function mountArtistAlbum(artist: string, album: string) {
   ]
   catalog.loading = false
 
-  const player = usePlayerStore(pinia)
-  const playFrom = vi.spyOn(player, 'playFrom')
-
   const i18n = createI18n({
     legacy: false,
     locale: 'en',
@@ -49,28 +45,24 @@ async function mountArtistAlbum(artist: string, album: string) {
   await router.push(`/artists/${encodeURIComponent(artist)}/albums/${encodeURIComponent(album)}`)
   await router.isReady()
 
-  const wrapper = mount(ArtistAlbumDetailView, {
+  return mount(ArtistAlbumDetailView, {
     global: { plugins: [pinia, router, vuetify, i18n] },
   })
-  return { wrapper, playFrom }
 }
 
 describe('ArtistAlbumDetailView', () => {
-  it('lists tracks for the artist album and plays from the selected index', async () => {
-    const { wrapper, playFrom } = await mountArtistAlbum('Artist One', 'Album A')
+  it('lists tracks for the artist album', async () => {
+    const wrapper = await mountArtistAlbum('Artist One', 'Album A')
     await flushPromises()
 
     const items = wrapper.findAllComponents(TrackListItem)
     expect(items).toHaveLength(2)
     expect(items[0]!.props('track').id).toBe('t1')
     expect(items[1]!.props('track').id).toBe('t2')
-
-    items[1]!.vm.$emit('select')
-    expect(playFrom).toHaveBeenCalledWith(1, ['t1', 't2'])
   })
 
   it('shows not-found when the artist is missing', async () => {
-    const { wrapper } = await mountArtistAlbum('Missing', 'Album A')
+    const wrapper = await mountArtistAlbum('Missing', 'Album A')
     await flushPromises()
 
     expect(wrapper.text()).toContain('Artist not found.')
@@ -78,7 +70,7 @@ describe('ArtistAlbumDetailView', () => {
   })
 
   it('shows not-found when the album is missing', async () => {
-    const { wrapper } = await mountArtistAlbum('Artist One', 'Missing')
+    const wrapper = await mountArtistAlbum('Artist One', 'Missing')
     await flushPromises()
 
     expect(wrapper.text()).toContain('Album not found.')

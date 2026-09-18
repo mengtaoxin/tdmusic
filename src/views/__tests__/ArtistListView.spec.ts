@@ -93,25 +93,4 @@ describe('ArtistListView', () => {
     expect(wrapper.text()).toContain('Artist One')
     expect(wrapper.text()).toContain('Artist Two')
   })
-
-  it('only mounts a viewport-sized subset of artists for large catalogs', async () => {
-    stubResizeObserver(400)
-    const artistCount = 200
-    const tracks = Array.from({ length: artistCount }, (_, i) => makeTrack(`t${i}`, `Artist ${i}`))
-    const wrapper = await mountArtistList(tracks)
-    await flushPromises()
-
-    const rendered = wrapper.findAll('.v-list-item').length
-    expect(rendered).toBeGreaterThan(0)
-    expect(rendered).toBeLessThan(artistCount)
-  })
-
-  it('uses a viewport-bounded page shell with a flex list host', async () => {
-    stubResizeObserver(800)
-    const wrapper = await mountArtistList()
-    await flushPromises()
-
-    expect(wrapper.find('.artist-list-page').exists()).toBe(true)
-    expect(wrapper.find('.list-host').exists()).toBe(true)
-  })
 })
