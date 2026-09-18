@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
 import Container from '@mui/material/Container'
 import IconButton from '@mui/material/IconButton'
 import Slider from '@mui/material/Slider'
@@ -10,7 +9,6 @@ import Typography from '@mui/material/Typography'
 import AlbumIcon from '@mui/icons-material/Album'
 import PauseIcon from '@mui/icons-material/Pause'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
-import PlaylistRemoveIcon from '@mui/icons-material/PlaylistRemove'
 import RepeatIcon from '@mui/icons-material/Repeat'
 import RepeatOneIcon from '@mui/icons-material/RepeatOne'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
@@ -18,6 +16,7 @@ import SkipNextIcon from '@mui/icons-material/SkipNext'
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious'
 import { useTranslation } from 'react-i18next'
 
+import { ClearUpcomingButton } from '@/components/ClearUpcomingButton'
 import { CoverImg } from '@/components/CoverImg'
 import { TrackListItem } from '@/components/TrackListItem'
 import { VirtualRowList } from '@/components/VirtualRowList'
@@ -247,18 +246,7 @@ function NowPlayingPage() {
         <Typography variant="h6" component="h2" sx={{ m: 0, whiteSpace: 'nowrap', flexShrink: 0 }}>
           {t('player.queue')}
         </Typography>
-        {queueRows.length > 1 ? (
-          <Button
-            data-testid="clear-upcoming"
-            color="secondary"
-            variant="contained"
-            startIcon={<PlaylistRemoveIcon />}
-            sx={{ flexShrink: 0 }}
-            onClick={clearUpcoming}
-          >
-            {t('player.clearUpcoming')}
-          </Button>
-        ) : null}
+        {queueRows.length > 1 ? <ClearUpcomingButton onClick={clearUpcoming} /> : null}
       </Box>
 
       <VirtualRowList
