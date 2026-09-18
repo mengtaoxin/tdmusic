@@ -1,30 +1,51 @@
 const CONCURRENCY = 3
 
-const pending: Array<() => void> = []
+export type DownloadPriority = 'high' | 'normal'
+
+type Waiter = {
+  priority: DownloadPriority
+  resume: () => void
+}
+
+const pending: Waiter[] = []
 let active = 0
 
-function acquire(): Promise<void> {
+function takeNextWaiter(): Waiter | undefined {
+  const highIndex = pending.findIndex((w) => w.priority === 'high')
+  if (highIndex >= 0) {
+    return pending.splice(highIndex, 1)[0]
+  }
+  return pending.shift()
+}
+
+function acquire(priority: DownloadPriority): Promise<void> {
   if (active < CONCURRENCY) {
     active += 1
     return Promise.resolve()
   }
   return new Promise((resolve) => {
-    pending.push(() => {
-      active += 1
-      resolve()
+    pending.push({
+      priority,
+      resume: () => {
+        active += 1
+        resolve()
+      },
     })
   })
 }
 
 function release(): void {
   active -= 1
-  const next = pending.shift()
-  if (next) next()
+  const next = takeNextWaiter()
+  if (next) next.resume()
 }
 
 /** Run `fn` while holding one of at most 3 global audio-download slots. */
-export async function withAudioDownloadSlot<T>(fn: () => Promise<T>): Promise<T> {
-  await acquire()
+export async function withAudioDownloadSlot<T>(
+  fn: () => Promise<T>,
+  priority: DownloadPriority = 'normal',
+): Promise<T> {
+  await acquire(priority)
   try {
     return await fn()
   } finally {

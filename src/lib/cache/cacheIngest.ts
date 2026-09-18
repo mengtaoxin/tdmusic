@@ -8,7 +8,7 @@ import {
 } from './cacheStore'
 import { ensureQuota } from './cacheEviction'
 import { reportCacheDownload, clearCacheDownloadState } from './cacheDownloadState'
-import { withAudioDownloadSlot } from './downloadLimiter'
+import { withAudioDownloadSlot, type DownloadPriority } from './downloadLimiter'
 import { isPlayablePath } from '../paths'
 
 export type CacheProgress = {
@@ -111,12 +111,20 @@ async function downloadAndStore(
 }
 
 /** Cache playable audio (http(s) or site-absolute). No-op for other paths. */
+export type EnsureTrackCachedOptions = {
+  onProgress?: (progress: CacheProgress) => void
+  priority?: DownloadPriority
+}
+
 export async function ensureTrackCached(
   sourceUrl: string,
   id?: string,
-  onProgress?: (progress: CacheProgress) => void,
+  options?: EnsureTrackCachedOptions,
 ): Promise<void> {
   if (!isPlayablePath(sourceUrl)) return
+
+  const onProgress = options?.onProgress
+  const priority = options?.priority ?? 'normal'
 
   if (await isTrackCached(sourceUrl)) {
     onProgress?.({ phase: 'done', loaded: 0, total: 0 })
@@ -129,11 +137,12 @@ export async function ensureTrackCached(
     return
   }
 
-  const job = withAudioDownloadSlot(() => downloadAndStore(sourceUrl, id, onProgress)).finally(
-    () => {
-      ensureInFlight.delete(sourceUrl)
-    },
-  )
+  const job = withAudioDownloadSlot(
+    () => downloadAndStore(sourceUrl, id, onProgress),
+    priority,
+  ).finally(() => {
+    ensureInFlight.delete(sourceUrl)
+  })
   ensureInFlight.set(sourceUrl, job)
   await job
 }
