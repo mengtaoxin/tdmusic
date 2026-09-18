@@ -22,17 +22,17 @@
 ```sh
 npm install
 npx playwright install chromium firefox webkit
-./scripts/dev-start.sh
+npm run dev
 ```
 
-打开 [http://localhost:3000](http://localhost:3000)。停止：`./scripts/dev-stop.sh`。
+打开 [http://localhost:3000](http://localhost:3000)。停止：Ctrl+C。
 
 命令说明见 [commands.md](commands.md)。
 
 | 命令 | 用途 |
 | ---- | ---- |
 | `npm install` + Playwright install | 安装依赖与浏览器 |
-| `./scripts/dev-start.sh` / `dev-stop.sh` | 启动 / 停止 Vite 开发服务器 |
+| `npm run dev` | 启动 Vite 开发服务器 |
 | `npm run build` | 生产构建 |
 | `npm run format && npm run lint && npm run type-check` | 格式化 + lint + 类型检查（**会改文件**） |
 | `npm run test:unit` / `test:e2e` | 单元（Vitest）/ e2e（Playwright） |
