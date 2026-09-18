@@ -45,7 +45,7 @@ export type PlaybackSessionHooks = {
 
 /**
  * Orchestrates load → resolve URL → enrich/prefetch → failure skip for the
- * current track. The Vue host only owns the `<audio>` element and watchers.
+ * current track. The React host only owns the `<audio>` element and effects.
  */
 export function createPlaybackSession(
   getAudio: () => PlaybackAudioElement | null,

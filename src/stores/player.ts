@@ -3,7 +3,6 @@ import { create } from 'zustand'
 import { getItem, removeItem, setItem } from '@/lib/clientStorage'
 import {
   appendToQueue,
-  buildQueueFrom,
   clearUpcoming,
   hydratePlayerState,
   insertAfterCurrent,
@@ -13,11 +12,13 @@ import {
   PLAYER_STORAGE_KEY,
   prevIndex,
   removeAtIndex,
-  serializePlayerState,
+  repeatModeForManualAdvance,
   shuffleFromCurrent,
   shuffleUpcoming,
   type RepeatMode,
 } from '@/lib/playback/playerLogic'
+import { createPlayFromSession } from '@/lib/playback/playFromSession'
+import { createPlayerPersist } from '@/lib/playback/playerPersist'
 
 type PlayerState = {
   queue: string[]
@@ -55,38 +56,23 @@ type PlayerState = {
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => {
-  let cancelFill: (() => void) | null = null
-  let persistTimer: ReturnType<typeof setTimeout> | null = null
-
-  function persistNow() {
-    const s = get()
-    const payload = serializePlayerState({
-      queue: s.queue,
-      originalQueue: s.originalQueue,
-      currentId: s.currentId,
-      currentIndex: s.currentIndex,
-      currentTime: s.currentTime,
-      repeatMode: s.repeatMode,
-      shuffle: s.shuffle,
-    })
-    setItem(PLAYER_STORAGE_KEY, payload)
-  }
-
-  function schedulePersist() {
-    if (persistTimer) clearTimeout(persistTimer)
-    persistTimer = setTimeout(() => {
-      persistTimer = null
-      persistNow()
-    }, 400)
-  }
-
-  function flushPersist() {
-    if (persistTimer) {
-      clearTimeout(persistTimer)
-      persistTimer = null
-    }
-    persistNow()
-  }
+  const playFromSession = createPlayFromSession()
+  const persist = createPlayerPersist({
+    setItem,
+    getPayload: () => {
+      const s = get()
+      return {
+        queue: s.queue,
+        originalQueue: s.originalQueue,
+        currentId: s.currentId,
+        currentIndex: s.currentIndex,
+        currentTime: s.currentTime,
+        repeatMode: s.repeatMode,
+        shuffle: s.shuffle,
+      }
+    },
+  })
+  const { schedulePersist, flushPersist } = persist
 
   function clearPlayback() {
     set({ currentId: null, currentIndex: -1, currentTime: 0 })
@@ -119,7 +105,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
 
   function next() {
     const { currentIndex, queue, repeatMode, shuffle } = get()
-    const modeForAdvance = repeatMode === 'one' ? 'off' : repeatMode
+    const modeForAdvance = repeatModeForManualAdvance(repeatMode)
     const nextIdx = nextIndex(currentIndex, queue.length, {
       repeatMode: modeForAdvance,
       shuffle,
@@ -174,23 +160,19 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     },
 
     playFrom(startIndex: number, sourceIds: string[]) {
-      cancelFill?.()
-      cancelFill = null
-
-      if (startIndex < 0 || startIndex >= sourceIds.length) return
-
-      set({
-        queue: [],
-        originalQueue: [],
-        currentTime: 0,
-        seekTo: 0,
-      })
-
-      const job = buildQueueFrom(sourceIds, startIndex, {
-        onHead: (headId) => {
+      playFromSession.start(startIndex, sourceIds, {
+        onReset: () => {
+          set({
+            queue: [],
+            originalQueue: [],
+            currentTime: 0,
+            seekTo: 0,
+          })
+        },
+        onHead: (headId, index) => {
           set({
             currentId: headId,
-            currentIndex: startIndex,
+            currentIndex: index,
             pendingPlay: true,
             playing: true,
             loadToken: get().loadToken + 1,
@@ -206,7 +188,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
           schedulePersist()
         },
         onDone: () => {
-          cancelFill = null
           if (get().shuffle) {
             const shuffled = shuffleFromCurrent(get().originalQueue, get().currentIndex)
             set({ queue: shuffled, currentIndex: 0 })
@@ -214,7 +195,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
           flushPersist()
         },
       })
-      cancelFill = job.cancel
     },
 
     play,
@@ -247,7 +227,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
         return
       }
       const { currentIndex, queue, repeatMode } = get()
-      const modeForAdvance = repeatMode === 'one' ? 'off' : repeatMode
+      const modeForAdvance = repeatModeForManualAdvance(repeatMode)
       const prevIdx = prevIndex(currentIndex, queue.length, {
         repeatMode: modeForAdvance,
       })
@@ -348,15 +328,14 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
 
       if (removingCurrent) {
         if (s.queue.length === 1) {
-          cancelFill?.()
-          cancelFill = null
+          playFromSession.cancel()
           set({ queue: [], originalQueue: [], seekTo: 0 })
           clearPlayback()
           pause()
           flushPersist()
           return
         }
-        const modeForAdvance = s.repeatMode === 'one' ? 'off' : s.repeatMode
+        const modeForAdvance = repeatModeForManualAdvance(s.repeatMode)
         const nextIdx = nextIndex(index, s.queue.length, {
           repeatMode: modeForAdvance,
           shuffle: s.shuffle,
@@ -408,8 +387,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     },
 
     clearNowPlaying() {
-      cancelFill?.()
-      cancelFill = null
+      playFromSession.cancel()
       set({ queue: [], originalQueue: [], seekTo: 0 })
       clearPlayback()
       pause()

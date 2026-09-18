@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import Alert from '@mui/material/Alert'
 import Container from '@mui/material/Container'
@@ -13,7 +12,6 @@ import MusicNoteIcon from '@mui/icons-material/MusicNote'
 import { useTranslation } from 'react-i18next'
 
 import { AlbumGallery } from '@/components/AlbumGallery'
-import { ensureCatalogLoaded } from '@/lib/catalog/catalogBootstrap'
 import { localizeArtistName } from '@/lib/catalog/displayLabels'
 import { firstAlbumCoverSrc } from '@/lib/routes/albumRoutes'
 import {
@@ -49,10 +47,6 @@ function ArtistAlbumsPage() {
   function pathFor(album: string) {
     return artistAlbumPath(artist?.name ?? artistName, album)
   }
-
-  useEffect(() => {
-    void ensureCatalogLoaded()
-  }, [])
 
   return (
     <Container

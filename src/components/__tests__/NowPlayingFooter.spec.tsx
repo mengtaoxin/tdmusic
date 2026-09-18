@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react'
 
 import { NowPlayingFooter } from '@/components/NowPlayingFooter'
 import { renderWithTestRouter } from '@/__tests__/renderWithProviders'
-import type { DisplayTrack } from '@/stores/catalog'
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
 

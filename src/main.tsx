@@ -4,8 +4,11 @@ import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { ThemeProvider, CssBaseline } from '@mui/material'
 import { routeTree } from './routeTree.gen'
 import { muiTheme } from '@/theme/muiTheme'
+import { bindAppCatalogBootstrap } from '@/stores/bindAppCatalog'
 import '@/i18n'
 import '@/styles/app.css'
+
+bindAppCatalogBootstrap()
 
 const router = createRouter({ routeTree })
 

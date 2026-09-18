@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import Container from '@mui/material/Container'
 import LinearProgress from '@mui/material/LinearProgress'
@@ -6,7 +5,6 @@ import Typography from '@mui/material/Typography'
 import { useTranslation } from 'react-i18next'
 
 import { AlbumGallery } from '@/components/AlbumGallery'
-import { ensureCatalogLoaded } from '@/lib/catalog/catalogBootstrap'
 import { albumPath, firstAlbumCoverSrc } from '@/lib/routes/albumRoutes'
 import { selectAlbums, useCatalogStore } from '@/stores/catalog'
 
@@ -24,10 +22,6 @@ function AlbumListPage() {
     trackCount: group.tracks.length,
     coverSrc: firstAlbumCoverSrc(group.tracks),
   }))
-
-  useEffect(() => {
-    void ensureCatalogLoaded()
-  }, [])
 
   return (
     <Container

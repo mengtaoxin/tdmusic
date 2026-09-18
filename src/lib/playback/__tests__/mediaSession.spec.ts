@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { syncMediaSession } from '@/lib/playback/mediaSession'
-import type { DisplayTrack } from '@/stores/catalog'
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
 
 function makeTrack(overrides: Partial<DisplayTrack> = {}): DisplayTrack {
   return {

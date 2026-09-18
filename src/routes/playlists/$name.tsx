@@ -13,7 +13,7 @@ import { TrackList } from '@/components/TrackList'
 import { useTrackListPlayback } from '@/hooks/useTrackListPlayback'
 import { findPlaylistByName } from '@/lib/routes/playlistRoutes'
 import { selectTrackById, useCatalogStore } from '@/stores/catalog'
-import type { DisplayTrack } from '@/stores/catalog'
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
 import { usePlayerStore } from '@/stores/player'
 
 export const Route = createFileRoute('/playlists/$name')({
@@ -34,7 +34,7 @@ function PlaylistDetailPage() {
         .filter((track): track is DisplayTrack => Boolean(track))
     : ([] as DisplayTrack[])
 
-  const { player, playAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(
+  const { currentId, playAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(
     tracks.map((track) => track.id),
   )
 
@@ -89,7 +89,7 @@ function PlaylistDetailPage() {
       ) : (
         <TrackList
           tracks={tracks}
-          currentId={player.currentId}
+          currentId={currentId}
           onSelect={playAt}
           onPlayNext={playNextTrack}
           onAddToQueue={addTrackToQueue}

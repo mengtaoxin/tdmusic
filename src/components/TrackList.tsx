@@ -1,7 +1,7 @@
 import List from '@mui/material/List'
 
 import { TrackListItem } from '@/components/TrackListItem'
-import type { DisplayTrack } from '@/stores/catalog'
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
 
 export type TrackListProps = {
   tracks: DisplayTrack[]

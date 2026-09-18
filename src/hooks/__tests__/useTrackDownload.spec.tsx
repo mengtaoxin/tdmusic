@@ -6,7 +6,7 @@ import {
   reportCacheDownload,
   resetCacheDownloadStateForTests,
 } from '@/lib/cache/cacheDownloadState'
-import type { DisplayTrack } from '@/stores/catalog'
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
 
 const track: DisplayTrack = {
   id: 't1',

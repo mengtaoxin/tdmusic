@@ -11,11 +11,20 @@ import {
   parsePlayerState,
   prevIndex,
   removeAtIndex,
+  repeatModeForManualAdvance,
   serializePlayerState,
   shuffleFromCurrent,
   shuffleUpcoming,
   upcomingQueueIds,
 } from '../playerLogic'
+
+describe('repeatModeForManualAdvance', () => {
+  it('treats repeat one as off so skip/next leave the current track', () => {
+    expect(repeatModeForManualAdvance('one')).toBe('off')
+    expect(repeatModeForManualAdvance('all')).toBe('all')
+    expect(repeatModeForManualAdvance('off')).toBe('off')
+  })
+})
 
 describe('nextIndex / prevIndex', () => {
   it('advances linearly and stops at end when repeat off', () => {

@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
@@ -11,7 +10,6 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import { useTranslation } from 'react-i18next'
 
-import { ensureCatalogLoaded } from '@/lib/catalog/catalogBootstrap'
 import { playlistPath } from '@/lib/routes/playlistRoutes'
 import { useCatalogStore } from '@/stores/catalog'
 
@@ -22,10 +20,6 @@ export const Route = createFileRoute('/playlists/')({
 function PlaylistListPage() {
   const { t } = useTranslation()
   const playlists = useCatalogStore((s) => s.playlists)
-
-  useEffect(() => {
-    void ensureCatalogLoaded()
-  }, [])
 
   return (
     <Container maxWidth={false} className="page">

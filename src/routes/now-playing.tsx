@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
@@ -16,17 +16,16 @@ import RepeatOneIcon from '@mui/icons-material/RepeatOne'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import SkipNextIcon from '@mui/icons-material/SkipNext'
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious'
-import { useVirtualizer } from '@tanstack/react-virtual'
 import { useTranslation } from 'react-i18next'
 
 import { CoverImg } from '@/components/CoverImg'
 import { TrackListItem } from '@/components/TrackListItem'
+import { VirtualRowList } from '@/components/VirtualRowList'
 import { useTrackDownload } from '@/hooks/useTrackDownload'
-import { ensureCatalogLoaded } from '@/lib/catalog/catalogBootstrap'
 import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels'
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
 import { artistAlbumPath, artistAlbumsPath } from '@/lib/routes/artistRoutes'
 import { selectTrackById, useCatalogStore } from '@/stores/catalog'
-import type { DisplayTrack } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
 
 export const Route = createFileRoute('/now-playing')({
@@ -65,7 +64,6 @@ function NowPlayingPage() {
 
   const current = currentId ? trackById.get(currentId) : undefined
   const { downloading } = useTrackDownload(current)
-  const scrollParentRef = useRef<HTMLDivElement | null>(null)
 
   const queueRows = useMemo(() => {
     const rows: { key: string; queueIndex: number; track: DisplayTrack }[] = []
@@ -83,17 +81,6 @@ function NowPlayingPage() {
 
   const RepeatModeIcon =
     repeatMode === 'one' ? RepeatOneIcon : repeatMode === 'all' ? RepeatIcon : RepeatIcon
-
-  const rowVirtualizer = useVirtualizer({
-    count: queueRows.length,
-    getScrollElement: () => scrollParentRef.current,
-    estimateSize: () => TRACK_ROW_HEIGHT,
-    overscan: 8,
-  })
-
-  useEffect(() => {
-    void ensureCatalogLoaded()
-  }, [])
 
   function onSeek(_event: Event, value: number | number[]) {
     const pct = Array.isArray(value) ? value[0]! : value
@@ -274,44 +261,22 @@ function NowPlayingPage() {
         ) : null}
       </Box>
 
-      <Box
-        ref={scrollParentRef}
-        className="queue-list"
-        sx={{
-          height: queueListHeight,
-          overflowY: 'auto',
-          bgcolor: 'transparent',
-          position: 'relative',
-        }}
-      >
-        <Box sx={{ height: rowVirtualizer.getTotalSize(), width: '100%', position: 'relative' }}>
-          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-            const item = queueRows[virtualRow.index]
-            if (!item) return null
-            return (
-              <Box
-                key={item.key}
-                sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: `${virtualRow.size}px`,
-                  transform: `translateY(${virtualRow.start}px)`,
-                }}
-              >
-                <TrackListItem
-                  track={item.track}
-                  active={currentIndex === item.queueIndex}
-                  actions="queue"
-                  onSelect={() => goToIndex(item.queueIndex, true)}
-                  onRemove={() => removeAt(item.queueIndex)}
-                />
-              </Box>
-            )
-          })}
-        </Box>
-      </Box>
+      <VirtualRowList
+        items={queueRows}
+        itemHeight={TRACK_ROW_HEIGHT}
+        height={queueListHeight}
+        listClassName="queue-list"
+        getItemKey={(item) => item.key}
+        renderRow={(item) => (
+          <TrackListItem
+            track={item.track}
+            active={currentIndex === item.queueIndex}
+            actions="queue"
+            onSelect={() => goToIndex(item.queueIndex, true)}
+            onRemove={() => removeAt(item.queueIndex)}
+          />
+        )}
+      />
     </Container>
   )
 }
