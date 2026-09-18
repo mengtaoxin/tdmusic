@@ -1,6 +1,6 @@
 # Header and nav chrome
 
-Top-bar layout, menus, and related visual behavior. Domain contracts (catalog, cache, playback) stay in [project-specific-docs.md](project-specific-docs.md).
+Top-bar layout, menus, and related visual behavior. Domain contracts: [catalog.md](catalog.md), [cache.md](cache.md), [playback.md](playback.md).
 
 ## Header navigation
 

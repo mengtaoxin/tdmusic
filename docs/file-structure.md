@@ -8,8 +8,7 @@ Repository layout for tdmusic. Library versions: [tech-stack.md](tech-stack.md).
 ├── .cursor/mcp.json              Shared MCP servers
 ├── .cursor/rules/                Shared Cursor rules (sandbox, path-scoped)
 ├── docs/                         Project docs (this file, commands, conventions, …)
-├── scripts/                      Dev start/stop, build, test, install, format
-│   └── lib/                      Node CLI helpers for those scripts + colocated __tests__/
+├── scripts/                      Dev start/stop + _lib.sh (install/format/build/test via package.json)
 ├── e2e/                          Playwright specs
 ├── public/                       Static assets + default configs.json
 ├── src/
@@ -42,8 +41,7 @@ Repository layout for tdmusic. Library versions: [tech-stack.md](tech-stack.md).
 | ---- | ---- |
 | `.cursor/mcp.json` | Shared MCP server config (API keys via env) |
 | `.cursor/rules/` | Versioned Cursor rules |
-| `scripts/` | Wrapper scripts for install, format, dev, build, test |
-| `scripts/lib/` | Node helpers used by those scripts and Playwright — not SPA code |
+| `scripts/` | Dev server start/stop wrappers (`_lib.sh` shared helpers) |
 | `src/` | Vue SPA source |
 | `src/components/` | Shared Vue components |
 | `src/composables/` | Vue composables (`use*`) |
@@ -70,6 +68,5 @@ Repository layout for tdmusic. Library versions: [tech-stack.md](tech-stack.md).
 - Catalog query/index helpers (`catalogIndex`: `DisplayTrack`, grouping, search, enrich patches) live in `src/lib/catalog/`; the catalog store holds the snapshot and schedules enrich.
 - Catalog load+hydrate orchestration (`catalogBootstrap`) lives in `src/lib/catalog/`. It uses Pinia but is not a store.
 - Playback transport (`playbackTransport`) binds the queue/player store to a single `<audio>` element; `AudioHost` only wires Vue watchers and the element.
-- Node helpers used only by `scripts/` or Playwright → `scripts/lib/`. Do not put them under `src/`.
 - Locale strings → `src/locales/`.
-- Unit tests colocate next to the module: `src/{composables,lib,views,components,stores}/**/__tests__/*.spec.ts` and `scripts/lib/__tests__/`. Do not put new specs in `src/__tests__/` unless they are app-level (see [testing.md](testing.md)).
+- Unit tests colocate next to the module: `src/{composables,lib,views,components,stores}/**/__tests__/*.spec.ts`. Do not put new specs in `src/__tests__/` unless they are app-level (see [testing.md](testing.md)).

@@ -1,35 +1,11 @@
 import process from 'node:process'
 import { defineConfig, devices } from '@playwright/test'
-import { resolveE2ePlatforms } from './scripts/lib/e2ePlatforms'
 
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
 // require('dotenv').config();
-
-const selectedPlatforms = new Set(resolveE2ePlatforms(process.env.TDMUSIC_E2E_PLATFORMS))
-
-const allProjects = [
-  {
-    name: 'chromium' as const,
-    use: {
-      ...devices['Desktop Chrome'],
-    },
-  },
-  {
-    name: 'firefox' as const,
-    use: {
-      ...devices['Desktop Firefox'],
-    },
-  },
-  {
-    name: 'webkit' as const,
-    use: {
-      ...devices['Desktop Safari'],
-    },
-  },
-]
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -66,8 +42,27 @@ export default defineConfig({
     headless: true,
   },
 
-  /* Default: chromium only. Override with TDMUSIC_E2E_PLATFORMS / test.sh --platform. */
-  projects: allProjects.filter((project) => selectedPlatforms.has(project.name)),
+  /* Select browsers with `--project` (e.g. chromium). */
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'firefox',
+      use: {
+        ...devices['Desktop Firefox'],
+      },
+    },
+    {
+      name: 'webkit',
+      use: {
+        ...devices['Desktop Safari'],
+      },
+    },
+  ],
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
   // outputDir: 'test-results/',

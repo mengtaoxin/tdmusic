@@ -1,30 +1,30 @@
-# Shared named-flag helpers for scripts/*.sh. Source only; not a user command.
+# Shared helpers for scripts/*.sh. Source only; not a user command.
 # Callers must define usage() that accepts an optional exit code (default 1).
+# usage() should write to stderr (so callers can redirect helper stdout).
 
-tdmusic_require_value() {
-  local flag="$1"
-  local value="${2:-}"
-  if [[ -z "$value" || "$value" == --* ]]; then
-    echo "error: ${flag} requires a value" >&2
-    usage 1
-  fi
-}
-
-tdmusic_unknown_arg() {
-  echo "error: unknown argument: $1" >&2
+die() {
+  echo "error: $*" >&2
   usage 1
 }
 
-tdmusic_unexpected_positional() {
-  echo "error: unexpected positional argument: $1 (named flags only)" >&2
-  usage 1
+# Expand --key=value into --key value so callers only handle the spaced form.
+# Result is stored in the global ARGS array. Restore with:
+#   set -- "${ARGS[@]+"${ARGS[@]}"}"   # set -u safe when ARGS is empty
+expand_equals() {
+  ARGS=()
+  local arg
+  for arg in "$@"; do
+    if [[ "$arg" == --*=* ]]; then
+      ARGS+=("${arg%%=*}" "${arg#*=}")
+    else
+      ARGS+=("$arg")
+    fi
+  done
 }
 
-tdmusic_node_cli() {
-  if [[ -z "${ROOT:-}" ]]; then
-    echo "error: ROOT is not set" >&2
-    exit 1
-  fi
-  node --experimental-strip-types --disable-warning=ExperimentalWarning \
-    "$ROOT/scripts/lib/scriptsCli.ts" "$@"
+reject_extra() {
+  case "$1" in
+    --*) die "unknown argument: $1" ;;
+    *) die "unexpected positional argument: $1 (named flags only)" ;;
+  esac
 }

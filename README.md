@@ -20,29 +20,28 @@ A browser music player that reads your library from a JSON catalog. No backend: 
 ## Quick start
 
 ```sh
-./scripts/install-dependency.sh
+npm install
+npx playwright install chromium firefox webkit
 ./scripts/dev-start.sh
 ```
 
 Open [http://localhost:3000](http://localhost:3000). Stop with `./scripts/dev-stop.sh`.
 
-Flags and extra options: [docs/commands.md](docs/commands.md).
+Commands and options: [docs/commands.md](docs/commands.md).
 
-| Script | Purpose |
-| ------ | ------- |
-| `./scripts/install-dependency.sh` | Install dependencies |
+| Command | Purpose |
+| ------- | ------- |
+| `npm install` + Playwright install | Install dependencies and browsers |
 | `./scripts/dev-start.sh` / `dev-stop.sh` | Start / stop the Vite dev server |
-| `./scripts/build.sh` | Production build |
-| `./scripts/format.sh` | Format + type-check (**writes files** by default; `--check` is read-only) |
-| `./scripts/test.sh` | Full test suite (unit + e2e) |
-
-Run a single test file or one layer (e2e defaults to Chromium; add browsers with `--platform`):
+| `npm run build` | Production build |
+| `npm run format && npm run lint && npm run type-check` | Format + lint + type-check (**writes files**) |
+| `npm run test:unit` / `test:e2e` | Unit (Vitest) / e2e (Playwright) |
 
 ```sh
-./scripts/test.sh --layer unit
-./scripts/test.sh --file src/__tests__/App.spec.ts
-./scripts/test.sh --file e2e/vue.spec.ts
-./scripts/test.sh --platform chrome,firefox,webkit
+npm run test:unit
+npm run test:unit -- src/__tests__/App.spec.ts
+npm run test:e2e -- --project chromium
+npm run test:e2e -- --project chromium -- e2e/vue.spec.ts
 ```
 
 ## Catalog
@@ -51,7 +50,7 @@ Default catalog: [`public/configs.json`](public/configs.json) served at `/config
 
 Each `music-list` entry needs `id` and `path` (`http(s)://` or site-absolute `/…`). Optional `title`, `artist`, `album`, and `cover` override extracted tags. Playlists reference tracks by `id`.
 
-Field-by-field help is in the app under **More → Guidelines for configs.json**, and in [docs/project-specific-docs.md](docs/project-specific-docs.md).
+Field-by-field help is in the app under **More → Guidelines for configs.json**, and in [docs/catalog.md](docs/catalog.md).
 
 ## Stack
 
@@ -67,7 +66,10 @@ Vue 3 · Vite · TypeScript · Pinia · Vue Router · vue-i18n · Vuetify 4 · V
 | [docs/commands.md](docs/commands.md) | Script conventions |
 | [docs/conventions.md](docs/conventions.md) | Coding conventions |
 | [docs/testing.md](docs/testing.md) | Test layers and naming |
-| [docs/project-specific-docs.md](docs/project-specific-docs.md) | Catalog, cache, playback behavior |
+| [docs/catalog.md](docs/catalog.md) | `configs.json`, catalog routes, enrich |
+| [docs/cache.md](docs/cache.md) | IndexedDB audio cache and covers |
+| [docs/playback.md](docs/playback.md) | Queue, shuffle, Media Session |
+| [docs/persistence.md](docs/persistence.md) | localStorage, locale, app logs |
 | [docs/ui-chrome.md](docs/ui-chrome.md) | Header layout and nav chrome |
 
 ## License

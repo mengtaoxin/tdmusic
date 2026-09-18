@@ -1,54 +1,64 @@
 # Commands
 
 ```sh
-./scripts/install-dependency.sh
-./scripts/format.sh
+npm install
+npx playwright install chromium firefox webkit
 ./scripts/dev-start.sh
 ./scripts/dev-stop.sh
-./scripts/build.sh
-./scripts/test.sh
+npm run build
+npm run format && npm run lint && npm run type-check
+npm run test:unit
+npm run test:e2e -- --project chromium
 ```
 
-Prefer the scripts above over raw `npm run <script>` (e.g. do not run `npm run dev`, `npm run test`, or `npm run test:e2e` directly).
+Prefer `./scripts/dev-start.sh` / `./scripts/dev-stop.sh` for the Vite server (do not run `npm run dev` directly for day-to-day work). Use `package.json` scripts for install, format, build, and tests.
 
-## Flags
+## Flags (shell scripts)
 
 Named flags only (`--key value` or `--key=value`); order does not matter. No positional arguments.
 
 - Switches are the flag name itself (e.g. `--check`), not `--check true`.
 - Every script accepts `-h` / `--help` (prints usage, exit 0). Unknown flags, missing values, and positionals exit 1.
 
-## install-dependency.sh
-
-Default: `npm install`, then Playwright **Chromium** only.
-
-| Flag | Value | Default | Notes |
-| ---- | ----- | ------- | ----- |
-| `--browsers` | comma-separated list, or `all` | `chromium` | Same aliases as `--platform`; `all` → chromium, firefox, webkit |
-
-## format.sh
-
-Default **writes files**: Prettier `--write` and lint `--fix`, then TypeScript check (`vue-tsc --build`). This is the everyday formatter, not a read-only CI check.
+## Install
 
 ```sh
-./scripts/format.sh          # default: write files, then type-check
-./scripts/format.sh --check  # check only, do not write
+npm install
+npx playwright install chromium firefox webkit
 ```
 
-| Flag | Value | Default | Notes |
-| ---- | ----- | ------- | ----- |
-| `--check` | _(switch)_ | off | Prettier `--check`; oxlint/eslint without `--fix`; then type-check |
+Unset `PLAYWRIGHT_BROWSERS_PATH` if a sandbox injected it, so browsers land in the default Playwright cache.
 
-## dev-start.sh / dev-stop.sh / build.sh
+## Format / lint / type-check
+
+```sh
+npm run format && npm run lint && npm run type-check   # write
+npx prettier --check --experimental-cli src/ e2e/ \
+  && npx oxlint . && npx eslint . --cache \
+  && npm run type-check                                 # check only
+```
+
+`npm run format` and `npm run lint` write files by default.
+
+## dev-start.sh / dev-stop.sh
 
 No tunables; `--help` only. Dev server is Vite on port 3000. `dev-start.sh` waits until the port is listening (or fails).
 
-## test.sh
+## Build
 
-Default (no flags): `--layer all` (unit, then e2e on chromium). Do not invoke Vitest or Playwright via `npm run` / `npx`.
+```sh
+npm run build
+```
 
-| Flag | Value | Default | Notes |
-| ---- | ----- | ------- | ----- |
-| `--layer` | `unit`, `e2e`, or `all` | `all` (when `--file` is omitted) | `--layer all` cannot be combined with `--file` |
-| `--file` | path to a spec | _(omit = all in the layer)_ | Resolved path under `e2e/` → Playwright; otherwise Vitest. Must match `--layer` if both are set |
-| `--platform` | comma-separated browsers | `chromium` | `chrome`/`chromium`, `firefox`, `webkit`/`safari`; e2e only; runs in parallel (`fullyParallel`) |
+Type-check + Vite production build → `dist/`.
+
+## Tests
+
+| Command | Notes |
+| ------- | ----- |
+| `npm run test:unit` | Vitest (all unit specs) |
+| `npm run test:unit -- path/to/spec.ts` | One unit file |
+| `npm run test:e2e -- --project chromium` | Playwright; pick projects explicitly |
+| `npm run test:e2e -- --project chromium -- path/to/spec.ts` | One e2e file |
+
+E2E defaults in config include chromium, firefox, and webkit; always pass `--project` when you want a subset. Agents should run e2e / Playwright install outside the sandbox (`required_permissions: ["all"]`).

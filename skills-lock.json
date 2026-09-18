@@ -1,11 +1,29 @@
 {
   "version": 1,
   "skills": {
+    "harness-engineering": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/harness-engineering/SKILL.md",
+      "computedHash": "a442c82ec3f8cb2d25f33f18bb28c586af3402d7b630bcc38501d7182a1d782d"
+    },
+    "refactor": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "skillPath": "skills/refactor/SKILL.md",
+      "computedHash": "87789a786b96f99ba0680e89345a975106e10e7db1071c7cdc2e76d507c449d6"
+    },
     "test-driven-development": {
       "source": "mengtaoxin/agent-kit",
       "sourceType": "github",
       "skillPath": "skills/test-driven-development/SKILL.md",
       "computedHash": "6d5f9565407b2b80efaeec8622d148e1de13b6ba28460bb3a931f46787cb79e3"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
     }
   }
 }

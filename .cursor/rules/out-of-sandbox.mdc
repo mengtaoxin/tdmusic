@@ -1,5 +1,5 @@
 ---
-description: Use Shell required_permissions ["all"] for test/dev/install scripts
+description: Use Shell required_permissions ["all"] for dev scripts and e2e
 alwaysApply: true
 ---
 
@@ -8,19 +8,17 @@ alwaysApply: true
 When running any of these, always use Shell with `required_permissions: ["all"]`
 (do not rely on the default sandbox):
 
-- `./scripts/test.sh`
 - `./scripts/dev-start.sh`
 - `./scripts/dev-stop.sh`
-- `./scripts/install-dependency.sh`
+- `npm run test:e2e` / `npx playwright …`
+- `npx playwright install …`
 
 Reason:
 
-- `test.sh` / `dev-*.sh`: process signals (kill) and/or writes under `/Volumes`
-- `install-dependency.sh`: Playwright browsers install into `~/Library/Caches/ms-playwright`
-  (scripts unset `PLAYWRIGHT_BROWSERS_PATH` so the Agent-injected sandbox cache is not used).
+- `dev-*.sh`: process signals (kill) and/or writes under `/Volumes`
+- Playwright: browsers install/run against `~/Library/Caches/ms-playwright`
+  (unset `PLAYWRIGHT_BROWSERS_PATH` if a sandbox injected it).
   A sandboxed shell cannot create the lock/cache dirs there → `EPERM`.
 
-`format.sh` and `build.sh` may stay sandboxed.
-
-Never run bare `npx playwright install` / `npm run test:e2e` — use the scripts above
-(with `required_permissions: ["all"]`).
+`npm run format`, `npm run lint`, `npm run type-check`, `npm run build`, and
+`npm run test:unit` may stay sandboxed.

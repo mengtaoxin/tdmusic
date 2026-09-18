@@ -20,29 +20,28 @@
 ## 快速开始
 
 ```sh
-./scripts/install-dependency.sh
+npm install
+npx playwright install chromium firefox webkit
 ./scripts/dev-start.sh
 ```
 
 打开 [http://localhost:3000](http://localhost:3000)。停止：`./scripts/dev-stop.sh`。
 
-脚本参数见 [commands.md](commands.md)。
+命令说明见 [commands.md](commands.md)。
 
-| 脚本 | 用途 |
+| 命令 | 用途 |
 | ---- | ---- |
-| `./scripts/install-dependency.sh` | 安装依赖 |
+| `npm install` + Playwright install | 安装依赖与浏览器 |
 | `./scripts/dev-start.sh` / `dev-stop.sh` | 启动 / 停止 Vite 开发服务器 |
-| `./scripts/build.sh` | 生产构建 |
-| `./scripts/format.sh` | 格式化 + TypeScript 检查（**默认会改文件**；`--check` 只读） |
-| `./scripts/test.sh` | 完整测试（单元 + e2e） |
-
-只跑单个测试文件或一层（e2e 默认仅 Chromium；用 `--platform` 追加浏览器）：
+| `npm run build` | 生产构建 |
+| `npm run format && npm run lint && npm run type-check` | 格式化 + lint + 类型检查（**会改文件**） |
+| `npm run test:unit` / `test:e2e` | 单元（Vitest）/ e2e（Playwright） |
 
 ```sh
-./scripts/test.sh --layer unit
-./scripts/test.sh --file src/__tests__/App.spec.ts
-./scripts/test.sh --file e2e/vue.spec.ts
-./scripts/test.sh --platform chrome,firefox,webkit
+npm run test:unit
+npm run test:unit -- src/__tests__/App.spec.ts
+npm run test:e2e -- --project chromium
+npm run test:e2e -- --project chromium -- e2e/vue.spec.ts
 ```
 
 ## 曲库配置
@@ -51,7 +50,7 @@
 
 `music-list` 每项必须有 `id` 与 `path`（`http(s)://` 或站点绝对路径 `/…`）。可选的 `title`、`artist`、`album`、`cover` 会覆盖解析出的标签。播放列表通过 `id` 引用曲目。
 
-字段说明见应用内 **更多 → configs.json 指南**，以及 [project-specific-docs.md](project-specific-docs.md)。
+字段说明见应用内 **更多 → configs.json 指南**，以及 [catalog.md](catalog.md)。
 
 ## 技术栈
 
@@ -66,7 +65,10 @@ Vue 3 · Vite · TypeScript · Pinia · Vue Router · vue-i18n · Vuetify 4 · V
 | [commands.md](commands.md) | 脚本约定 |
 | [conventions.md](conventions.md) | 编码约定 |
 | [testing.md](testing.md) | 测试分层与命名 |
-| [project-specific-docs.md](project-specific-docs.md) | 曲库、缓存、播放行为 |
+| [catalog.md](catalog.md) | configs.json、曲库路由、enrich |
+| [cache.md](cache.md) | IndexedDB 音频缓存与封面 |
+| [playback.md](playback.md) | 队列、随机、Media Session |
+| [persistence.md](persistence.md) | localStorage、语言、应用日志 |
 | [ui-chrome.md](ui-chrome.md) | 顶栏布局与导航外观 |
 
 ## 许可

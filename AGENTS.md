@@ -2,17 +2,21 @@
 
 ## Rules
 
-- Day-to-day workflows use `./scripts/*` — do not run `npm run` / `npx vitest` / `npx playwright` directly. Flags and examples: [docs/commands.md](docs/commands.md).
-- Behavior changes follow the `test-driven-development` skill (including the full test suite before finishing).
-- Place new files per [docs/file-structure.md](docs/file-structure.md). Unit tests sit next to the module in `__tests__/*.spec.ts`.
-- UI copy: update both `src/locales/en.ts` and `src/locales/zh.ts`.
+- Install, format, dev, build, and tests in [docs/commands.md](docs/commands.md).
+- Behavior changes follow the `test-driven-development` skill.
+- Place new files per [docs/file-structure.md](docs/file-structure.md).
+- i18n: update both `src/locales/en.ts` and `src/locales/zh.ts`.
 - Views that need the catalog call `ensureCatalogLoaded` — never `catalog.load()` alone.
 
 ## Read when
 
 - Running scripts or a test layer → [docs/commands.md](docs/commands.md)
+- Test placement and naming → [docs/testing.md](docs/testing.md)
 - Adding or moving files → [docs/file-structure.md](docs/file-structure.md)
 - Style, Vuetify, log language → [docs/conventions.md](docs/conventions.md)
-- Catalog, cache, playback, or storage contracts → [docs/project-specific-docs.md](docs/project-specific-docs.md) (the relevant section)
+- `configs.json`, catalog routes, enrich, `ensureCatalogLoaded` → [docs/catalog.md](docs/catalog.md)
+- IndexedDB audio cache, covers, download limiter → [docs/cache.md](docs/cache.md)
+- Queue, shuffle, repeat, Media Session → [docs/playback.md](docs/playback.md)
+- localStorage keys, locale, app logs → [docs/persistence.md](docs/persistence.md)
 - Header layout or nav animation → [docs/ui-chrome.md](docs/ui-chrome.md)
 - Stack and versions → [docs/tech-stack.md](docs/tech-stack.md)
