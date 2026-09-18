@@ -8,6 +8,7 @@ function fakePorts() {
     getTrackIds: vi.fn<() => readonly string[]>(() => ['a', 'b']),
     hydratePlayer: vi.fn<(knownIds: Set<string>) => boolean>(() => true),
     clearAllMusicCaches: vi.fn<() => Promise<void>>(async () => undefined),
+    clearEnrichQueue: vi.fn<() => void>(),
     resetDisplayFromConfig: vi.fn<() => void>(),
     scheduleEnrichment: vi.fn<() => void>(),
     clearNowPlaying: vi.fn<() => void>(),
@@ -72,9 +73,13 @@ describe('createCatalogBootstrap', () => {
 
     await api.clearMusicCachesAndRefresh()
 
+    expect(ports.clearEnrichQueue).toHaveBeenCalledOnce()
     expect(ports.clearAllMusicCaches).toHaveBeenCalledOnce()
     expect(ports.resetDisplayFromConfig).toHaveBeenCalledOnce()
     expect(ports.scheduleEnrichment).toHaveBeenCalledOnce()
     expect(ports.clearNowPlaying).toHaveBeenCalledOnce()
+    expect(ports.clearEnrichQueue.mock.invocationCallOrder[0]).toBeLessThan(
+      ports.scheduleEnrichment.mock.invocationCallOrder[0]!,
+    )
   })
 })

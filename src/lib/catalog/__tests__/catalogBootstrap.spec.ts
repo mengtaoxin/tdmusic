@@ -8,12 +8,14 @@ import {
   resetCacheDbForTests,
 } from '@/lib/cache/cacheStore'
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
-import { useCatalogStore } from '@/stores/catalog'
 import {
   clearMusicCachesAndRefresh,
   ensureCatalogLoaded,
   loadCatalogAndHydratePlayer,
 } from '@/lib/catalog/catalogBootstrap'
+import { enqueueEnrich, getEnrichQueueStatsForTests } from '@/lib/catalog/enrichQueue'
+import * as loadConfigs from '@/lib/catalog/loadConfigs'
+import { useCatalogStore } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
 
 function sampleTracks(): DisplayTrack[] {
@@ -28,6 +30,10 @@ function sampleTracks(): DisplayTrack[] {
   ] as DisplayTrack[]
 }
 
+function sampleConfigs() {
+  return { 'music-list': [{ id: 'a', path: '/a.mp3' }] }
+}
+
 describe('catalogBootstrap', () => {
   beforeEach(async () => {
     await resetCacheDbForTests()
@@ -35,51 +41,44 @@ describe('catalogBootstrap', () => {
   })
 
   it('loadCatalogAndHydratePlayer loads catalog then hydrates player', async () => {
-    const catalog = useCatalogStore.getState()
-    const player = usePlayerStore.getState()
-    const load = vi.spyOn(catalog, 'load').mockImplementation(async () => {
-      useCatalogStore.getState().setTracks(sampleTracks())
-    })
-    const hydrate = vi.spyOn(player, 'hydrate').mockReturnValue(true)
+    const fetchConfigs = vi.spyOn(loadConfigs, 'loadConfigsJson').mockResolvedValue(sampleConfigs())
+    const hydrate = vi.spyOn(usePlayerStore.getState(), 'hydrate').mockReturnValue(true)
 
     await loadCatalogAndHydratePlayer()
 
-    expect(load).toHaveBeenCalledOnce()
+    expect(fetchConfigs).toHaveBeenCalledOnce()
+    expect(useCatalogStore.getState().snapshot.tracks.map((track) => track.id)).toEqual(['a'])
     expect(hydrate).toHaveBeenCalledWith(new Set(['a']))
   })
 
   it('ensureCatalogLoaded is a no-op when tracks are already present', async () => {
     useCatalogStore.getState().setTracks(sampleTracks())
-    const catalog = useCatalogStore.getState()
-    const player = usePlayerStore.getState()
-    const load = vi.spyOn(catalog, 'load')
-    const hydrate = vi.spyOn(player, 'hydrate')
+    const fetchConfigs = vi.spyOn(loadConfigs, 'loadConfigsJson')
+    const hydrate = vi.spyOn(usePlayerStore.getState(), 'hydrate')
 
     await ensureCatalogLoaded()
 
-    expect(load).not.toHaveBeenCalled()
+    expect(fetchConfigs).not.toHaveBeenCalled()
     expect(hydrate).not.toHaveBeenCalled()
   })
 
   it('ensureCatalogLoaded joins an in-flight loadCatalogAndHydratePlayer', async () => {
-    const catalog = useCatalogStore.getState()
-    const player = usePlayerStore.getState()
     let finishLoad!: () => void
     const loadGate = new Promise<void>((resolve) => {
       finishLoad = resolve
     })
-    const load = vi.spyOn(catalog, 'load').mockImplementation(async () => {
+    const fetchConfigs = vi.spyOn(loadConfigs, 'loadConfigsJson').mockImplementation(async () => {
       await loadGate
-      useCatalogStore.getState().setTracks(sampleTracks())
+      return sampleConfigs()
     })
-    const hydrate = vi.spyOn(player, 'hydrate').mockReturnValue(true)
+    const hydrate = vi.spyOn(usePlayerStore.getState(), 'hydrate').mockReturnValue(true)
 
     const first = loadCatalogAndHydratePlayer()
     const second = ensureCatalogLoaded()
     finishLoad()
     await Promise.all([first, second])
 
-    expect(load).toHaveBeenCalledOnce()
+    expect(fetchConfigs).toHaveBeenCalledOnce()
     expect(hydrate).toHaveBeenCalledOnce()
   })
 
@@ -140,5 +139,25 @@ describe('catalogBootstrap', () => {
     expect(after.originalQueue).toEqual([])
     expect(after.currentId).toBeNull()
     expect(after.playing).toBe(false)
+  })
+
+  it('clearMusicCachesAndRefresh drops queued enrich work', async () => {
+    vi.spyOn(useCatalogStore.getState(), 'scheduleEnrichment').mockImplementation(() => {})
+    const releases: Array<() => void> = []
+    const blocked = () =>
+      new Promise<void>((resolve) => {
+        releases.push(resolve)
+      })
+    void enqueueEnrich(blocked)
+    void enqueueEnrich(blocked)
+    void enqueueEnrich(blocked)
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(getEnrichQueueStatsForTests().pending).toBe(1)
+
+    await clearMusicCachesAndRefresh()
+
+    expect(getEnrichQueueStatsForTests().pending).toBe(0)
+    for (const release of releases) release()
   })
 })

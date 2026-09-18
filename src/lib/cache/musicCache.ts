@@ -25,7 +25,6 @@ import {
   type ExtractedTrackMeta,
   type TrackCacheMeta,
 } from './cacheStore'
-import { clearEnrichQueue } from '../catalog/enrichQueue'
 
 export type { CacheProgress, CacheDownloadTrackRef, ExtractedTrackMeta, TrackCacheMeta }
 export {
@@ -54,7 +53,6 @@ export async function clearTrackCache(sourceUrl: string): Promise<void> {
 }
 
 export async function clearAllMusicCaches(): Promise<void> {
-  clearEnrichQueue()
   clearEnsureInFlight()
   await clearAllCacheRecords()
 }

@@ -3,6 +3,8 @@ export type CatalogBootstrapPorts = {
   getTrackIds: () => readonly string[]
   hydratePlayer: (knownIds: Set<string>) => boolean | void
   clearAllMusicCaches: () => Promise<void>
+  /** Drop queued ID3/cover enrich work (catalog owns this queue, not cache). */
+  clearEnrichQueue: () => void
   resetDisplayFromConfig: () => void
   scheduleEnrichment: () => void
   clearNowPlaying: () => void
@@ -30,6 +32,7 @@ export function createCatalogBootstrap(ports: CatalogBootstrapPorts) {
   }
 
   async function clearMusicCachesAndRefresh(): Promise<void> {
+    ports.clearEnrichQueue()
     await ports.clearAllMusicCaches()
     ports.resetDisplayFromConfig()
     ports.scheduleEnrichment()
