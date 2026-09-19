@@ -67,6 +67,15 @@ export const muiTheme = createTheme({
   shape: {
     borderRadius: 8,
   },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+        },
+      },
+    },
+  },
   layout: {
     pageMaxWidth: '52rem',
     contentMaxWidth: '40rem',

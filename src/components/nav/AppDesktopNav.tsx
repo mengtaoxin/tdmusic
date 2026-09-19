@@ -138,7 +138,6 @@ export function AppDesktopNav({
                 sx={{
                   height: '2.25rem',
                   minHeight: '2.25rem',
-                  textTransform: 'none',
                   ...(groupActive(item) ? { color: 'primary.main' } : {}),
                 }}
               >
@@ -180,7 +179,6 @@ export function AppDesktopNav({
             sx={{
               height: '2.25rem',
               minHeight: '2.25rem',
-              textTransform: 'none',
               ...(pathname === item.to ? { color: 'primary.main' } : {}),
             }}
           >

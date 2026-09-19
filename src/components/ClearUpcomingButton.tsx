@@ -14,7 +14,7 @@ export function ClearUpcomingButton({ onClick }: ClearUpcomingButtonProps) {
       color="secondary"
       variant="contained"
       startIcon={<PlaylistRemoveIcon />}
-      sx={{ flexShrink: 0, textTransform: 'none' }}
+      sx={{ flexShrink: 0 }}
       onClick={onClick}
     >
       {t('player.clearUpcoming')}
