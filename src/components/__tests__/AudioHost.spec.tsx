@@ -130,4 +130,27 @@ describe('AudioHost', () => {
       logs.some((entry) => /bad/i.test(entry.message) && /fail|download/i.test(entry.message)),
     ).toBe(true)
   })
+
+  it('writes an app log when the bound audio element errors', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    useCatalogStore.getState().setTracks([makeTrack('t1', 'One')])
+    const { container } = renderWithProviders(<AudioHost />)
+    const audio = container.querySelector('[data-testid="global-audio"]') as HTMLAudioElement
+    vi.spyOn(audio, 'play').mockResolvedValue(undefined)
+    vi.spyOn(audio, 'load').mockImplementation(() => undefined)
+
+    await bumpLoad(['t1'], 't1')
+    await waitFor(() => {
+      expect(resolvePlayableUrl).toHaveBeenCalledWith('https://example.com/t1.mp3', 't1')
+    })
+
+    audio.dispatchEvent(new Event('error'))
+
+    await waitFor(async () => {
+      const logs = await listAppLogs()
+      expect(logs.some((entry) => /Failed to play track "t1"/.test(entry.message))).toBe(true)
+    })
+    expect(consoleError).toHaveBeenCalledWith(expect.stringMatching(/Failed to play track "t1"/))
+    consoleError.mockRestore()
+  })
 })

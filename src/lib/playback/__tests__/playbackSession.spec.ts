@@ -16,6 +16,7 @@ function makeAudio(): TestAudio {
     duration: 0,
     loop: false,
     ended: false,
+    error: null,
     load: vi.fn<() => void>(),
     play: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
     pause: vi.fn<() => void>(),
@@ -126,15 +127,61 @@ describe('playbackSession', () => {
       },
     )
 
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+
     await session.loadCurrent()
-    expect(appendAppLog).toHaveBeenCalledOnce()
+    expect(appendAppLog).toHaveBeenCalledExactlyOnceWith(
+      'Failed to download track "a" from https://example.com/a.mp3: boom',
+    )
+    expect(consoleError).toHaveBeenCalledWith(
+      'Failed to download track "a" from https://example.com/a.mp3: boom',
+    )
     expect(skip).toHaveBeenCalledOnce()
     expect(pause).not.toHaveBeenCalled()
 
     await session.loadCurrent()
     expect(appendAppLog).toHaveBeenCalledTimes(2)
+    expect(consoleError).toHaveBeenCalledTimes(2)
     expect(skip).toHaveBeenCalledOnce()
     expect(pause).toHaveBeenCalledOnce()
+    consoleError.mockRestore()
+  })
+
+  it('prints play() rejection to the console and does not write an app log', async () => {
+    const audio = makeAudio()
+    const playError = new Error('NotAllowedError')
+    vi.mocked(audio.play).mockRejectedValueOnce(playError)
+    const appendAppLog = vi.fn<(message: string) => void>()
+    const pause = vi.fn<() => void>()
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const session = createPlaybackSession(
+      () => audio,
+      {
+        getCurrentId: () => 't1',
+        getQueueLength: () => 1,
+        getSeekTo: () => null,
+        getPendingPlay: () => true,
+        clearSeekTo: () => {},
+        pause,
+        skip: vi.fn<() => void>(),
+        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3` }),
+      },
+      {
+        resolvePlayableUrl: async () => 'blob:t1',
+        appendAppLog,
+        scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+        schedulePrefetch: vi.fn<() => void>(),
+      },
+    )
+
+    await session.loadCurrent()
+    audio.emit('loadedmetadata')
+    await Promise.resolve()
+
+    expect(consoleError).toHaveBeenCalledWith(playError)
+    expect(pause).toHaveBeenCalledOnce()
+    expect(appendAppLog).not.toHaveBeenCalled()
+    consoleError.mockRestore()
   })
 
   it('pauses the previous src before waiting for the next playable URL', async () => {

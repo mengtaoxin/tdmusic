@@ -1,9 +1,11 @@
 import {
   createPlaybackSession,
+  formatMediaPlaybackFailureLog,
   type PlaybackAudioElement,
   type PlaybackSessionHooks,
   type PlaybackSessionPlayer,
 } from '@/lib/playback/playbackSession'
+import { reportFailure } from '@/lib/reportFailure'
 import type { RepeatMode } from '@/lib/playback/playerLogic'
 
 export type PlaybackTransportDeps = {
@@ -82,6 +84,13 @@ export function createPlaybackTransport(deps: PlaybackTransportDeps) {
     boundTrackId = null
   }
 
+  function playAudio(audio: PlaybackAudioElement) {
+    void audio.play().catch((error: unknown) => {
+      reportFailure(error)
+      deps.pause()
+    })
+  }
+
   function onPendingPlayChange(want: boolean) {
     const audio = deps.getAudio()
     if (!audio) return
@@ -89,7 +98,7 @@ export function createPlaybackTransport(deps: PlaybackTransportDeps) {
       // Resume only when the element already holds the current track. Otherwise
       // loadCurrent owns autoplay after resolving the new src.
       if (!isBoundToCurrent()) return
-      void audio.play().catch(() => deps.pause())
+      playAudio(audio)
     } else {
       audio.pause()
     }
@@ -149,8 +158,20 @@ export function createPlaybackTransport(deps: PlaybackTransportDeps) {
       const seek = deps.getSeekTo()
       audio.currentTime = seek != null && Number.isFinite(seek) ? seek : 0
       deps.clearSeekTo()
-      void audio.play().catch(() => deps.pause())
+      playAudio(audio)
     }
+  }
+
+  function onError() {
+    if (!isBoundToCurrent()) return
+    const audio = deps.getAudio()
+    const id = deps.getCurrentId()
+    if (!audio || !id) return
+    const track = deps.getTrack(id)
+    if (!track) return
+    const message = formatMediaPlaybackFailureLog(track, audio.error)
+    reportFailure(message)
+    deps.appendAppLog(message)
   }
 
   function syncLoopFromRepeatMode() {
@@ -169,6 +190,7 @@ export function createPlaybackTransport(deps: PlaybackTransportDeps) {
     onPlay,
     onPause,
     onEnded,
+    onError,
     syncLoopFromRepeatMode,
     syncMediaSession: () => deps.syncMediaSession(),
     schedulePrefetch: () => deps.schedulePrefetch(),

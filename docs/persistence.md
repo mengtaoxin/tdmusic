@@ -22,4 +22,5 @@ Catalog config cache usage: [catalog.md](catalog.md). Player queue fields: [play
 - Messages are **English only** (see [conventions.md](conventions.md)); Logs page chrome is still i18n.
 - Public API: `lib/appLogStore` (`appendAppLog`, `listAppLogs`, `clearAppLogs`).
 - Logs page “Clear logs” asks for confirmation, then calls `clearAppLogs`.
-- When play-time download fails (`resolvePlayableUrl` / cache ingest), the playback transport appends a failure log, skips that track (`player.skip`), and continues; after a full queue of consecutive failures it pauses.
+- When play-time download fails (`resolvePlayableUrl` / cache ingest), playback `console.error`s an English failure message, appends that same message, skips that track (`player.skip`), and continues; after a full queue of consecutive failures it pauses.
+- A bound `<audio>` `error` (unsupported or undecodable source) `console.error`s an English play-failure message and appends that same message. `audio.play()` rejections are printed to the console only.

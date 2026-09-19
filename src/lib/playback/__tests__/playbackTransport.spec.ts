@@ -17,6 +17,7 @@ function makeAudio(): TestAudio {
     duration: 0,
     loop: false,
     ended: false,
+    error: null,
     load: vi.fn<() => void>(),
     play: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
     pause: vi.fn<() => void>(),
@@ -150,5 +151,95 @@ describe('playbackTransport', () => {
 
     await transport.loadCurrent()
     expect(transport.isBoundToCurrent()).toBe(true)
+  })
+
+  it('prints a bound media error to the console and the app log', async () => {
+    const audio = makeAudio()
+    audio.error = { code: 4, message: '' }
+    const appendAppLog = vi.fn<(message: string) => void>()
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const transport = createPlaybackTransport({
+      getAudio: () => audio,
+      getCurrentId: () => 't1',
+      getQueueLength: () => 1,
+      getSeekTo: () => null,
+      getPendingPlay: () => false,
+      getRepeatMode: () => 'off',
+      clearSeekTo: noop(),
+      pause: noop(),
+      skip: noop(),
+      onEnded: noop(),
+      getTrack: () => ({ id: 't1', path: '/t1.mp3' }),
+      setPlaying: vi.fn<(playing: boolean) => void>(),
+      clearPendingPlay: noop(),
+      flushPersist: noop(),
+      setCurrentTime: vi.fn<(time: number) => void>(),
+      setDuration: vi.fn<(duration: number) => void>(),
+      syncMediaSession: noop(),
+      schedulePrefetch: noop(),
+      resolvePlayableUrl: async () => 'blob:ok',
+      appendAppLog,
+      scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+    })
+
+    await transport.loadCurrent()
+    transport.onError()
+    expect(consoleError).toHaveBeenCalledWith(
+      'Failed to play track "t1" from /t1.mp3: MEDIA_ERR_SRC_NOT_SUPPORTED',
+    )
+    expect(appendAppLog).toHaveBeenCalledWith(
+      'Failed to play track "t1" from /t1.mp3: MEDIA_ERR_SRC_NOT_SUPPORTED',
+    )
+
+    appendAppLog.mockClear()
+    consoleError.mockClear()
+    transport.onLoadStart('t1')
+    transport.onError()
+    expect(consoleError).not.toHaveBeenCalled()
+    expect(appendAppLog).not.toHaveBeenCalled()
+    consoleError.mockRestore()
+  })
+
+  it('prints play() rejection to the console without an app log', async () => {
+    const audio = makeAudio()
+    const playError = new Error('NotAllowedError')
+    const pause = noop()
+    const appendAppLog = vi.fn<(message: string) => void>()
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const transport = createPlaybackTransport({
+      getAudio: () => audio,
+      getCurrentId: () => 't1',
+      getQueueLength: () => 1,
+      getSeekTo: () => null,
+      getPendingPlay: () => true,
+      getRepeatMode: () => 'off',
+      clearSeekTo: noop(),
+      pause,
+      skip: noop(),
+      onEnded: noop(),
+      getTrack: () => ({ id: 't1', path: '/t1.mp3' }),
+      setPlaying: vi.fn<(playing: boolean) => void>(),
+      clearPendingPlay: noop(),
+      flushPersist: noop(),
+      setCurrentTime: vi.fn<(time: number) => void>(),
+      setDuration: vi.fn<(duration: number) => void>(),
+      syncMediaSession: noop(),
+      schedulePrefetch: noop(),
+      resolvePlayableUrl: async () => 'blob:t1',
+      appendAppLog,
+      scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+    })
+
+    await transport.loadCurrent()
+    audio.emit('loadedmetadata')
+    vi.mocked(audio.play).mockClear()
+    vi.mocked(audio.play).mockRejectedValueOnce(playError)
+    transport.onPendingPlayChange(true)
+    await Promise.resolve()
+
+    expect(consoleError).toHaveBeenCalledWith(playError)
+    expect(pause).toHaveBeenCalledOnce()
+    expect(appendAppLog).not.toHaveBeenCalled()
+    consoleError.mockRestore()
   })
 })

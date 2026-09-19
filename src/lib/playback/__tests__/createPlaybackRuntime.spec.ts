@@ -14,6 +14,7 @@ function makeAudio(): PlaybackAudioElement {
     duration: 0,
     loop: false,
     ended: false,
+    error: null,
     load: vi.fn<() => void>(),
     play: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
     pause: vi.fn<() => void>(),
