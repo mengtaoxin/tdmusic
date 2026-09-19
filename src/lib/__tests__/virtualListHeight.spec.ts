@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { capVirtualListHeight, virtualListNeedsScroll } from '../virtualListHeight'
+import {
+  alignStartScrollOffset,
+  capVirtualListHeight,
+  virtualListNeedsScroll,
+} from '../virtualListHeight'
 
 describe('capVirtualListHeight', () => {
   it('shrinks to content height for short lists', () => {
@@ -28,5 +32,20 @@ describe('virtualListNeedsScroll', () => {
 
   it('is false until the host has been measured', () => {
     expect(virtualListNeedsScroll(200, 64, 0)).toBe(false)
+  })
+})
+
+describe('alignStartScrollOffset', () => {
+  it('places the given index at the top of the viewport', () => {
+    expect(alignStartScrollOffset(5, 64, 20, 192)).toBe(320)
+  })
+
+  it('clamps near the end so the list does not overscroll', () => {
+    expect(alignStartScrollOffset(18, 64, 20, 192)).toBe(20 * 64 - 192)
+  })
+
+  it('is 0 for the first row or an invalid index', () => {
+    expect(alignStartScrollOffset(0, 64, 20, 192)).toBe(0)
+    expect(alignStartScrollOffset(-1, 64, 20, 192)).toBe(0)
   })
 })

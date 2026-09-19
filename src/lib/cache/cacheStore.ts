@@ -1,3 +1,5 @@
+import { blobForPlayableObjectUrl } from './audioMimeFromPath'
+
 export type TrackCacheMeta = {
   sourceUrl: string
   id?: string
@@ -126,7 +128,8 @@ export async function getCachedBlobUrl(
   const blob = await getCachedFile(sourceUrl, relativePath)
   if (!blob) return null
 
-  const url = URL.createObjectURL(blob)
+  const forUrl = relativePath === AUDIO_FILE_KEY ? blobForPlayableObjectUrl(sourceUrl, blob) : blob
+  const url = URL.createObjectURL(forUrl)
   blobUrlCache.set(cacheKey, url)
   return url
 }

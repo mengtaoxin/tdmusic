@@ -16,6 +16,7 @@ tdmusic is a React SPA (Vite) at the repo root — no separate `api/` or `web/` 
 | Virtual lists | @tanstack/react-virtual                     |
 | Markdown      | marked (Config Guides page)                 |
 | Audio meta    | music-metadata                              |
+| Shared kit    | tdkit → @mengtaoxin/tdkit (GitHub Packages) |
 | Lint / format | ESLint + oxlint + Prettier                  |
 | Unit tests    | Vitest + Testing Library                    |
 | E2E           | Playwright                                  |

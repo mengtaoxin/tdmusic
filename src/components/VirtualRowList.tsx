@@ -1,9 +1,13 @@
-import { useState, type CSSProperties, type ReactNode } from 'react'
+import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import Box from '@mui/material/Box'
 import { useVirtualizer } from '@tanstack/react-virtual'
 
 import { useVirtualListHost } from '@/hooks/useVirtualListHost'
-import { capVirtualListHeight, virtualListNeedsScroll } from '@/lib/virtualListHeight'
+import {
+  alignStartScrollOffset,
+  capVirtualListHeight,
+  virtualListNeedsScroll,
+} from '@/lib/virtualListHeight'
 
 export type VirtualRowListProps<T> = {
   items: readonly T[]
@@ -17,6 +21,8 @@ export type VirtualRowListProps<T> = {
   height?: number | string
   listClassName?: string
   hostClassName?: string
+  /** Align this row to the top of the scroller when the list is ready. */
+  scrollToIndex?: number | null
 }
 
 export function VirtualRowList<T>({
@@ -29,9 +35,11 @@ export function VirtualRowList<T>({
   height,
   listClassName = 'virtual-list',
   hostClassName,
+  scrollToIndex = null,
 }: VirtualRowListProps<T>) {
   const { listHostRef, hostHeight } = useVirtualListHost()
   const [scrollParent, setScrollParent] = useState<HTMLDivElement | null>(null)
+  const scrolledToRef = useRef<number | null>(null)
 
   const listHeight = fillHost ? capVirtualListHeight(items.length, itemHeight, hostHeight) : height
   const listFlush = fillHost ? !virtualListNeedsScroll(items.length, itemHeight, hostHeight) : false
@@ -59,6 +67,22 @@ export function VirtualRowList<T>({
       return () => observer.disconnect()
     },
   })
+
+  useLayoutEffect(() => {
+    if (scrollParent == null || scrollToIndex == null || scrollToIndex < 0) return
+    if (scrolledToRef.current === scrollToIndex) return
+    if (scrollToIndex >= items.length) return
+    const viewport =
+      scrollParent.clientHeight > 0
+        ? scrollParent.clientHeight
+        : typeof listHeight === 'number'
+          ? listHeight
+          : 0
+    const offset = alignStartScrollOffset(scrollToIndex, itemHeight, items.length, viewport)
+    scrollParent.scrollTop = offset
+    rowVirtualizer.scrollToOffset(offset, { align: 'start' })
+    scrolledToRef.current = scrollToIndex
+  }, [scrollParent, scrollToIndex, itemHeight, items.length, listHeight, rowVirtualizer])
 
   const scroller = (
     <Box

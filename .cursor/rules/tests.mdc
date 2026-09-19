@@ -6,6 +6,8 @@ alwaysApply: false
 
 # Tests
 
+When to write and run tests: [docs/change-code-steps.md](docs/change-code-steps.md).
+
 - Name specs `*.spec.ts` or `*.spec.tsx`.
 - Put a new unit spec next to the module (`src/{lib,hooks,components,stores,routes}/**/__tests__/`).
 - `src/__tests__/` is only Vitest setup, render helpers, and app-level specs — do not add module tests there.

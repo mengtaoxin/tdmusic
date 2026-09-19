@@ -76,6 +76,7 @@ export function AudioHost() {
       onPlay={transport.onPlay}
       onPause={transport.onPause}
       onEnded={transport.onEnded}
+      onError={transport.onError}
     />
   )
 }

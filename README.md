@@ -61,6 +61,7 @@ React · Vite · TypeScript · Zustand · TanStack Router · react-i18next · MU
 | Doc | Contents |
 | --- | -------- |
 | [docs/README.zh.md](docs/README.zh.md) | Chinese README |
+| [docs/change-code-steps.md](docs/change-code-steps.md) | TDD, structure, tests, format/check |
 | [docs/file-structure.md](docs/file-structure.md) | Repository layout |
 | [docs/tech-stack.md](docs/tech-stack.md) | Versions and libraries |
 | [docs/commands.md](docs/commands.md) | Script conventions |

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   COVER_FILE_KEY,
+  getCachedBlobUrl,
   getCachedFile,
   getMusicCacheSizeBytes,
   isTrackCached,
@@ -113,5 +114,39 @@ describe('music cache', () => {
     })
     await clearAllMusicCaches()
     expect(await isTrackCached(sourceUrl)).toBe(false)
+  })
+
+  it('getCachedBlobUrl rewraps audio MIME from path without mutating IndexedDB', async () => {
+    const sourceUrl = 'https://example.com/batch01/song.flac?x=1'
+    const stored = new Blob(['fLaC-bytes'], { type: 'application/octet-stream' })
+    await putFiles(sourceUrl, [{ relativePath: AUDIO_FILE_KEY, blob: stored }])
+
+    const createObjectURL = vi.spyOn(URL, 'createObjectURL')
+    const url = await getCachedBlobUrl(sourceUrl)
+    expect(url).toMatch(/^blob:/)
+
+    expect(createObjectURL).toHaveBeenCalledOnce()
+    const playable = createObjectURL.mock.calls[0]![0] as Blob
+    expect(playable.type).toBe('audio/flac')
+    expect(await playable.text()).toBe('fLaC-bytes')
+
+    const fromDb = await getCachedFile(sourceUrl)
+    expect(fromDb).not.toBeNull()
+    expect(fromDb!.type).toBe('application/octet-stream')
+    expect(await fromDb!.text()).toBe('fLaC-bytes')
+  })
+
+  it('getCachedBlobUrl does not rewrite cover blob MIME from the audio path', async () => {
+    const sourceUrl = 'https://example.com/song.flac'
+    await putFiles(sourceUrl, [
+      { relativePath: COVER_FILE_KEY, blob: new Blob(['img'], { type: 'image/jpeg' }) },
+    ])
+
+    const createObjectURL = vi.spyOn(URL, 'createObjectURL')
+    await getCachedBlobUrl(sourceUrl, COVER_FILE_KEY)
+
+    expect(createObjectURL).toHaveBeenCalledOnce()
+    const cover = createObjectURL.mock.calls[0]![0] as Blob
+    expect(cover.type).toBe('image/jpeg')
   })
 })

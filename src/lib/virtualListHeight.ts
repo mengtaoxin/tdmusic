@@ -19,3 +19,16 @@ export function virtualListNeedsScroll(
   if (hostHeightPx <= 0) return false
   return Math.max(itemCount, 1) * itemHeightPx > hostHeightPx
 }
+
+/** Pixel offset that places `index` at the top of a fixed-row virtual list. */
+export function alignStartScrollOffset(
+  index: number,
+  itemHeightPx: number,
+  itemCount: number,
+  viewportHeightPx: number,
+): number {
+  if (index <= 0 || itemHeightPx <= 0 || itemCount <= 0) return 0
+  const total = itemCount * itemHeightPx
+  const maxScroll = Math.max(0, total - Math.max(0, viewportHeightPx))
+  return Math.min(index * itemHeightPx, maxScroll)
+}
