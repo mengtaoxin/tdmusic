@@ -1,14 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 import Alert from '@mui/material/Alert'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
 import Container from '@mui/material/Container'
 import LinearProgress from '@mui/material/LinearProgress'
 import Typography from '@mui/material/Typography'
-import PlayArrowIcon from '@mui/icons-material/PlayArrow'
-import ShuffleIcon from '@mui/icons-material/Shuffle'
 import { useTranslation } from 'react-i18next'
 
+import { PlayAllButtons } from '@/components/PlayAllButtons'
 import { TrackList } from '@/components/TrackList'
 import { useTrackListPlayback } from '@/hooks/useTrackListPlayback'
 import { findPlaylistByName } from '@/lib/routes/playlistRoutes'
@@ -61,24 +58,7 @@ function PlaylistDetailPage() {
       ) : null}
 
       {tracks.length > 0 ? (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-          <Button
-            color="secondary"
-            variant="contained"
-            startIcon={<PlayArrowIcon />}
-            onClick={playAllInOrder}
-          >
-            {t('playlist.playAll')}
-          </Button>
-          <Button
-            color="secondary"
-            variant="outlined"
-            startIcon={<ShuffleIcon />}
-            onClick={shufflePlayAll}
-          >
-            {t('playlist.shuffleAll')}
-          </Button>
-        </Box>
+        <PlayAllButtons onPlayAll={playAllInOrder} onShuffleAll={shufflePlayAll} />
       ) : null}
 
       {loading ? (
