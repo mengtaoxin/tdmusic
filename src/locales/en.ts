@@ -36,8 +36,6 @@ export default {
     empty: 'No playlists yet. Add a playlists array in your config.',
     trackCount: '{count} tracks',
     notFound: 'Playlist not found.',
-    playAll: 'Play all',
-    shuffleAll: 'Shuffle all',
   },
   artist: {
     allMusic: 'All music by this artist',
@@ -59,6 +57,8 @@ export default {
     removeFromQueue: 'Remove from queue',
     clearUpcoming: 'Clear upcoming',
     downloading: 'Downloading',
+    playAll: 'Play all',
+    shuffleAll: 'Shuffle all',
   },
   search: {
     placeholder: 'Search tracks, artists, albums',
