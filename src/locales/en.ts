@@ -20,9 +20,11 @@ export default {
   },
   home: {
     title: 'Welcome to tdmusic',
-    lead: 'A simple way to listen to your music in the browser.',
-    pointPlay: 'Open the music list, pick a song, and hit play.',
-    pointBrowse: 'Browse by artist or album, or search when you know the title.',
+    lead: 'Bring your own configs.json — describe your library there, point tdmusic at its URL, and play in the browser.',
+    pointPlay:
+      'List tracks in music-list (each needs an id and a path to the audio). Optional playlists group tracks by id.',
+    pointBrowse:
+      'Set your catalog URL in Settings. The bundled configs.json is only a sample for trying the app.',
     cta: 'Browse music',
   },
   locale: {

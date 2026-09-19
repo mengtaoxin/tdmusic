@@ -20,9 +20,10 @@ export default {
   },
   home: {
     title: '欢迎使用 tdmusic',
-    lead: '在浏览器里轻松听自己的音乐。',
-    pointPlay: '打开音乐列表，点一首歌就能播放。',
-    pointBrowse: '也可以按歌手、专辑浏览，或直接搜索歌名。',
+    lead: '使用你自己的 configs.json：在文件里描述曲库，把 tdmusic 指向该 URL，即可在浏览器中播放。',
+    pointPlay:
+      '在 music-list 中列出曲目（每首需要 id，以及指向音频的 path）；可选的 playlists 用 id 分组。',
+    pointBrowse: '在设置中填写你的曲库 URL。自带的 configs.json 仅作试用示例。',
     cta: '去听音乐',
   },
   locale: {
