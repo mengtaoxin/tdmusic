@@ -15,12 +15,10 @@ Catalog config cache usage: [catalog.md](catalog.md). Player queue fields: [play
 - UI language (`en` / `zh`) persists under `localStorage` key `tdmusic.locale`.
 - Missing, blank, or unknown values → default `en`. Changing language from the header writes this key; i18n boots from the stored value. Header Language control layout: [ui-chrome.md](ui-chrome.md).
 
-## App logs (IndexedDB `tdmusic-logs`)
+## App logs
 
-- Separate from the music cache DB. Object store `logs` holds `{ id, at, message }` (auto-increment `id`).
-- Max **100** entries; appending beyond that drops the oldest.
+- Durable diagnostics use `tdkit` (`TdLog`). API and storage details: see that package’s docs.
 - Messages are **English only** (see [conventions.md](conventions.md)); Logs page chrome is still i18n.
-- Public API: `lib/appLogStore` (`appendAppLog`, `listAppLogs`, `clearAppLogs`).
-- Logs page “Clear logs” asks for confirmation, then calls `clearAppLogs`.
-- When play-time download fails (`resolvePlayableUrl` / cache ingest), playback `console.error`s an English failure message, appends that same message, skips that track (`player.skip`), and continues; after a full queue of consecutive failures it pauses.
+- Logs page (`/logs`) lists and clears app logs (clear asks for confirmation).
+- When play-time download fails (`resolvePlayableUrl` / cache ingest), playback `console.error`s an English failure message, appends that same message to app logs, skips that track (`player.skip`), and continues; after a full queue of consecutive failures it pauses.
 - A bound `<audio>` `error` (unsupported or undecodable source) `console.error`s an English play-failure message and appends that same message. `audio.play()` rejections are printed to the console only.

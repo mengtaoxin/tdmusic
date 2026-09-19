@@ -4,7 +4,7 @@ import { act } from 'react'
 
 import { AudioHost } from '@/components/AudioHost'
 import { renderWithProviders } from '@/__tests__/renderWithProviders'
-import { listAppLogs, resetAppLogDbForTests } from '@/lib/appLogStore'
+import { TdLog } from 'tdkit'
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
@@ -44,7 +44,7 @@ async function bumpLoad(trackIds: string[], currentId: string) {
 
 describe('AudioHost', () => {
   beforeEach(async () => {
-    await resetAppLogDbForTests()
+    await TdLog.clean()
     vi.mocked(resolvePlayableUrl).mockReset()
     vi.mocked(resolvePlayableUrl).mockResolvedValue('blob:test')
   })
@@ -125,9 +125,9 @@ describe('AudioHost', () => {
     })
     expect(usePlayerStore.getState().pendingPlay).toBe(true)
 
-    const logs = await listAppLogs()
+    const { records } = await TdLog.query({ page: 1, pageSize: 100 })
     expect(
-      logs.some((entry) => /bad/i.test(entry.message) && /fail|download/i.test(entry.message)),
+      records.some((entry) => /bad/i.test(entry.message) && /fail|download/i.test(entry.message)),
     ).toBe(true)
   })
 
@@ -147,8 +147,8 @@ describe('AudioHost', () => {
     audio.dispatchEvent(new Event('error'))
 
     await waitFor(async () => {
-      const logs = await listAppLogs()
-      expect(logs.some((entry) => /Failed to play track "t1"/.test(entry.message))).toBe(true)
+      const { records } = await TdLog.query({ page: 1, pageSize: 100 })
+      expect(records.some((entry) => /Failed to play track "t1"/.test(entry.message))).toBe(true)
     })
     expect(consoleError).toHaveBeenCalledWith(expect.stringMatching(/Failed to play track "t1"/))
     consoleError.mockRestore()

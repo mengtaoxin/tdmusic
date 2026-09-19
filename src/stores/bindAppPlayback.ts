@@ -1,4 +1,5 @@
-import { appendAppLog } from '@/lib/appLogStore'
+import { TdLog } from 'tdkit'
+
 import { prefetchUpcoming } from '@/lib/playback/prefetchUpcoming'
 import { createPlaybackRuntime } from '@/lib/playback/createPlaybackRuntime'
 import { syncMediaSession } from '@/lib/playback/mediaSession'
@@ -67,7 +68,7 @@ export function createAppPlaybackTransport(getAudio: () => HTMLAudioElement | nu
     schedulePrefetch,
     resolvePlayableUrl,
     appendAppLog: (message) => {
-      void appendAppLog(message)
+      void TdLog.error(message)
     },
     scheduleEnrichTrack: (id) => useCatalogStore.getState().scheduleEnrichTrack(id),
   })

@@ -10,7 +10,7 @@ import DialogTitle from '@mui/material/DialogTitle'
 import Typography from '@mui/material/Typography'
 import { useTranslation } from 'react-i18next'
 
-import { clearAppLogs, listAppLogs, type AppLogEntry } from '@/lib/appLogStore'
+import { TdLog, type TdLogRecord } from 'tdkit'
 
 export const Route = createFileRoute('/logs')({
   component: LogsPage,
@@ -18,27 +18,28 @@ export const Route = createFileRoute('/logs')({
 
 function LogsPage() {
   const { t } = useTranslation()
-  const [logs, setLogs] = useState<AppLogEntry[]>([])
+  const [logs, setLogs] = useState<TdLogRecord[]>([])
   const [clearing, setClearing] = useState(false)
   const [confirmClearOpen, setConfirmClearOpen] = useState(false)
 
   async function refresh() {
-    setLogs(await listAppLogs())
+    const page = await TdLog.query({ page: 1, pageSize: 100 })
+    setLogs(page.records)
   }
 
   async function confirmClearLogs() {
     setConfirmClearOpen(false)
     setClearing(true)
     try {
-      await clearAppLogs()
+      await TdLog.clean()
       setLogs([])
     } finally {
       setClearing(false)
     }
   }
 
-  function formatTime(at: number) {
-    return new Date(at).toLocaleString()
+  function formatTime(createdAt: number) {
+    return new Date(createdAt).toLocaleString()
   }
 
   useEffect(() => {
@@ -112,10 +113,10 @@ function LogsPage() {
               <Box
                 component="time"
                 className="log-time"
-                dateTime={new Date(entry.at).toISOString()}
+                dateTime={new Date(entry.createdAt).toISOString()}
                 sx={{ color: 'text.secondary', fontVariantNumeric: 'tabular-nums' }}
               >
-                {formatTime(entry.at)}
+                {formatTime(entry.createdAt)}
               </Box>
               <Box
                 component="span"
