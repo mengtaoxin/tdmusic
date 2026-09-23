@@ -66,7 +66,7 @@ export type PlaybackSessionHooks = {
   appendAppLog: (message: string) => void
   scheduleEnrichTrack: (id: string) => void
   schedulePrefetch: () => void
-  /** Apply per-track volume-ratio (percent) via Web Audio gain. */
+  /** Apply per-track volume-ratio (percent) via native element volume. */
   setVolumeRatio: (percent: number) => void
   /** Called when a playable URL is ready for `id`, before assigning audio.src. */
   onTrackResolved?: (id: string) => void

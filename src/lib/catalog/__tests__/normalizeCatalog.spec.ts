@@ -45,22 +45,22 @@ describe('normalizeMusicList', () => {
     expect(tracks[0]!.volumeRatio).toBe(100)
   })
 
-  it('keeps valid volume-ratio percentages including values above 100', () => {
+  it('keeps valid volume-ratio percentages in [0, 100]', () => {
     const { tracks } = normalizeMusicList([
       { id: 'quiet', path: '/q.mp3', 'volume-ratio': 50 },
-      { id: 'loud', path: '/l.mp3', 'volume-ratio': 150 },
+      { id: 'unity', path: '/u.mp3', 'volume-ratio': 100 },
       { id: 'zero', path: '/z.mp3', 'volume-ratio': 0 },
-      { id: 'cap', path: '/c.mp3', 'volume-ratio': 200 },
     ])
-    expect(tracks.map((t) => t.volumeRatio)).toEqual([50, 150, 0, 200])
+    expect(tracks.map((t) => t.volumeRatio)).toEqual([50, 100, 0])
   })
 
-  it('clamps volume-ratio above 200 down to 200', () => {
+  it('clamps volume-ratio above 100 down to 100', () => {
     const { tracks } = normalizeMusicList([
-      { id: 'a', path: '/a.mp3', 'volume-ratio': 201 },
-      { id: 'b', path: '/b.mp3', 'volume-ratio': 500 },
+      { id: 'a', path: '/a.mp3', 'volume-ratio': 101 },
+      { id: 'b', path: '/b.mp3', 'volume-ratio': 150 },
+      { id: 'c', path: '/c.mp3', 'volume-ratio': 500 },
     ])
-    expect(tracks.map((t) => t.volumeRatio)).toEqual([200, 200])
+    expect(tracks.map((t) => t.volumeRatio)).toEqual([100, 100, 100])
   })
 
   it('defaults volumeRatio to 100 for invalid volume-ratio values', () => {

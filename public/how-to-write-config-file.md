@@ -12,7 +12,7 @@ An array of tracks. Each entry needs `id` and `path`. Missing either, or a dupli
 - `artist` — artist name (optional)
 - `album` — album name (optional)
 - `cover` — cover image URL (optional)
-- `volume-ratio` — playback loudness as a percent of normal (optional; default `100`, max `200`). Values above `100` amplify; values above `200` are treated as `200`; invalid values fall back to `100`.
+- `volume-ratio` — playback loudness as a percent of normal (optional; default `100`, max `100`). Values above `100` are treated as `100`; invalid values fall back to `100`.
 
 ## playlists
 

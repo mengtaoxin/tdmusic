@@ -15,7 +15,7 @@ export type MusicTrack = {
   artist?: string
   album?: string
   cover?: string
-  /** Playback gain as a percent of normal loudness (100 = unity). */
+  /** Playback volume as a percent of normal loudness (100 = unity; max 100). */
   volumeRatio: number
 }
 
@@ -38,9 +38,9 @@ function asOptionalString(value: unknown): string | undefined {
 }
 
 const DEFAULT_VOLUME_RATIO = 100
-const MAX_VOLUME_RATIO = 200
+const MAX_VOLUME_RATIO = 100
 
-/** Finite number in [0, 200]; otherwise default 100. Values above 200 clamp to 200. */
+/** Finite number in [0, 100]; otherwise default 100. Values above 100 clamp to 100. */
 export function parseVolumeRatio(value: unknown): number {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
     return DEFAULT_VOLUME_RATIO

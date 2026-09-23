@@ -319,7 +319,7 @@ describe('playbackSession', () => {
         skip: vi.fn<() => void>(),
         getTrack: (id) => {
           if (id === 'quiet') return { id: 'quiet', path: '/quiet.mp3', volumeRatio: 50 }
-          if (id === 'loud') return { id: 'loud', path: '/loud.mp3', volumeRatio: 150 }
+          if (id === 'full') return { id: 'full', path: '/full.mp3', volumeRatio: 100 }
           return undefined
         },
       },
@@ -336,9 +336,9 @@ describe('playbackSession', () => {
     expect(setVolumeRatio).toHaveBeenCalledWith(50)
     expect(audio.src).toBe('blob:good')
 
-    currentId = 'loud'
+    currentId = 'full'
     await session.loadCurrent()
-    expect(setVolumeRatio).toHaveBeenLastCalledWith(150)
+    expect(setVolumeRatio).toHaveBeenLastCalledWith(100)
     expect(setVolumeRatio).toHaveBeenCalledTimes(2)
   })
 })
