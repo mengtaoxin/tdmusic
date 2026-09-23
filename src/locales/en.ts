@@ -19,12 +19,12 @@ export default {
     beta: 'Beta',
   },
   home: {
-    title: 'Welcome to tdmusic',
-    lead: 'Bring your own configs.json — describe your library there, point tdmusic at its URL, and play in the browser.',
+    title: 'Your music library, in the browser',
+    lead: 'No account. No backend. Point tdmusic at your catalog and play.',
     pointPlay:
-      'List tracks in music-list (each needs an id and a path to the audio). Optional playlists group tracks by id.',
+      'Tracks cache on this device and upcoming songs prefetch; incomplete tags fill in from the audio.',
     pointBrowse:
-      'Set your catalog URL in Settings. The bundled configs.json is only a sample for trying the app.',
+      'Queue, shuffle, repeat, and lock-screen controls — browse by list, artist, album, or search.',
     cta: 'Browse music',
   },
   locale: {

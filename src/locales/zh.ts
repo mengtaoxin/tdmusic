@@ -19,11 +19,10 @@ export default {
     beta: 'Beta',
   },
   home: {
-    title: '欢迎使用 tdmusic',
-    lead: '使用你自己的 configs.json：在文件里描述曲库，把 tdmusic 指向该 URL，即可在浏览器中播放。',
-    pointPlay:
-      '在 music-list 中列出曲目（每首需要 id，以及指向音频的 path）；可选的 playlists 用 id 分组。',
-    pointBrowse: '在设置中填写你的曲库 URL。自带的 configs.json 仅作试用示例。',
+    title: '用自己的歌库，在浏览器里听',
+    lead: '无需账号、无需后端。把曲库交给 tdmusic，打开网页就能播。',
+    pointPlay: '听过的歌会缓存到本机，并预取接下来几首；元数据不全时还能从音频里补全。',
+    pointBrowse: '支持队列、随机、循环与锁屏控制，可按列表、歌手、专辑或搜索浏览。',
     cta: '去听音乐',
   },
   locale: {
