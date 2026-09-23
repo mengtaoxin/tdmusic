@@ -17,7 +17,7 @@ export type DisplayFields = {
 
 /** Config fields win; extracted values fill gaps; path filename is last title fallback. */
 export function mergeTrackDisplay(
-  track: MusicTrack,
+  track: Pick<MusicTrack, 'path' | 'title' | 'artist' | 'album' | 'cover'>,
   parsed: ParsedAudioMeta | null | undefined,
 ): DisplayFields {
   const fromPath = titleFromPath(track.path)

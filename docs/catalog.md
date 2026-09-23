@@ -7,7 +7,8 @@ Audio/cover cache: [cache.md](cache.md). Playback: [playback.md](playback.md).
 - Fetched `configs.json` (default or override URL) is stored under `tdmusic.configs` as `{ url, data }`. Later loads use that cache when `url` matches the resolved config URL; otherwise fetch and replace the cache. Settings “Delete local config cache” confirms, then removes `tdmusic.configs` and clears now playing / the play queue — the next catalog load fetches again.
 - Settings and **More** link to **Guidelines for configs.json** (`/config-guides`), which fetches and renders locale markdown from `public/how-to-write-config-file.md` (English) or `public/how-to-write-config-file.zh.md` (Chinese), including a short LLM prompt that points at the live guide URL and a sample music-library URL.
 - `music-list` entries require `id` and `path`. Missing either, or duplicate `id`, drops the entry and surfaces an error in Music List.
-- Optional fields: `title`, `artist`, `album`, `cover`. Config values win over extracted ID3.
+- Optional fields: `title`, `artist`, `album`, `cover`, `volume-ratio`. Config values win over extracted ID3.
+- `volume-ratio` is a non-negative finite percent of normal loudness (default `100`, max `200`). Values above `100` amplify via Web Audio gain; values above `200` are treated as `200`. Invalid values fall back to `100` without dropping the track.
 - Track title fallback order: config → ID3 → filename from `path`/`url` (decoded basename without extension) → `id`.
 - Missing artist/album metadata resolves to stable labels `Unknown artist` / `Unknown album` (UI shows localized 未知歌手 / 未知专辑). Those tracks still group under artist → albums → tracks.
 - `playlists` is an array of playlists; each references tracks by `id` (resolved against accepted tracks only). Legacy singular `playlist` is ignored.

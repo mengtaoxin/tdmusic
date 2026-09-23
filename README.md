@@ -55,7 +55,7 @@ Your library is whatever **your** `configs.json` describes — host it anywhere 
 | Sample (dev) | [`public/configs.json`](public/configs.json) → `/configs.json` |
 | Your catalog | Settings → catalog URL (`tdmusic.configUrl`) |
 | `music-list` | Required: each track needs unique `id` + `path` (URL to the audio) |
-| Optional fields | `title`, `artist`, `album`, `cover` (win over extracted ID3) |
+| Optional fields | `title`, `artist`, `album`, `cover`, `volume-ratio` (win over extracted ID3; `volume-ratio` defaults to `100`, max `200`) |
 | `playlists` | Arrays of `{ title, music-list: [{ id }] }` referencing track ids |
 
 Example shape:

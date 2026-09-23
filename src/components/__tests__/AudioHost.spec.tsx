@@ -23,6 +23,7 @@ function makeTrack(id: string, title = id): DisplayTrack {
   return {
     id,
     path: `https://example.com/${id}.mp3`,
+    volumeRatio: 100,
     displayTitle: title,
     displayArtist: 'A',
     displayAlbum: 'B',

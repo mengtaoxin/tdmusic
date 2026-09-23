@@ -12,6 +12,7 @@
 - `artist` — 歌手名（可选）
 - `album` — 专辑名（可选）
 - `cover` — 封面图 URL（可选）
+- `volume-ratio` — 相对正常响度的百分比（可选；默认 `100`，上限 `200`）。大于 `100` 会放大音量；大于 `200` 按 `200` 处理；非法值回退为 `100`。
 
 ## playlists
 
@@ -27,7 +28,8 @@
       "title": "Sample 1",
       "artist": "Artist 1",
       "album": "Album 1",
-      "path": "/sample-1.mp3"
+      "path": "/sample-1.mp3",
+      "volume-ratio": 80
     }
   ],
   "playlists": [

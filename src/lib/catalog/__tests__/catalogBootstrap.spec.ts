@@ -23,11 +23,12 @@ function sampleTracks(): DisplayTrack[] {
     {
       id: 'a',
       path: '/a.mp3',
+      volumeRatio: 100,
       displayTitle: 'A',
       displayArtist: 'Unknown artist',
       displayAlbum: 'Unknown album',
     },
-  ] as DisplayTrack[]
+  ]
 }
 
 function sampleConfigs() {

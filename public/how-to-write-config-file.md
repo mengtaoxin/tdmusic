@@ -12,6 +12,7 @@ An array of tracks. Each entry needs `id` and `path`. Missing either, or a dupli
 - `artist` — artist name (optional)
 - `album` — album name (optional)
 - `cover` — cover image URL (optional)
+- `volume-ratio` — playback loudness as a percent of normal (optional; default `100`, max `200`). Values above `100` amplify; values above `200` are treated as `200`; invalid values fall back to `100`.
 
 ## playlists
 
@@ -27,7 +28,8 @@ An array of playlists. Each has a `title` and a `music-list` of `{ "id": "…" }
       "title": "Sample 1",
       "artist": "Artist 1",
       "album": "Album 1",
-      "path": "/sample-1.mp3"
+      "path": "/sample-1.mp3",
+      "volume-ratio": 80
     }
   ],
   "playlists": [

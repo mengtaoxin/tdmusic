@@ -11,6 +11,7 @@ function makeTrack(id = 't1', title = 'Song One'): DisplayTrack {
   return {
     id,
     path: `/music/${id}.mp3`,
+    volumeRatio: 100,
     displayTitle: title,
     displayArtist: 'Artist One',
     displayAlbum: 'Album One',

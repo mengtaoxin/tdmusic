@@ -19,7 +19,7 @@ export type PlaybackTransportDeps = {
   pause: () => void
   skip: () => void
   onEnded: () => void
-  getTrack: (id: string) => { id: string; path: string } | undefined
+  getTrack: (id: string) => { id: string; path: string; volumeRatio: number } | undefined
   setPlaying: (playing: boolean) => void
   clearPendingPlay: () => void
   flushPersist: () => void
@@ -30,6 +30,7 @@ export type PlaybackTransportDeps = {
   resolvePlayableUrl: (path: string, id: string) => Promise<string>
   appendAppLog: (message: string) => void
   scheduleEnrichTrack: (id: string) => void
+  setVolumeRatio: (percent: number) => void
   /** Override session factory (tests). Defaults to createPlaybackSession. */
   createSession?: (
     getAudio: () => PlaybackAudioElement | null,
@@ -68,6 +69,7 @@ export function createPlaybackTransport(deps: PlaybackTransportDeps) {
     appendAppLog: deps.appendAppLog,
     scheduleEnrichTrack: deps.scheduleEnrichTrack,
     schedulePrefetch: deps.schedulePrefetch,
+    setVolumeRatio: deps.setVolumeRatio,
     onLoadStart: () => {
       boundTrackId = null
     },

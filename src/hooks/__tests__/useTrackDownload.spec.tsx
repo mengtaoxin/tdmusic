@@ -11,6 +11,7 @@ import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
 const track: DisplayTrack = {
   id: 't1',
   path: '/music/t1.mp3',
+  volumeRatio: 100,
   displayTitle: 'Song',
   displayArtist: 'Artist',
   displayAlbum: 'Album',

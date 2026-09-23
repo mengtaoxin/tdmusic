@@ -58,7 +58,7 @@ export type PlaybackSessionPlayer = {
   clearSeekTo: () => void
   pause: () => void
   skip: () => void
-  getTrack: (id: string) => { id: string; path: string } | undefined
+  getTrack: (id: string) => { id: string; path: string; volumeRatio: number } | undefined
 }
 
 export type PlaybackSessionHooks = {
@@ -66,6 +66,8 @@ export type PlaybackSessionHooks = {
   appendAppLog: (message: string) => void
   scheduleEnrichTrack: (id: string) => void
   schedulePrefetch: () => void
+  /** Apply per-track volume-ratio (percent) via Web Audio gain. */
+  setVolumeRatio: (percent: number) => void
   /** Called when a playable URL is ready for `id`, before assigning audio.src. */
   onTrackResolved?: (id: string) => void
   /** Called when a load for `id` starts, before resolving the playable URL. */
@@ -108,6 +110,7 @@ export function createPlaybackSession(
     // Stop the previously bound file immediately. UI already shows `id`; waiting
     // on cache/download would otherwise keep playing the old song (slow on old devices).
     audio.pause()
+    hooks.setVolumeRatio(track.volumeRatio)
 
     try {
       const url = await hooks.resolvePlayableUrl(track.path, track.id)

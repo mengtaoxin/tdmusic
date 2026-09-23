@@ -72,9 +72,18 @@ describe('playbackSession', () => {
         pause,
         skip,
         getTrack: (id) =>
-          id === 't1' ? { id: 't1', path: 'https://example.com/t1.mp3' } : undefined,
+          id === 't1'
+            ? { id: 't1', path: 'https://example.com/t1.mp3', volumeRatio: 100 }
+            : undefined,
       },
-      { resolvePlayableUrl, appendAppLog, scheduleEnrichTrack, schedulePrefetch, onTrackResolved },
+      {
+        resolvePlayableUrl,
+        appendAppLog,
+        scheduleEnrichTrack,
+        schedulePrefetch,
+        onTrackResolved,
+        setVolumeRatio: vi.fn<(percent: number) => void>(),
+      },
     )
 
     await session.loadCurrent()
@@ -117,12 +126,13 @@ describe('playbackSession', () => {
           skip()
           currentId = 'b'
         },
-        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3` }),
+        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3`, volumeRatio: 100 }),
       },
       {
         resolvePlayableUrl,
         appendAppLog,
         scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+        setVolumeRatio: vi.fn<(percent: number) => void>(),
         schedulePrefetch: vi.fn<() => void>(),
       },
     )
@@ -164,12 +174,13 @@ describe('playbackSession', () => {
         clearSeekTo: () => {},
         pause,
         skip: vi.fn<() => void>(),
-        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3` }),
+        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3`, volumeRatio: 100 }),
       },
       {
         resolvePlayableUrl: async () => 'blob:t1',
         appendAppLog,
         scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+        setVolumeRatio: vi.fn<(percent: number) => void>(),
         schedulePrefetch: vi.fn<() => void>(),
       },
     )
@@ -207,12 +218,13 @@ describe('playbackSession', () => {
         clearSeekTo: () => {},
         pause: vi.fn<() => void>(),
         skip: vi.fn<() => void>(),
-        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3` }),
+        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3`, volumeRatio: 100 }),
       },
       {
         resolvePlayableUrl,
         appendAppLog: vi.fn<(message: string) => void>(),
         scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+        setVolumeRatio: vi.fn<(percent: number) => void>(),
         schedulePrefetch: vi.fn<() => void>(),
         onLoadStart,
       },
@@ -255,12 +267,13 @@ describe('playbackSession', () => {
         },
         pause: vi.fn<() => void>(),
         skip: vi.fn<() => void>(),
-        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3` }),
+        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3`, volumeRatio: 100 }),
       },
       {
         resolvePlayableUrl,
         appendAppLog: vi.fn<(message: string) => void>(),
         scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+        setVolumeRatio: vi.fn<(percent: number) => void>(),
         schedulePrefetch,
       },
     )
@@ -284,5 +297,48 @@ describe('playbackSession', () => {
     expect(audio.src).toBe('blob:t2')
     expect(audio.play).toHaveBeenCalledOnce()
     expect(schedulePrefetch).toHaveBeenCalledOnce()
+  })
+
+  it('loadCurrent applies setVolumeRatio before assigning audio src', async () => {
+    const audio = makeAudio()
+    const setVolumeRatio = vi.fn<(percent: number) => void>()
+    const resolvePlayableUrl = vi
+      .fn<(path: string, id: string) => Promise<string>>()
+      .mockResolvedValue('blob:good')
+    let currentId: string | null = 'quiet'
+
+    const session = createPlaybackSession(
+      () => audio,
+      {
+        getCurrentId: () => currentId,
+        getQueueLength: () => 2,
+        getSeekTo: () => null,
+        getPendingPlay: () => false,
+        clearSeekTo: () => {},
+        pause: vi.fn<() => void>(),
+        skip: vi.fn<() => void>(),
+        getTrack: (id) => {
+          if (id === 'quiet') return { id: 'quiet', path: '/quiet.mp3', volumeRatio: 50 }
+          if (id === 'loud') return { id: 'loud', path: '/loud.mp3', volumeRatio: 150 }
+          return undefined
+        },
+      },
+      {
+        resolvePlayableUrl,
+        appendAppLog: vi.fn<(message: string) => void>(),
+        scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+        schedulePrefetch: vi.fn<() => void>(),
+        setVolumeRatio,
+      },
+    )
+
+    await session.loadCurrent()
+    expect(setVolumeRatio).toHaveBeenCalledWith(50)
+    expect(audio.src).toBe('blob:good')
+
+    currentId = 'loud'
+    await session.loadCurrent()
+    expect(setVolumeRatio).toHaveBeenLastCalledWith(150)
+    expect(setVolumeRatio).toHaveBeenCalledTimes(2)
   })
 })

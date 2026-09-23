@@ -5,6 +5,7 @@ export type RawMusicEntry = {
   artist?: unknown
   album?: unknown
   cover?: unknown
+  'volume-ratio'?: unknown
 }
 
 export type MusicTrack = {
@@ -14,6 +15,8 @@ export type MusicTrack = {
   artist?: string
   album?: string
   cover?: string
+  /** Playback gain as a percent of normal loudness (100 = unity). */
+  volumeRatio: number
 }
 
 export type CatalogError = string
@@ -32,6 +35,17 @@ function asOptionalString(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined
   const trimmed = value.trim()
   return trimmed.length > 0 ? trimmed : undefined
+}
+
+const DEFAULT_VOLUME_RATIO = 100
+const MAX_VOLUME_RATIO = 200
+
+/** Finite number in [0, 200]; otherwise default 100. Values above 200 clamp to 200. */
+export function parseVolumeRatio(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+    return DEFAULT_VOLUME_RATIO
+  }
+  return Math.min(value, MAX_VOLUME_RATIO)
 }
 
 export function normalizeMusicList(rawList: unknown): {
@@ -66,7 +80,11 @@ export function normalizeMusicList(rawList: unknown): {
     }
 
     seen.add(id)
-    const track: MusicTrack = { id, path }
+    const track: MusicTrack = {
+      id,
+      path,
+      volumeRatio: parseVolumeRatio(entry['volume-ratio']),
+    }
     const title = asOptionalString(entry.title)
     const artist = asOptionalString(entry.artist)
     const album = asOptionalString(entry.album)

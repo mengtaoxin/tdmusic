@@ -10,6 +10,7 @@ describe('mergeTrackDisplay', () => {
       path: 'https://ex.com/a.mp3',
       title: 'Config Title',
       artist: 'Config Artist',
+      volumeRatio: 100,
     }
     const parsed: ParsedAudioMeta = {
       title: 'Tag Title',
@@ -26,7 +27,7 @@ describe('mergeTrackDisplay', () => {
   })
 
   it('fills missing fields from extracted metadata', () => {
-    const track: MusicTrack = { id: '1', path: '/a.mp3' }
+    const track: MusicTrack = { id: '1', path: '/a.mp3', volumeRatio: 100 }
     const parsed: ParsedAudioMeta = {
       title: 'Tag Title',
       artist: 'Tag Artist',
@@ -44,6 +45,7 @@ describe('mergeTrackDisplay', () => {
     const track: MusicTrack = {
       id: '1',
       path: 'http://ex.com/music/9277%20-%20%E5%B0%9A%E6%96%87%E5%A9%B7.mp3',
+      volumeRatio: 100,
     }
     expect(mergeTrackDisplay(track, null)).toEqual({
       title: '9277 - 尚文婷',
@@ -54,7 +56,7 @@ describe('mergeTrackDisplay', () => {
   })
 
   it('falls back to site-absolute path basename without extension', () => {
-    const track: MusicTrack = { id: '1', path: '/folder/sample-1.mp3' }
+    const track: MusicTrack = { id: '1', path: '/folder/sample-1.mp3', volumeRatio: 100 }
     expect(mergeTrackDisplay(track, undefined).title).toBe('sample-1')
   })
 })

@@ -12,6 +12,7 @@ function track(id: string, title: string): DisplayTrack {
   return {
     id,
     path: `/music/${id}.mp3`,
+    volumeRatio: 100,
     displayTitle: title,
     displayArtist: 'Artist',
     displayAlbum: 'Album',

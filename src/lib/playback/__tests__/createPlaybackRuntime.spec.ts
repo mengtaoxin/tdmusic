@@ -39,7 +39,7 @@ describe('createPlaybackRuntime', () => {
       pause: noop(),
       skip: noop(),
       onEnded: noop(),
-      getTrack: (id) => (id === 't1' ? { id: 't1', path: '/t1.mp3' } : undefined),
+      getTrack: (id) => (id === 't1' ? { id: 't1', path: '/t1.mp3', volumeRatio: 100 } : undefined),
       setPlaying: vi.fn<(playing: boolean) => void>(),
       clearPendingPlay: noop(),
       flushPersist: noop(),
@@ -50,6 +50,7 @@ describe('createPlaybackRuntime', () => {
       resolvePlayableUrl,
       appendAppLog: vi.fn<(message: string) => void>(),
       scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+      setVolumeRatio: vi.fn<(percent: number) => void>(),
     })
 
     await runtime.loadCurrent()

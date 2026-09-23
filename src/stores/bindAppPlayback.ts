@@ -4,6 +4,7 @@ import { prefetchUpcoming } from '@/lib/playback/prefetchUpcoming'
 import { createPlaybackRuntime } from '@/lib/playback/createPlaybackRuntime'
 import { syncMediaSession } from '@/lib/playback/mediaSession'
 import { resolvePlayableUrl } from '@/lib/playback/resolvePlayableUrl'
+import { createVolumeGainController } from '@/lib/playback/volumeGain'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
 
@@ -28,6 +29,7 @@ function schedulePrefetch() {
 
 /** Bind Zustand / cache / log ports to a playback transport for one audio element. */
 export function createAppPlaybackTransport(getAudio: () => HTMLAudioElement | null) {
+  const volumeGain = createVolumeGainController({ getAudio })
   return createPlaybackRuntime(getAudio, {
     getCurrentId: () => usePlayerStore.getState().currentId,
     getQueueLength: () => usePlayerStore.getState().queue.length,
@@ -43,8 +45,9 @@ export function createAppPlaybackTransport(getAudio: () => HTMLAudioElement | nu
     getTrack: (id) => {
       const track = useCatalogStore.getState().snapshot.trackById.get(id)
       if (!track) return undefined
-      return { id: track.id, path: track.path }
+      return { id: track.id, path: track.path, volumeRatio: track.volumeRatio ?? 100 }
     },
+    setVolumeRatio: (percent) => volumeGain.setRatio(percent),
     setPlaying: (playing) => {
       usePlayerStore.setState({ playing })
     },

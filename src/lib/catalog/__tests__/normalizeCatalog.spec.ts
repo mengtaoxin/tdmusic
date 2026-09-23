@@ -39,13 +39,47 @@ describe('normalizeMusicList', () => {
     expect(tracks[0]!.path).toBe('/1.mp3')
     expect(errors[0]).toMatch(/id already exists/i)
   })
+
+  it('defaults volumeRatio to 100 when volume-ratio is missing', () => {
+    const { tracks } = normalizeMusicList([{ id: 'a', path: '/a.mp3' }])
+    expect(tracks[0]!.volumeRatio).toBe(100)
+  })
+
+  it('keeps valid volume-ratio percentages including values above 100', () => {
+    const { tracks } = normalizeMusicList([
+      { id: 'quiet', path: '/q.mp3', 'volume-ratio': 50 },
+      { id: 'loud', path: '/l.mp3', 'volume-ratio': 150 },
+      { id: 'zero', path: '/z.mp3', 'volume-ratio': 0 },
+      { id: 'cap', path: '/c.mp3', 'volume-ratio': 200 },
+    ])
+    expect(tracks.map((t) => t.volumeRatio)).toEqual([50, 150, 0, 200])
+  })
+
+  it('clamps volume-ratio above 200 down to 200', () => {
+    const { tracks } = normalizeMusicList([
+      { id: 'a', path: '/a.mp3', 'volume-ratio': 201 },
+      { id: 'b', path: '/b.mp3', 'volume-ratio': 500 },
+    ])
+    expect(tracks.map((t) => t.volumeRatio)).toEqual([200, 200])
+  })
+
+  it('defaults volumeRatio to 100 for invalid volume-ratio values', () => {
+    const { tracks } = normalizeMusicList([
+      { id: 'a', path: '/a.mp3', 'volume-ratio': -1 },
+      { id: 'b', path: '/b.mp3', 'volume-ratio': Number.NaN },
+      { id: 'c', path: '/c.mp3', 'volume-ratio': Number.POSITIVE_INFINITY },
+      { id: 'd', path: '/d.mp3', 'volume-ratio': '80' },
+      { id: 'e', path: '/e.mp3', 'volume-ratio': null },
+    ])
+    expect(tracks.map((t) => t.volumeRatio)).toEqual([100, 100, 100, 100, 100])
+  })
 })
 
 describe('normalizePlaylist', () => {
   it('resolves playlist entries to known track ids', () => {
     const tracks = [
-      { id: 'a', path: '/a.mp3' },
-      { id: 'b', path: '/b.mp3' },
+      { id: 'a', path: '/a.mp3', volumeRatio: 100 },
+      { id: 'b', path: '/b.mp3', volumeRatio: 100 },
     ]
     const playlist = normalizePlaylist(
       { title: 'Mine', 'music-list': [{ id: 'a' }, { id: 'missing' }, { id: 'b' }] },
@@ -58,9 +92,9 @@ describe('normalizePlaylist', () => {
 describe('normalizePlaylists', () => {
   it('normalizes multiple playlists from playlists array', () => {
     const tracks = [
-      { id: 'a', path: '/a.mp3' },
-      { id: 'b', path: '/b.mp3' },
-      { id: 'c', path: '/c.mp3' },
+      { id: 'a', path: '/a.mp3', volumeRatio: 100 },
+      { id: 'b', path: '/b.mp3', volumeRatio: 100 },
+      { id: 'c', path: '/c.mp3', volumeRatio: 100 },
     ]
     const playlists = normalizePlaylists(
       [

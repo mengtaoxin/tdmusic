@@ -52,7 +52,7 @@ describe('playbackTransport', () => {
       pause,
       skip: noop(),
       onEnded: noop(),
-      getTrack: (id) => (id === 't1' ? { id: 't1', path: '/t1.mp3' } : undefined),
+      getTrack: (id) => (id === 't1' ? { id: 't1', path: '/t1.mp3', volumeRatio: 100 } : undefined),
       setPlaying: vi.fn<(playing: boolean) => void>(),
       clearPendingPlay: noop(),
       flushPersist: noop(),
@@ -63,6 +63,7 @@ describe('playbackTransport', () => {
       resolvePlayableUrl: async () => 'blob:t1',
       appendAppLog: vi.fn<(message: string) => void>(),
       scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+      setVolumeRatio: vi.fn<(percent: number) => void>(),
     })
 
     transport.onPendingPlayChange(true)
@@ -106,6 +107,7 @@ describe('playbackTransport', () => {
       resolvePlayableUrl: async () => 'blob:x',
       appendAppLog: vi.fn<(message: string) => void>(),
       scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+      setVolumeRatio: vi.fn<(percent: number) => void>(),
       createSession: () => ({ loadCurrent: async () => undefined }),
     })
 
@@ -135,7 +137,7 @@ describe('playbackTransport', () => {
       pause: noop(),
       skip: noop(),
       onEnded: noop(),
-      getTrack: () => ({ id: 't1', path: '/t1.mp3' }),
+      getTrack: () => ({ id: 't1', path: '/t1.mp3', volumeRatio: 100 }),
       setPlaying: vi.fn<(playing: boolean) => void>(),
       clearPendingPlay: noop(),
       flushPersist: noop(),
@@ -146,6 +148,7 @@ describe('playbackTransport', () => {
       resolvePlayableUrl: async () => 'blob:ok',
       appendAppLog: vi.fn<(message: string) => void>(),
       scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+      setVolumeRatio: vi.fn<(percent: number) => void>(),
       createSession: (getAudio, player, hooks) => createPlaybackSession(getAudio, player, hooks),
     })
 
@@ -169,7 +172,7 @@ describe('playbackTransport', () => {
       pause: noop(),
       skip: noop(),
       onEnded: noop(),
-      getTrack: () => ({ id: 't1', path: '/t1.mp3' }),
+      getTrack: () => ({ id: 't1', path: '/t1.mp3', volumeRatio: 100 }),
       setPlaying: vi.fn<(playing: boolean) => void>(),
       clearPendingPlay: noop(),
       flushPersist: noop(),
@@ -180,6 +183,7 @@ describe('playbackTransport', () => {
       resolvePlayableUrl: async () => 'blob:ok',
       appendAppLog,
       scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+      setVolumeRatio: vi.fn<(percent: number) => void>(),
     })
 
     await transport.loadCurrent()
@@ -217,7 +221,7 @@ describe('playbackTransport', () => {
       pause,
       skip: noop(),
       onEnded: noop(),
-      getTrack: () => ({ id: 't1', path: '/t1.mp3' }),
+      getTrack: () => ({ id: 't1', path: '/t1.mp3', volumeRatio: 100 }),
       setPlaying: vi.fn<(playing: boolean) => void>(),
       clearPendingPlay: noop(),
       flushPersist: noop(),
@@ -228,6 +232,7 @@ describe('playbackTransport', () => {
       resolvePlayableUrl: async () => 'blob:t1',
       appendAppLog,
       scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+      setVolumeRatio: vi.fn<(percent: number) => void>(),
     })
 
     await transport.loadCurrent()
