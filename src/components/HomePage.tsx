@@ -13,7 +13,6 @@ export function HomePage() {
   return (
     <Container
       maxWidth={false}
-      className="page-home"
       sx={{
         minHeight: '100%',
         display: 'grid',
@@ -21,7 +20,6 @@ export function HomePage() {
       }}
     >
       <Box
-        className="hero"
         sx={{
           textAlign: 'center',
           maxWidth: (theme) => theme.layout.heroMaxWidth,
@@ -31,7 +29,6 @@ export function HomePage() {
       >
         <Box
           component="img"
-          className="brand-icon"
           src={brandIconUrl}
           width={48}
           height={48}
@@ -44,7 +41,6 @@ export function HomePage() {
           }}
         />
         <Typography
-          className="eyebrow"
           variant="caption"
           color="text.secondary"
           sx={{
@@ -64,7 +60,6 @@ export function HomePage() {
         </Typography>
         <Box
           component="ul"
-          className="points"
           sx={{
             listStyle: 'none',
             p: 0,

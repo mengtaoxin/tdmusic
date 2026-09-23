@@ -21,7 +21,6 @@ function AboutPage() {
     <Container maxWidth={false} sx={{ textAlign: 'center' }}>
       <Box
         component="img"
-        className="about-icon"
         src={brandIconUrl}
         width={64}
         height={64}

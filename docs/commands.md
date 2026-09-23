@@ -9,6 +9,7 @@ npm run dev
 npm run build
 npm run format && npm run lint && npm run type-check
 npm run test:unit
+npm run test:coverage
 npm run test:e2e -- --project chromium
 ```
 
@@ -56,6 +57,7 @@ Type-check + Vite production build → `dist/`.
 | ------- | ----- |
 | `npm run test:unit` | Vitest (all unit specs) |
 | `npm run test:unit -- path/to/spec.ts` | One unit file |
+| `npm run test:coverage` | Vitest with V8 coverage (`text` + `coverage/` HTML) |
 | `npm run test:e2e -- --project chromium` | Playwright; pick projects explicitly |
 | `npm run test:e2e -- --project chromium -- path/to/spec.ts` | One e2e file |
 

@@ -146,7 +146,6 @@ export function AppHeader() {
               <Box
                 component="img"
                 data-testid="brand-icon"
-                className="brand-icon"
                 src={brandIconUrl}
                 width={28}
                 height={28}
@@ -157,7 +156,6 @@ export function AppHeader() {
               <Box
                 component="span"
                 data-testid="brand-beta"
-                className="brand-beta"
                 sx={{
                   display: 'inline-flex',
                   alignItems: 'center',

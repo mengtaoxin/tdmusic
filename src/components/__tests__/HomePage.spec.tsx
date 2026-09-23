@@ -32,7 +32,6 @@ describe('HomePage', () => {
     ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Browse music' })).toHaveAttribute('href', '/music')
 
-    const mainCopy = screen.getByRole('heading', { level: 1 }).closest('.hero')
-    expect(mainCopy?.textContent).not.toMatch(/configs\.json|music-list/i)
+    expect(document.body.textContent).not.toMatch(/configs\.json|music-list/i)
   })
 })
