@@ -96,4 +96,44 @@ describe('createVolumeGainController', () => {
     controller.setRatio(40)
     expect(audio.volume).toBe(0.4)
   })
+
+  it('default AudioContext graph connects real AudioNodes (not plain wrappers)', () => {
+    const audio = { volume: 1 } as HTMLAudioElement
+    const destination = { numberOfInputs: 1 }
+    const realGain = {
+      numberOfInputs: 1,
+      gain: { value: 1 },
+      connect: vi.fn<(destination: unknown) => void>(),
+    }
+    const realSource = {
+      connect: vi.fn<(destination: unknown) => void>((destination) => {
+        // Browser AudioNode.connect rejects non-AudioNode destinations.
+        if (!destination || typeof destination !== 'object' || !('numberOfInputs' in destination)) {
+          throw new TypeError(
+            "Failed to execute 'connect' on 'AudioNode': Overload resolution failed.",
+          )
+        }
+      }),
+    }
+
+    class FakeAudioContext {
+      destination = destination
+      createMediaElementSource = vi.fn<() => typeof realSource>().mockReturnValue(realSource)
+      createGain = vi.fn<() => typeof realGain>().mockReturnValue(realGain)
+      resume = vi.fn<() => Promise<void>>().mockResolvedValue(undefined)
+    }
+
+    const previous = window.AudioContext
+    window.AudioContext = FakeAudioContext as unknown as typeof AudioContext
+    try {
+      const controller = createVolumeGainController({ getAudio: () => audio })
+      expect(() => controller.setRatio(150)).not.toThrow()
+      expect(realSource.connect).toHaveBeenCalledWith(realGain)
+      expect(realGain.connect).toHaveBeenCalledWith(destination)
+      expect(realGain.gain.value).toBe(1.5)
+      expect(audio.volume).toBe(1)
+    } finally {
+      window.AudioContext = previous
+    }
+  })
 })

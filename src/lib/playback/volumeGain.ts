@@ -32,24 +32,11 @@ function createDefaultContext(): VolumeGainAudioGraph | null {
       : undefined
   if (typeof AudioContextCtor !== 'function') return null
   const ctx = new AudioContextCtor()
+  // Return real AudioNodes — wrappers break AudioNode.connect (overload resolution).
   return {
-    createMediaElementSource: (element) => {
-      const source = ctx.createMediaElementSource(element)
-      return {
-        connect: (destination) => {
-          source.connect(destination as AudioNode)
-        },
-      }
-    },
-    createGain: () => {
-      const node = ctx.createGain()
-      return {
-        gain: node.gain,
-        connect: (destination) => {
-          node.connect(destination as AudioNode)
-        },
-      }
-    },
+    createMediaElementSource: (element) =>
+      ctx.createMediaElementSource(element) as unknown as VolumeGainSource,
+    createGain: () => ctx.createGain() as unknown as VolumeGainNode,
     destination: ctx.destination,
     resume: () => ctx.resume(),
   }
