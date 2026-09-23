@@ -29,6 +29,7 @@ describe('ensureTrackCached', () => {
     await ensureTrackCached(sourceUrl, 'b')
     expect(await isTrackCached(sourceUrl)).toBe(true)
     expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch).toHaveBeenCalledWith(sourceUrl, { cache: 'no-cache' })
 
     await ensureTrackCached(sourceUrl, 'b')
     expect(fetch).toHaveBeenCalledTimes(1)
@@ -76,7 +77,7 @@ describe('ensureTrackCached', () => {
     await ensureTrackCached(sourceUrl, 'local')
     expect(await isTrackCached(sourceUrl)).toBe(true)
     expect(fetch).toHaveBeenCalledTimes(1)
-    expect(fetch).toHaveBeenCalledWith(sourceUrl)
+    expect(fetch).toHaveBeenCalledWith(sourceUrl, { cache: 'no-cache' })
 
     await ensureTrackCached(sourceUrl, 'local')
     expect(fetch).toHaveBeenCalledTimes(1)

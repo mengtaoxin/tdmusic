@@ -34,7 +34,7 @@ async function fetchAsBlob(
   id?: string,
   onProgress?: (progress: CacheProgress) => void,
 ): Promise<Blob> {
-  const response = await fetch(sourceUrl)
+  const response = await fetch(sourceUrl, { cache: 'no-cache' })
   if (!response.ok) {
     throw new Error(`downloadFailed:${response.status}`)
   }
