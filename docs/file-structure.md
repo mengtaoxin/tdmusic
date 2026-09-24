@@ -23,6 +23,7 @@ Repository layout for tdmusic. Changing code: [change-code-steps.md](change-code
 │   │   ├── cache/                IndexedDB audio cache (public: musicCache)
 │   │   ├── catalog/              configs.json load, normalize, enrich, labels, index, bootstrap
 │   │   ├── playback/             queue session, persist codec, transport, media session, prefetch
+│   │   ├── pwa/                  web app manifest + service worker options
 │   │   └── routes/               album / artist / playlist path helpers
 │   ├── locales/                  i18n message modules (en, zh)
 │   ├── routes/                   TanStack Router file routes + routeTree.gen.ts
@@ -50,6 +51,7 @@ Repository layout for tdmusic. Changing code: [change-code-steps.md](change-code
 | `src/lib/cache/` | IndexedDB audio cache; app code imports `musicCache` only |
 | `src/lib/catalog/` | configs.json load, normalize, enrich, display labels, catalog index, load+hydrate orchestration |
 | `src/lib/playback/` | Queue session, player math, persist codec, transport, media session, prefetch |
+| `src/lib/pwa/` | Web app manifest and service-worker options for `vite-plugin-pwa` |
 | `src/lib/routes/` | Album / artist / playlist route helpers |
 | `src/stores/` | Zustand stores |
 | `src/locales/` | Locale message modules (wired via `src/i18n/`) |
@@ -65,7 +67,7 @@ Repository layout for tdmusic. Changing code: [change-code-steps.md](change-code
 
 - Imports use `@/`.
 - Route-level pages → `src/routes/`. Shared UI → `src/components/`. React hooks (`use*`) → `src/hooks/`.
-- Framework-agnostic helpers → `src/lib/`, grouped as `cache/`, `catalog/`, `playback/`, or `routes/` when they belong to those domains. Small shared utilities may stay at `src/lib/` root.
+- Framework-agnostic helpers → `src/lib/`, grouped as `cache/`, `catalog/`, `playback/`, `pwa/`, or `routes/` when they belong to those domains. Small shared utilities may stay at `src/lib/` root.
 - Cache internals (`cacheStore`, `cacheIngest`, `cacheEviction`, `trackMetadata`, `downloadLimiter`) stay inside `src/lib/cache/`; app code imports `musicCache`.
 - Catalog query/index helpers (`catalogIndex`: `DisplayTrack`, grouping, search, enrich patches) live in `src/lib/catalog/`; the catalog store holds the snapshot and schedules enrich.
 - Catalog load+hydrate orchestration (`createCatalogBootstrap`, `runCatalogLoad`) lives in `src/lib/catalog/` and is framework-agnostic. App/test startup binds Zustand ports via `bindAppCatalogBootstrap` (`src/stores/bindAppCatalog.ts`). Public `ensureCatalogLoaded` / `loadCatalogAndHydratePlayer` stay on `catalogBootstrap.ts`.
