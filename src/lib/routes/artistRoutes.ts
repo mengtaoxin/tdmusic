@@ -84,13 +84,12 @@ export type ArtistAlbumsGalleryEntry =
     }
 
 /** All-music tile first, then this artist’s albums (sorted), each with a cover. */
-export function artistAlbumsGalleryEntries<
-  T extends ArtistTrackLike & { displayCover?: string },
->(tracks: T[], artistName: string): ArtistAlbumsGalleryEntry[] {
+export function artistAlbumsGalleryEntries<T extends ArtistTrackLike & { displayCover?: string }>(
+  tracks: T[],
+  artistName: string,
+): ArtistAlbumsGalleryEntry[] {
   const decoded = decodeRouteParam(artistName)
-  const artistTracks = tracks.filter(
-    (track) => (track.displayArtist || UNKNOWN_ARTIST) === decoded,
-  )
+  const artistTracks = tracks.filter((track) => (track.displayArtist || UNKNOWN_ARTIST) === decoded)
   const albums = albumsForArtist(tracks, artistName)
   return [
     {
