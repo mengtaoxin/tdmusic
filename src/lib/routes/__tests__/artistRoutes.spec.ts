@@ -7,6 +7,7 @@ import {
   artistPath,
   findArtistGroup,
   albumsForArtist,
+  artistAlbumsGalleryEntries,
   tracksForArtistAlbum,
   type ArtistTrackLike,
 } from '../artistRoutes'
@@ -107,6 +108,46 @@ describe('tracksForArtistAlbum', () => {
     ]
     expect(tracksForArtistAlbum(unknownTracks, UNKNOWN_ARTIST, 'Album A')).toEqual([
       unknownTracks[0]!,
+    ])
+  })
+})
+
+describe('artistAlbumsGalleryEntries', () => {
+  it('puts all-music first with total track count and first cover, then albums', () => {
+    const withCovers: (ArtistTrackLike & { id: string; displayCover?: string })[] = [
+      {
+        id: 'a1',
+        displayArtist: 'Artist 1',
+        displayAlbum: 'Album 2',
+        displayCover: 'https://example.com/a2.jpg',
+      },
+      {
+        id: 'a2',
+        displayArtist: 'Artist 1',
+        displayAlbum: 'Album 1',
+        displayCover: 'https://example.com/a1.jpg',
+      },
+      { id: 'a3', displayArtist: 'Artist 1', displayAlbum: 'Album 1' },
+    ]
+
+    expect(artistAlbumsGalleryEntries(withCovers, 'Artist 1')).toEqual([
+      {
+        kind: 'all-music',
+        trackCount: 3,
+        coverSrc: 'https://example.com/a2.jpg',
+      },
+      {
+        kind: 'album',
+        name: 'Album 1',
+        trackCount: 2,
+        coverSrc: 'https://example.com/a1.jpg',
+      },
+      {
+        kind: 'album',
+        name: 'Album 2',
+        trackCount: 1,
+        coverSrc: 'https://example.com/a2.jpg',
+      },
     ])
   })
 })
