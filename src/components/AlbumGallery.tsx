@@ -20,6 +20,10 @@ export type AlbumGalleryTile = {
   name: string
   trackCount: number
   coverSrc?: string
+  /** When set, shown instead of localizeAlbumName(name). */
+  label?: string
+  /** When set, Link uses this instead of pathFor(name). */
+  to?: string
 }
 
 export type AlbumGalleryProps = {
@@ -99,7 +103,7 @@ export function AlbumGallery({ tiles, pathFor }: AlbumGalleryProps) {
                   <Box
                     key={tile.name}
                     component={Link}
-                    to={pathFor(tile.name)}
+                    to={tile.to ?? pathFor(tile.name)}
                     className="album-tile"
                     sx={{
                       color: 'inherit',
@@ -157,7 +161,7 @@ export function AlbumGallery({ tiles, pathFor }: AlbumGalleryProps) {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        {localizeAlbumName(tile.name, t)}
+                        {tile.label ?? localizeAlbumName(tile.name, t)}
                       </Box>
                       <Box
                         className="album-tile__subtitle"

@@ -1,4 +1,5 @@
 import { UNKNOWN_ALBUM, UNKNOWN_ARTIST } from '../catalog/displayLabels'
+import { firstAlbumCoverSrc } from './albumRoutes'
 import { decodeRouteParam } from './routeParams'
 
 export type ArtistTrackLike = {
@@ -67,4 +68,40 @@ export function tracksForArtistAlbum<T extends ArtistTrackLike>(
     const trackAlbum = track.displayAlbum || UNKNOWN_ALBUM
     return trackArtist === artist && trackAlbum === album
   })
+}
+
+export type ArtistAlbumsGalleryEntry =
+  | {
+      kind: 'all-music'
+      trackCount: number
+      coverSrc?: string
+    }
+  | {
+      kind: 'album'
+      name: string
+      trackCount: number
+      coverSrc?: string
+    }
+
+/** All-music tile first, then this artist’s albums (sorted), each with a cover. */
+export function artistAlbumsGalleryEntries<T extends ArtistTrackLike & { displayCover?: string }>(
+  tracks: T[],
+  artistName: string,
+): ArtistAlbumsGalleryEntry[] {
+  const decoded = decodeRouteParam(artistName)
+  const artistTracks = tracks.filter((track) => (track.displayArtist || UNKNOWN_ARTIST) === decoded)
+  const albums = albumsForArtist(tracks, artistName)
+  return [
+    {
+      kind: 'all-music',
+      trackCount: artistTracks.length,
+      coverSrc: firstAlbumCoverSrc(artistTracks),
+    },
+    ...albums.map((group) => ({
+      kind: 'album' as const,
+      name: group.name,
+      trackCount: group.tracks.length,
+      coverSrc: firstAlbumCoverSrc(group.tracks),
+    })),
+  ]
 }

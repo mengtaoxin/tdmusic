@@ -1,27 +1,23 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import Alert from '@mui/material/Alert'
 import Container from '@mui/material/Container'
 import LinearProgress from '@mui/material/LinearProgress'
-import List from '@mui/material/List'
-import ListItemButton from '@mui/material/ListItemButton'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import ListItemText from '@mui/material/ListItemText'
 import Typography from '@mui/material/Typography'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import MusicNoteIcon from '@mui/icons-material/MusicNote'
 import { useTranslation } from 'react-i18next'
 
-import { AlbumGallery } from '@/components/AlbumGallery'
+import { AlbumGallery, type AlbumGalleryTile } from '@/components/AlbumGallery'
 import { localizeArtistName } from '@/lib/catalog/displayLabels'
-import { firstAlbumCoverSrc } from '@/lib/routes/albumRoutes'
 import {
-  albumsForArtist,
   artistAlbumPath,
+  artistAlbumsGalleryEntries,
   artistPath,
   findArtistGroup,
 } from '@/lib/routes/artistRoutes'
 import { decodeRouteParam } from '@/lib/routes/routeParams'
 import { selectArtists, useCatalogStore } from '@/stores/catalog'
+
+/** Sentinel tile name for the all-music gallery entry (not an album title). */
+const ALL_MUSIC_TILE_NAME = '__artist_all_music__'
 
 export const Route = createFileRoute('/artists/$name_/albums')({
   component: ArtistAlbumsPage,
@@ -36,12 +32,23 @@ function ArtistAlbumsPage() {
 
   const artist = findArtistGroup(artists, artistName)
 
-  const albumTiles = artist
-    ? albumsForArtist(artist.tracks, artist.name).map((group) => ({
-        name: group.name,
-        trackCount: group.tracks.length,
-        coverSrc: firstAlbumCoverSrc(group.tracks),
-      }))
+  const galleryTiles: AlbumGalleryTile[] = artist
+    ? artistAlbumsGalleryEntries(artist.tracks, artist.name).map((entry) => {
+        if (entry.kind === 'all-music') {
+          return {
+            name: ALL_MUSIC_TILE_NAME,
+            label: t('artist.allMusic'),
+            trackCount: entry.trackCount,
+            coverSrc: entry.coverSrc,
+            to: artistPath(artist.name),
+          }
+        }
+        return {
+          name: entry.name,
+          trackCount: entry.trackCount,
+          coverSrc: entry.coverSrc,
+        }
+      })
     : []
 
   function pathFor(album: string) {
@@ -74,22 +81,7 @@ function ArtistAlbumsPage() {
       {loading ? (
         <LinearProgress sx={{ mb: 2 }} />
       ) : artist ? (
-        <>
-          <List sx={{ bgcolor: 'transparent', mb: 2, p: 0, flexGrow: 0 }}>
-            <ListItemButton component={Link} to={artistPath(artist.name)} sx={{ borderRadius: 2 }}>
-              <ListItemIcon sx={{ minWidth: 40 }}>
-                <MusicNoteIcon />
-              </ListItemIcon>
-              <ListItemText
-                primary={t('artist.allMusic')}
-                secondary={t('artist.trackCount', { count: artist.tracks.length })}
-              />
-              <ChevronRightIcon />
-            </ListItemButton>
-          </List>
-
-          <AlbumGallery tiles={albumTiles} pathFor={pathFor} />
-        </>
+        <AlbumGallery tiles={galleryTiles} pathFor={pathFor} />
       ) : null}
     </Container>
   )
