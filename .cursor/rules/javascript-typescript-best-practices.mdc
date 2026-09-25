@@ -1,0 +1,12 @@
+---
+description: Use JS/TS best-practices skill when editing TypeScript or JavaScript
+globs: **/*.{ts,tsx,js,jsx}
+alwaysApply: false
+---
+
+# JavaScript & TypeScript best practices
+
+When writing, reviewing, or refactoring `.ts`/`.tsx`/`.js`/`.jsx` (types, modules, async, errors, APIs):
+
+1. Read and follow [`.agents/skills/javascript-typescript-best-practices/SKILL.md`](../../.agents/skills/javascript-typescript-best-practices/SKILL.md).
+2. Prefer this project's conventions (`tsconfig`, ESLint/oxlint/Prettier, existing modules) when they conflict with the skill.

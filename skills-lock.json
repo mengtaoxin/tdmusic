@@ -1,11 +1,35 @@
 {
   "version": 1,
   "skills": {
+    "cursor-local-best-practices": {
+      "source": "mengtaoxin/agent-kit",
+      "sourceType": "github",
+      "skillPath": "skills/cursor-local-best-practices/SKILL.md",
+      "computedHash": "91aec6a46c033ee472a278e77254eea5c24dcf6bab460b351d66d899a79d125e"
+    },
     "harness-engineering": {
       "source": "github/awesome-copilot",
       "sourceType": "github",
       "skillPath": "skills/harness-engineering/SKILL.md",
       "computedHash": "a442c82ec3f8cb2d25f33f18bb28c586af3402d7b630bcc38501d7182a1d782d"
+    },
+    "javascript-typescript-best-practices": {
+      "source": "mengtaoxin/agent-kit",
+      "sourceType": "github",
+      "skillPath": "skills/javascript-typescript-best-practices/SKILL.md",
+      "computedHash": "f1171e6d350f47ff48ffbff54b25060441461bced7a8226d6afcfc72aa114691"
+    },
+    "material-design-best-practices": {
+      "source": "mengtaoxin/agent-kit",
+      "sourceType": "github",
+      "skillPath": "skills/material-design-best-practices/SKILL.md",
+      "computedHash": "55c3be70ee908f0182dae2e96e96ed2c5e364c4ced1d2370c4f346739782a651"
+    },
+    "react-best-practices": {
+      "source": "mengtaoxin/agent-kit",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "60c3623eb9ddd29c88c75ff6147ba7b3fedc743c08bbc763492667d3ea87ef70"
     },
     "refactor": {
       "source": "github/awesome-copilot",

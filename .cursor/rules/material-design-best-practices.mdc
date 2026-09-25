@@ -1,0 +1,12 @@
+---
+description: Use Material Design / MUI best-practices skill for UI and theme work
+globs: src/components/**,src/theme/**,src/routes/**/*.tsx,src/styles/**
+alwaysApply: false
+---
+
+# Material Design best practices
+
+When designing or implementing UI with MUI, theme tokens, layout, elevation, motion, or Material Design:
+
+1. Read and follow [`.agents/skills/material-design-best-practices/SKILL.md`](../../.agents/skills/material-design-best-practices/SKILL.md).
+2. Prefer MUI `sx`, palette, and layout tokens from `src/theme/muiTheme.ts` (see [docs/conventions.md](../../docs/conventions.md)); do not introduce Tailwind or another UI library.

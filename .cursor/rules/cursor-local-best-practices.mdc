@@ -1,0 +1,11 @@
+---
+description: Local Cursor session hygiene — concurrent chats and ports
+alwaysApply: true
+---
+
+# Cursor local best practices
+
+Before starting work that uses terminals/ports, when hitting `EADDRINUSE`, when starting/stopping a dev server, or before ending a local conversation:
+
+1. Read and follow [`.agents/skills/cursor-local-best-practices/SKILL.md`](../../.agents/skills/cursor-local-best-practices/SKILL.md).
+2. Do not skip the wait/abort checks for other in-repo chats or the port cleanup steps.
