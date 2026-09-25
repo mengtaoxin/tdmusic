@@ -17,7 +17,7 @@
       "source": "mengtaoxin/agent-kit",
       "sourceType": "github",
       "skillPath": "skills/javascript-typescript-best-practices/SKILL.md",
-      "computedHash": "f1171e6d350f47ff48ffbff54b25060441461bced7a8226d6afcfc72aa114691"
+      "computedHash": "c59c4f0eb76c528449bea25c591ba7b99205a33e640364235b34a6b0c56e2bf5"
     },
     "material-design-best-practices": {
       "source": "mengtaoxin/agent-kit",
@@ -29,7 +29,7 @@
       "source": "mengtaoxin/agent-kit",
       "sourceType": "github",
       "skillPath": "skills/react-best-practices/SKILL.md",
-      "computedHash": "60c3623eb9ddd29c88c75ff6147ba7b3fedc743c08bbc763492667d3ea87ef70"
+      "computedHash": "29d251a574279d795c81071cea771a1b93c06e26357013956d165e9e7ed0f655"
     },
     "refactor": {
       "source": "github/awesome-copilot",
@@ -42,12 +42,6 @@
       "sourceType": "github",
       "skillPath": "skills/test-driven-development/SKILL.md",
       "computedHash": "6d5f9565407b2b80efaeec8622d148e1de13b6ba28460bb3a931f46787cb79e3"
-    },
-    "web-design-guidelines": {
-      "source": "vercel-labs/agent-skills",
-      "sourceType": "github",
-      "skillPath": "skills/web-design-guidelines/SKILL.md",
-      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
     }
   }
 }
