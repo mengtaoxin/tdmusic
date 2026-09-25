@@ -5,7 +5,7 @@
       "source": "mengtaoxin/agent-kit",
       "sourceType": "github",
       "skillPath": "skills/cursor-local-best-practices/SKILL.md",
-      "computedHash": "91aec6a46c033ee472a278e77254eea5c24dcf6bab460b351d66d899a79d125e"
+      "computedHash": "323b7e9f5977c92e4dbc2434f9cfc22c760dede1db7bd5863f84a559d21be827"
     },
     "harness-engineering": {
       "source": "github/awesome-copilot",

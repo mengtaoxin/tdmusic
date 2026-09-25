@@ -8,7 +8,7 @@
 
 ## Read when
 
-- Local Cursor session / ports / concurrent chats → `.agents/skills/cursor-local-best-practices/`
+- Local ports / EADDRINUSE / start-stop server → `.agents/skills/cursor-local-best-practices/`
 - JS/TS edits or review → `.agents/skills/javascript-typescript-best-practices/`
 - React components, hooks, effects → `.agents/skills/react-best-practices/`
 - MUI / Material Design UI or theme → `.agents/skills/material-design-best-practices/`
