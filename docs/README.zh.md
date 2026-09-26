@@ -31,13 +31,13 @@ npm run dev
 
 命令说明见 [commands.md](commands.md)。
 
-| 命令                                                   | 用途                                     |
-| ------------------------------------------------------ | ---------------------------------------- |
-| `npm install` + Playwright install                     | 安装依赖与浏览器                         |
-| `npm run dev`                                          | 启动 Vite 开发服务器                     |
-| `npm run build`                                        | 生产构建                                 |
-| `npm run format && npm run lint && npm run type-check` | 格式化 + lint + 类型检查（**会改文件**） |
-| `npm run test:unit` / `test:e2e`                       | 单元（Vitest）/ e2e（Playwright）        |
+| 命令                                                | 用途                                     |
+| --------------------------------------------------- | ---------------------------------------- |
+| `npm install` + Playwright install                  | 安装依赖与浏览器                         |
+| `npm run dev`                                       | 启动 Vite 开发服务器                     |
+| `npm run build`                                     | 生产构建                                 |
+| `npm run fmt && npm run lint && npm run type-check` | 格式化 + lint + 类型检查（**会改文件**） |
+| `npm run test:unit` / `test:e2e`                    | 单元（Vitest）/ e2e（Playwright）        |
 
 ```sh
 npm run test:unit

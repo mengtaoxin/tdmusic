@@ -31,13 +31,13 @@ Open [http://localhost:3000](http://localhost:3000). Stop with Ctrl+C.
 
 Commands and options: [docs/commands.md](docs/commands.md).
 
-| Command                                                | Purpose                                       |
-| ------------------------------------------------------ | --------------------------------------------- |
-| `npm install` + Playwright install                     | Install dependencies and browsers             |
-| `npm run dev`                                          | Start the Vite dev server                     |
-| `npm run build`                                        | Production build                              |
-| `npm run format && npm run lint && npm run type-check` | Format + lint + type-check (**writes files**) |
-| `npm run test:unit` / `test:e2e`                       | Unit (Vitest) / e2e (Playwright)              |
+| Command                                             | Purpose                                       |
+| --------------------------------------------------- | --------------------------------------------- |
+| `npm install` + Playwright install                  | Install dependencies and browsers             |
+| `npm run dev`                                       | Start the Vite dev server                     |
+| `npm run build`                                     | Production build                              |
+| `npm run fmt && npm run lint && npm run type-check` | Format + lint + type-check (**writes files**) |
+| `npm run test:unit` / `test:e2e`                    | Unit (Vitest) / e2e (Playwright)              |
 
 ```sh
 npm run test:unit

@@ -7,7 +7,7 @@ npm install
 npx playwright install chromium firefox webkit
 npm run dev
 npm run build
-npm run format && npm run lint && npm run type-check
+npm run fmt && npm run lint && npm run type-check
 npm run test:unit
 npm run test:coverage
 npm run test:e2e -- --project chromium

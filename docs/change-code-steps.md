@@ -47,7 +47,7 @@ Commands and `--project` for Playwright: [commands.md](commands.md).
 
 After the tests you owe for this change:
 
-1. Write: `npm run format && npm run lint && npm run type-check` (these write files).
+1. Write: `npm run fmt && npm run lint && npm run type-check` (these write files).
 2. Confirm check-only is clean (exact commands in [commands.md](commands.md)).
 
 Do not mark the change done while check-only format, lint, or type-check fails.
