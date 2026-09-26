@@ -34,6 +34,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@mengtaoxin/oxc-config": "^0.1.0",
     "@playwright/test": "^1.63.0",
     "@tanstack/router-devtools": "^1.167.2",
     "@tanstack/router-plugin": "^1.168.40",
@@ -48,7 +49,6 @@
     "@vitest/coverage-v8": "^5.0.1",
     "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.14.5",
-    "@mengtaoxin/oxc-config": "git+https://github.com/mengtaoxin/oxc-config.git#8fd82ae",
     "npm-run-all2": "^9.0.3",
     "oxfmt": "^0.70.0",
     "oxlint": "^1.85.0",

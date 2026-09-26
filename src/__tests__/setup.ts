@@ -66,13 +66,19 @@ beforeAll(() => {
 
   // happy-dom ships IntersectionObserver but does not layout, so entries never
   // intersect. Match the previous jsdom fallback (undefined → treat as visible).
-  globalThis.IntersectionObserver = class IntersectionObserver {
+  globalThis.IntersectionObserver = class {
     readonly root: Element | Document | null = null;
     readonly rootMargin = '';
+    readonly scrollMargin = '';
     readonly thresholds: ReadonlyArray<number> = [];
-    constructor(private readonly callback: IntersectionObserverCallback) {}
+    #callback: IntersectionObserverCallback;
+
+    constructor(callback: IntersectionObserverCallback) {
+      this.#callback = callback;
+    }
+
     observe(target: Element) {
-      this.callback(
+      this.#callback(
         [
           {
             isIntersecting: true,
@@ -84,15 +90,16 @@ beforeAll(() => {
             rootBounds: null,
           },
         ],
-        this,
+        this as unknown as IntersectionObserver,
       );
     }
+
     unobserve() {}
     disconnect() {}
     takeRecords(): IntersectionObserverEntry[] {
       return [];
     }
-  };
+  } as typeof IntersectionObserver;
 
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
