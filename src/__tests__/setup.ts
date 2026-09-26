@@ -14,11 +14,11 @@ import { readStoredConfigUrl } from '@/lib/catalog/configUrl';
 
 bindAppCatalogBootstrap();
 
-// jsdom Blob is not structured-cloneable into fake-indexeddb reliably.
+// happy-dom Blob is not structured-cloneable into fake-indexeddb reliably.
 globalThis.Blob = NodeBlob as unknown as typeof globalThis.Blob;
 globalThis.File = NodeFile as unknown as typeof globalThis.File;
 
-// jsdom's createObjectURL expects browser Blobs; Node Blob needs a stub.
+// happy-dom's createObjectURL expects browser Blobs; Node Blob needs a stub.
 let blobUrlSeq = 0;
 URL.createObjectURL = () => {
   blobUrlSeq += 1;
@@ -62,6 +62,36 @@ beforeAll(() => {
     observe() {}
     unobserve() {}
     disconnect() {}
+  };
+
+  // happy-dom ships IntersectionObserver but does not layout, so entries never
+  // intersect. Match the previous jsdom fallback (undefined → treat as visible).
+  globalThis.IntersectionObserver = class IntersectionObserver {
+    readonly root: Element | Document | null = null;
+    readonly rootMargin = '';
+    readonly thresholds: ReadonlyArray<number> = [];
+    constructor(private readonly callback: IntersectionObserverCallback) {}
+    observe(target: Element) {
+      this.callback(
+        [
+          {
+            isIntersecting: true,
+            target,
+            intersectionRatio: 1,
+            time: 0,
+            boundingClientRect: target.getBoundingClientRect(),
+            intersectionRect: target.getBoundingClientRect(),
+            rootBounds: null,
+          },
+        ],
+        this,
+      );
+    }
+    unobserve() {}
+    disconnect() {}
+    takeRecords(): IntersectionObserverEntry[] {
+      return [];
+    }
   };
 
   Object.defineProperty(window, 'matchMedia', {

@@ -1,9 +1,20 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 
 import { VirtualRowList } from '@/components/VirtualRowList';
 
 describe('VirtualRowList', () => {
+  afterEach(() => {
+    // Restore layout stubs so later suites keep happy-dom defaults.
+    for (const prop of ['clientHeight', 'scrollHeight'] as const) {
+      try {
+        delete (HTMLElement.prototype as unknown as Record<string, unknown>)[prop];
+      } catch {
+        /* ignore non-configurable */
+      }
+    }
+  });
+
   it('renders rows inside a measured scroller of the given height', () => {
     const items = ['one', 'two', 'three'];
     render(
@@ -25,6 +36,20 @@ describe('VirtualRowList', () => {
   });
 
   it('scrolls so scrollToIndex is the first visible row', async () => {
+    // happy-dom has no layout; without metrics, scrollToOffset clamps scrollTop to 0.
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
+      configurable: true,
+      get() {
+        return 192;
+      },
+    });
+    Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
+      configurable: true,
+      get() {
+        return 20 * 64;
+      },
+    });
+
     const items = Array.from({ length: 20 }, (_, i) => `row-${i}`);
     render(
       <VirtualRowList
