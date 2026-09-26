@@ -1,43 +1,43 @@
-import { useMemo, useRef } from 'react'
-import Box from '@mui/material/Box'
-import AlbumIcon from '@mui/icons-material/Album'
-import { Link } from '@tanstack/react-router'
-import { useVirtualizer } from '@tanstack/react-virtual'
-import { useTranslation } from 'react-i18next'
+import { useMemo, useRef } from 'react';
+import Box from '@mui/material/Box';
+import AlbumIcon from '@mui/icons-material/Album';
+import { Link } from '@tanstack/react-router';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { useTranslation } from 'react-i18next';
 
-import { CoverImg } from '@/components/CoverImg'
-import { useVirtualListHost } from '@/hooks/useVirtualListHost'
+import { CoverImg } from '@/components/CoverImg';
+import { useVirtualListHost } from '@/hooks/useVirtualListHost';
 import {
   ALBUM_GALLERY_GAP_PX,
   albumGalleryColumns,
   albumGalleryRowHeight,
   chunkIntoRows,
-} from '@/lib/albumGalleryLayout'
-import { localizeAlbumName } from '@/lib/catalog/displayLabels'
-import { capVirtualListHeight, virtualListNeedsScroll } from '@/lib/virtualListHeight'
+} from '@/lib/albumGalleryLayout';
+import { localizeAlbumName } from '@/lib/catalog/displayLabels';
+import { capVirtualListHeight, virtualListNeedsScroll } from '@/lib/virtualListHeight';
 
 export type AlbumGalleryTile = {
-  name: string
-  trackCount: number
-  coverSrc?: string
+  name: string;
+  trackCount: number;
+  coverSrc?: string;
   /** When set, shown instead of localizeAlbumName(name). */
-  label?: string
+  label?: string;
   /** When set, Link uses this instead of pathFor(name). */
-  to?: string
-}
+  to?: string;
+};
 
 export type AlbumGalleryProps = {
-  tiles: AlbumGalleryTile[]
+  tiles: AlbumGalleryTile[];
   /** Build the router `to` for a tile name. */
-  pathFor: (name: string) => string
-}
+  pathFor: (name: string) => string;
+};
 
 export function AlbumGallery({ tiles, pathFor }: AlbumGalleryProps) {
-  const { t } = useTranslation()
-  const { listHostRef, hostHeight, hostWidth } = useVirtualListHost({ observeWidth: true })
-  const scrollParentRef = useRef<HTMLDivElement | null>(null)
+  const { t } = useTranslation();
+  const { listHostRef, hostHeight, hostWidth } = useVirtualListHost({ observeWidth: true });
+  const scrollParentRef = useRef<HTMLDivElement | null>(null);
 
-  const columns = albumGalleryColumns(hostWidth)
+  const columns = albumGalleryColumns(hostWidth);
   const albumRows = useMemo(
     () =>
       chunkIntoRows(tiles, columns).map((rowTiles, index) => ({
@@ -45,23 +45,23 @@ export function AlbumGallery({ tiles, pathFor }: AlbumGalleryProps) {
         tiles: rowTiles,
       })),
     [tiles, columns],
-  )
-  const rowHeight = albumGalleryRowHeight(hostWidth, columns)
-  const listHeight = capVirtualListHeight(albumRows.length, rowHeight, hostHeight)
-  const listFlush = !virtualListNeedsScroll(albumRows.length, rowHeight, hostHeight)
+  );
+  const rowHeight = albumGalleryRowHeight(hostWidth, columns);
+  const listHeight = capVirtualListHeight(albumRows.length, rowHeight, hostHeight);
+  const listFlush = !virtualListNeedsScroll(albumRows.length, rowHeight, hostHeight);
 
   const rowVirtualizer = useVirtualizer({
     count: albumRows.length,
     getScrollElement: () => scrollParentRef.current,
     estimateSize: () => rowHeight,
     overscan: 4,
-  })
+  });
 
   const rowStyle = {
     gap: `${ALBUM_GALLERY_GAP_PX}px`,
     gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
     paddingBottom: `${ALBUM_GALLERY_GAP_PX}px`,
-  } as const
+  } as const;
 
   return (
     <Box
@@ -81,8 +81,8 @@ export function AlbumGallery({ tiles, pathFor }: AlbumGalleryProps) {
       >
         <Box sx={{ height: rowVirtualizer.getTotalSize(), width: '100%', position: 'relative' }}>
           {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-            const row = albumRows[virtualRow.index]
-            if (!row) return null
+            const row = albumRows[virtualRow.index];
+            if (!row) return null;
             return (
               <Box
                 key={row.key}
@@ -173,10 +173,10 @@ export function AlbumGallery({ tiles, pathFor }: AlbumGalleryProps) {
                   </Box>
                 ))}
               </Box>
-            )
+            );
           })}
         </Box>
       </Box>
     </Box>
-  )
+  );
 }

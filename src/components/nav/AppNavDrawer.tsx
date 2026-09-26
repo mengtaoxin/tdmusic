@@ -1,17 +1,17 @@
-import type { ReactNode } from 'react'
-import Box from '@mui/material/Box'
-import Collapse from '@mui/material/Collapse'
-import Drawer from '@mui/material/Drawer'
-import List from '@mui/material/List'
-import ListItemButton from '@mui/material/ListItemButton'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import ListItemText from '@mui/material/ListItemText'
-import ExpandLess from '@mui/icons-material/ExpandLess'
-import ExpandMore from '@mui/icons-material/ExpandMore'
-import { Link } from '@tanstack/react-router'
-import { useTranslation } from 'react-i18next'
+import type { ReactNode } from 'react';
+import Box from '@mui/material/Box';
+import Collapse from '@mui/material/Collapse';
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import { Link } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 
-import type { AppLocale } from '@/lib/locale'
+import type { AppLocale } from '@/lib/locale';
 import {
   isActionNavLink,
   isLocaleNavLink,
@@ -19,19 +19,19 @@ import {
   navItems,
   type NavGroup,
   type NavLink,
-} from '@/components/nav/navConfig'
+} from '@/components/nav/navConfig';
 
 export type AppNavDrawerProps = {
-  open: boolean
-  pathname: string
-  locale: AppLocale
-  moreGroupActive: boolean
-  expanded: Record<string, boolean>
-  onClose: () => void
-  onToggleGroup: (key: string) => void
-  onLocale: (locale: AppLocale) => void
-  onFeedback: () => void
-}
+  open: boolean;
+  pathname: string;
+  locale: AppLocale;
+  moreGroupActive: boolean;
+  expanded: Record<string, boolean>;
+  onClose: () => void;
+  onToggleGroup: (key: string) => void;
+  onLocale: (locale: AppLocale) => void;
+  onFeedback: () => void;
+};
 
 export function AppNavDrawer({
   open,
@@ -44,10 +44,10 @@ export function AppNavDrawer({
   onLocale,
   onFeedback,
 }: AppNavDrawerProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   function groupActive(item: NavGroup): boolean {
-    return item.key === 'nav.more' ? moreGroupActive : false
+    return item.key === 'nav.more' ? moreGroupActive : false;
   }
 
   function renderChild(child: NavLink): ReactNode {
@@ -59,8 +59,8 @@ export function AppNavDrawer({
           selected={locale === child.locale}
           sx={{ pl: 4 }}
           onClick={() => {
-            onLocale(child.locale)
-            onClose()
+            onLocale(child.locale);
+            onClose();
           }}
         >
           <ListItemIcon>
@@ -68,7 +68,7 @@ export function AppNavDrawer({
           </ListItemIcon>
           <ListItemText primary={t(child.key)} />
         </ListItemButton>
-      )
+      );
     }
     if (isActionNavLink(child)) {
       return (
@@ -77,8 +77,8 @@ export function AppNavDrawer({
           data-testid="nav-feedback"
           sx={{ pl: 4 }}
           onClick={() => {
-            onClose()
-            onFeedback()
+            onClose();
+            onFeedback();
           }}
         >
           <ListItemIcon>
@@ -86,7 +86,7 @@ export function AppNavDrawer({
           </ListItemIcon>
           <ListItemText primary={t(child.key)} />
         </ListItemButton>
-      )
+      );
     }
     return (
       <ListItemButton
@@ -102,7 +102,7 @@ export function AppNavDrawer({
         </ListItemIcon>
         <ListItemText primary={t(child.key)} />
       </ListItemButton>
-    )
+    );
   }
 
   return (
@@ -126,7 +126,7 @@ export function AppNavDrawer({
         <List dense component="nav" sx={{ pt: 1 }}>
           {navItems.map((item) => {
             if (isNavGroup(item)) {
-              const groupOpen = Boolean(expanded[item.key])
+              const groupOpen = Boolean(expanded[item.key]);
               return (
                 <Box key={item.key} className="v-list-group">
                   <ListItemButton
@@ -146,7 +146,7 @@ export function AppNavDrawer({
                     </List>
                   </Collapse>
                 </Box>
-              )
+              );
             }
             return (
               <ListItemButton
@@ -161,10 +161,10 @@ export function AppNavDrawer({
                 </ListItemIcon>
                 <ListItemText primary={t(item.key)} />
               </ListItemButton>
-            )
+            );
           })}
         </List>
       </Box>
     </Drawer>
-  )
+  );
 }

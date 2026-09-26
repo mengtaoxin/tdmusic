@@ -1,12 +1,12 @@
-import { beforeEach, describe, expect, it } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { beforeEach, describe, expect, it } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 
-import { useTrackDownload } from '@/hooks/useTrackDownload'
+import { useTrackDownload } from '@/hooks/useTrackDownload';
 import {
   reportCacheDownload,
   resetCacheDownloadStateForTests,
-} from '@/lib/cache/cacheDownloadState'
-import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
+} from '@/lib/cache/cacheDownloadState';
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
 
 const track: DisplayTrack = {
   id: 't1',
@@ -15,37 +15,37 @@ const track: DisplayTrack = {
   displayTitle: 'Song',
   displayArtist: 'Artist',
   displayAlbum: 'Album',
-}
+};
 
 function Harness({ track: t }: { track: DisplayTrack }) {
-  const { downloading, percent } = useTrackDownload(t)
+  const { downloading, percent } = useTrackDownload(t);
   return (
     <div>
       <span data-testid="downloading">{String(downloading)}</span>
       <span data-testid="percent">{String(percent)}</span>
     </div>
-  )
+  );
 }
 
 describe('useTrackDownload', () => {
   beforeEach(() => {
-    resetCacheDownloadStateForTests()
-  })
+    resetCacheDownloadStateForTests();
+  });
 
   it('tracks downloading state from cache download progress', async () => {
-    render(<Harness track={track} />)
+    render(<Harness track={track} />);
 
-    expect(screen.getByTestId('downloading')).toHaveTextContent('false')
+    expect(screen.getByTestId('downloading')).toHaveTextContent('false');
 
-    reportCacheDownload(track.path, track.id, { phase: 'download', loaded: 50, total: 200 })
+    reportCacheDownload(track.path, track.id, { phase: 'download', loaded: 50, total: 200 });
     await waitFor(() => {
-      expect(screen.getByTestId('downloading')).toHaveTextContent('true')
-      expect(screen.getByTestId('percent')).toHaveTextContent('25')
-    })
+      expect(screen.getByTestId('downloading')).toHaveTextContent('true');
+      expect(screen.getByTestId('percent')).toHaveTextContent('25');
+    });
 
-    reportCacheDownload(track.path, track.id, { phase: 'done', loaded: 200, total: 200 })
+    reportCacheDownload(track.path, track.id, { phase: 'done', loaded: 200, total: 200 });
     await waitFor(() => {
-      expect(screen.getByTestId('downloading')).toHaveTextContent('false')
-    })
-  })
-})
+      expect(screen.getByTestId('downloading')).toHaveTextContent('false');
+    });
+  });
+});

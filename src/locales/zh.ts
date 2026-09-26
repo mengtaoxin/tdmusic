@@ -109,4 +109,4 @@ export default {
     clearConfirm: '确定清空全部日志？此操作无法撤销。',
     empty: '暂无日志。',
   },
-}
+};

@@ -1,10 +1,29 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["eslint", "typescript", "unicorn", "oxc", "vitest"],
+  "plugins": ["typescript", "react"],
   "env": {
     "browser": true
   },
   "categories": {
-    "correctness": "error"
-  }
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "react/set-state-in-effect": "off",
+    "react/refs": "off",
+    "react/incompatible-library": "off",
+    "react/static-components": "off",
+    "react-hooks/exhaustive-deps": "warn"
+  },
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    "dist-ssr",
+    "coverage",
+    "src/routeTree.gen.ts",
+    "playwright-report",
+    "test-results"
+  ]
 }

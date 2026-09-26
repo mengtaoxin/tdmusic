@@ -33,4 +33,4 @@ export const pwaOptions = {
     navigateFallbackDenylist: [/^\/configs\.json$/, /\.(?:mp3|flac|wav|ogg|m4a|aac)$/i],
     cleanupOutdatedCaches: true,
   },
-}
+};

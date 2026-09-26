@@ -1,16 +1,16 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest';
 
-import { createPlaybackSession, type PlaybackAudioElement } from '@/lib/playback/playbackSession'
-import { createPlaybackTransport } from '@/lib/playback/playbackTransport'
+import { createPlaybackSession, type PlaybackAudioElement } from '@/lib/playback/playbackSession';
+import { createPlaybackTransport } from '@/lib/playback/playbackTransport';
 
-type TestAudio = PlaybackAudioElement & { emit: (type: string) => void }
+type TestAudio = PlaybackAudioElement & { emit: (type: string) => void };
 
 function noop() {
-  return vi.fn<() => void>()
+  return vi.fn<() => void>();
 }
 
 function makeAudio(): TestAudio {
-  const listeners = new Map<string, Set<() => void>>()
+  const listeners = new Map<string, Set<() => void>>();
   return {
     src: '',
     currentTime: 0,
@@ -22,24 +22,24 @@ function makeAudio(): TestAudio {
     play: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
     pause: vi.fn<() => void>(),
     addEventListener: (type: string, handler: EventListener) => {
-      const set = listeners.get(type) ?? new Set()
-      set.add(handler as () => void)
-      listeners.set(type, set)
+      const set = listeners.get(type) ?? new Set();
+      set.add(handler as () => void);
+      listeners.set(type, set);
     },
     removeEventListener: (type: string, handler: EventListener) => {
-      listeners.get(type)?.delete(handler as () => void)
+      listeners.get(type)?.delete(handler as () => void);
     },
     emit(type: string) {
-      for (const handler of listeners.get(type) ?? []) handler()
+      for (const handler of listeners.get(type) ?? []) handler();
     },
-  }
+  };
 }
 
 describe('playbackTransport', () => {
   it('pendingPlay resumes only when the audio element is bound to the current track', async () => {
-    const audio = makeAudio()
-    const currentId: string | null = 't1'
-    const pause = noop()
+    const audio = makeAudio();
+    const currentId: string | null = 't1';
+    const pause = noop();
 
     const transport = createPlaybackTransport({
       getAudio: () => audio,
@@ -64,26 +64,26 @@ describe('playbackTransport', () => {
       appendAppLog: vi.fn<(message: string) => void>(),
       scheduleEnrichTrack: vi.fn<(id: string) => void>(),
       setVolumeRatio: vi.fn<(percent: number) => void>(),
-    })
+    });
 
-    transport.onPendingPlayChange(true)
-    expect(audio.play).not.toHaveBeenCalled()
+    transport.onPendingPlayChange(true);
+    expect(audio.play).not.toHaveBeenCalled();
 
-    await transport.loadCurrent()
-    audio.emit('loadedmetadata')
-    expect(transport.isBoundToCurrent()).toBe(true)
+    await transport.loadCurrent();
+    audio.emit('loadedmetadata');
+    expect(transport.isBoundToCurrent()).toBe(true);
 
-    vi.mocked(audio.play).mockClear()
-    transport.onPendingPlayChange(true)
-    expect(audio.play).toHaveBeenCalled()
-  })
+    vi.mocked(audio.play).mockClear();
+    transport.onPendingPlayChange(true);
+    expect(audio.play).toHaveBeenCalled();
+  });
 
   it('ignores pause and ended events while unbound during a track switch', () => {
-    const audio = makeAudio()
-    const clearPendingPlay = noop()
-    const setPlaying = vi.fn<(playing: boolean) => void>()
-    const onEnded = noop()
-    const flushPersist = noop()
+    const audio = makeAudio();
+    const clearPendingPlay = noop();
+    const setPlaying = vi.fn<(playing: boolean) => void>();
+    const onEnded = noop();
+    const flushPersist = noop();
 
     const transport = createPlaybackTransport({
       getAudio: () => audio,
@@ -109,22 +109,22 @@ describe('playbackTransport', () => {
       scheduleEnrichTrack: vi.fn<(id: string) => void>(),
       setVolumeRatio: vi.fn<(percent: number) => void>(),
       createSession: () => ({ loadCurrent: async () => undefined }),
-    })
+    });
 
-    transport.onLoadStart('t2')
-    expect(transport.isBoundToCurrent()).toBe(false)
+    transport.onLoadStart('t2');
+    expect(transport.isBoundToCurrent()).toBe(false);
 
-    transport.onPause()
-    expect(clearPendingPlay).not.toHaveBeenCalled()
-    expect(setPlaying).not.toHaveBeenCalled()
-    expect(flushPersist).not.toHaveBeenCalled()
+    transport.onPause();
+    expect(clearPendingPlay).not.toHaveBeenCalled();
+    expect(setPlaying).not.toHaveBeenCalled();
+    expect(flushPersist).not.toHaveBeenCalled();
 
-    transport.onEnded()
-    expect(onEnded).not.toHaveBeenCalled()
-  })
+    transport.onEnded();
+    expect(onEnded).not.toHaveBeenCalled();
+  });
 
   it('uses createPlaybackSession by default', async () => {
-    const audio = makeAudio()
+    const audio = makeAudio();
 
     const transport = createPlaybackTransport({
       getAudio: () => audio,
@@ -150,17 +150,17 @@ describe('playbackTransport', () => {
       scheduleEnrichTrack: vi.fn<(id: string) => void>(),
       setVolumeRatio: vi.fn<(percent: number) => void>(),
       createSession: (getAudio, player, hooks) => createPlaybackSession(getAudio, player, hooks),
-    })
+    });
 
-    await transport.loadCurrent()
-    expect(transport.isBoundToCurrent()).toBe(true)
-  })
+    await transport.loadCurrent();
+    expect(transport.isBoundToCurrent()).toBe(true);
+  });
 
   it('prints a bound media error to the console and the app log', async () => {
-    const audio = makeAudio()
-    audio.error = { code: 4, message: '' }
-    const appendAppLog = vi.fn<(message: string) => void>()
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const audio = makeAudio();
+    audio.error = { code: 4, message: '' };
+    const appendAppLog = vi.fn<(message: string) => void>();
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
     const transport = createPlaybackTransport({
       getAudio: () => audio,
       getCurrentId: () => 't1',
@@ -184,32 +184,32 @@ describe('playbackTransport', () => {
       appendAppLog,
       scheduleEnrichTrack: vi.fn<(id: string) => void>(),
       setVolumeRatio: vi.fn<(percent: number) => void>(),
-    })
+    });
 
-    await transport.loadCurrent()
-    transport.onError()
+    await transport.loadCurrent();
+    transport.onError();
     expect(consoleError).toHaveBeenCalledWith(
       'Failed to play track "t1" from /t1.mp3: MEDIA_ERR_SRC_NOT_SUPPORTED',
-    )
+    );
     expect(appendAppLog).toHaveBeenCalledWith(
       'Failed to play track "t1" from /t1.mp3: MEDIA_ERR_SRC_NOT_SUPPORTED',
-    )
+    );
 
-    appendAppLog.mockClear()
-    consoleError.mockClear()
-    transport.onLoadStart('t1')
-    transport.onError()
-    expect(consoleError).not.toHaveBeenCalled()
-    expect(appendAppLog).not.toHaveBeenCalled()
-    consoleError.mockRestore()
-  })
+    appendAppLog.mockClear();
+    consoleError.mockClear();
+    transport.onLoadStart('t1');
+    transport.onError();
+    expect(consoleError).not.toHaveBeenCalled();
+    expect(appendAppLog).not.toHaveBeenCalled();
+    consoleError.mockRestore();
+  });
 
   it('prints play() rejection to the console without an app log', async () => {
-    const audio = makeAudio()
-    const playError = new Error('NotAllowedError')
-    const pause = noop()
-    const appendAppLog = vi.fn<(message: string) => void>()
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const audio = makeAudio();
+    const playError = new Error('NotAllowedError');
+    const pause = noop();
+    const appendAppLog = vi.fn<(message: string) => void>();
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
     const transport = createPlaybackTransport({
       getAudio: () => audio,
       getCurrentId: () => 't1',
@@ -233,26 +233,26 @@ describe('playbackTransport', () => {
       appendAppLog,
       scheduleEnrichTrack: vi.fn<(id: string) => void>(),
       setVolumeRatio: vi.fn<(percent: number) => void>(),
-    })
+    });
 
-    await transport.loadCurrent()
-    audio.emit('loadedmetadata')
-    vi.mocked(audio.play).mockClear()
-    vi.mocked(audio.play).mockRejectedValueOnce(playError)
-    transport.onPendingPlayChange(true)
-    await Promise.resolve()
+    await transport.loadCurrent();
+    audio.emit('loadedmetadata');
+    vi.mocked(audio.play).mockClear();
+    vi.mocked(audio.play).mockRejectedValueOnce(playError);
+    transport.onPendingPlayChange(true);
+    await Promise.resolve();
 
-    expect(consoleError).toHaveBeenCalledWith(playError)
-    expect(pause).toHaveBeenCalledOnce()
-    expect(appendAppLog).not.toHaveBeenCalled()
-    consoleError.mockRestore()
-  })
+    expect(consoleError).toHaveBeenCalledWith(playError);
+    expect(pause).toHaveBeenCalledOnce();
+    expect(appendAppLog).not.toHaveBeenCalled();
+    consoleError.mockRestore();
+  });
 
   it('records play history on play, pause, ended, and track-switch load start', async () => {
-    const audio = makeAudio()
-    const onPlay = vi.fn<(trackId: string) => void>()
-    const onStop = vi.fn<() => void>()
-    let currentId: string | null = 't1'
+    const audio = makeAudio();
+    const onPlay = vi.fn<(trackId: string) => void>();
+    const onStop = vi.fn<() => void>();
+    let currentId: string | null = 't1';
 
     const transport = createPlaybackTransport({
       getAudio: () => audio,
@@ -279,28 +279,28 @@ describe('playbackTransport', () => {
       scheduleEnrichTrack: vi.fn<(id: string) => void>(),
       setVolumeRatio: vi.fn<(percent: number) => void>(),
       playHistory: { onPlay, onStop },
-    })
+    });
 
-    await transport.loadCurrent()
-    onPlay.mockClear()
-    onStop.mockClear()
+    await transport.loadCurrent();
+    onPlay.mockClear();
+    onStop.mockClear();
 
-    transport.onPlay()
-    expect(onPlay).toHaveBeenCalledExactlyOnceWith('t1')
+    transport.onPlay();
+    expect(onPlay).toHaveBeenCalledExactlyOnceWith('t1');
 
-    transport.onPause()
-    expect(onStop).toHaveBeenCalledOnce()
+    transport.onPause();
+    expect(onStop).toHaveBeenCalledOnce();
 
-    onPlay.mockClear()
-    onStop.mockClear()
-    transport.onPlay()
-    transport.onEnded()
-    expect(onPlay).toHaveBeenCalledExactlyOnceWith('t1')
-    expect(onStop).toHaveBeenCalledOnce()
+    onPlay.mockClear();
+    onStop.mockClear();
+    transport.onPlay();
+    transport.onEnded();
+    expect(onPlay).toHaveBeenCalledExactlyOnceWith('t1');
+    expect(onStop).toHaveBeenCalledOnce();
 
-    onStop.mockClear()
-    currentId = 't2'
-    transport.onLoadStart('t2')
-    expect(onStop).toHaveBeenCalledOnce()
-  })
-})
+    onStop.mockClear();
+    currentId = 't2';
+    transport.onLoadStart('t2');
+    expect(onStop).toHaveBeenCalledOnce();
+  });
+});

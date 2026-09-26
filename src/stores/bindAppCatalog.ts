@@ -1,11 +1,11 @@
-import { clearAllMusicCaches } from '@/lib/cache/musicCache'
-import { bindCatalogBootstrap } from '@/lib/catalog/catalogBootstrap'
-import { clearEnrichQueue } from '@/lib/catalog/enrichQueue'
-import { loadConfigsJson } from '@/lib/catalog/loadConfigs'
-import { runCatalogLoad } from '@/lib/catalog/runCatalogLoad'
-import { clearPlayHistory } from '@/lib/playback/playHistoryStore'
-import { useCatalogStore } from '@/stores/catalog'
-import { usePlayerStore } from '@/stores/player'
+import { clearAllMusicCaches } from '@/lib/cache/musicCache';
+import { bindCatalogBootstrap } from '@/lib/catalog/catalogBootstrap';
+import { clearEnrichQueue } from '@/lib/catalog/enrichQueue';
+import { loadConfigsJson } from '@/lib/catalog/loadConfigs';
+import { runCatalogLoad } from '@/lib/catalog/runCatalogLoad';
+import { clearPlayHistory } from '@/lib/playback/playHistoryStore';
+import { useCatalogStore } from '@/stores/catalog';
+import { usePlayerStore } from '@/stores/player';
 
 /** Bind catalog bootstrap ports to the live Zustand stores. */
 export function bindAppCatalogBootstrap() {
@@ -28,5 +28,5 @@ export function bindAppCatalogBootstrap() {
     resetDisplayFromConfig: () => useCatalogStore.getState().resetDisplayFromConfig(),
     scheduleEnrichment: () => useCatalogStore.getState().scheduleEnrichment(),
     clearNowPlaying: () => usePlayerStore.getState().clearNowPlaying(),
-  })
+  });
 }

@@ -1,18 +1,18 @@
-import Button from '@mui/material/Button'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import { useTranslation } from 'react-i18next'
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { useTranslation } from 'react-i18next';
 
 export type FeedbackConfirmDialogProps = {
-  open: boolean
-  onClose: () => void
-  onConfirm: () => void
-}
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+};
 
 export function FeedbackConfirmDialog({ open, onClose, onConfirm }: FeedbackConfirmDialogProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>{t('nav.feedback')}</DialogTitle>
@@ -24,5 +24,5 @@ export function FeedbackConfirmDialog({ open, onClose, onConfirm }: FeedbackConf
         </Button>
       </DialogActions>
     </Dialog>
-  )
+  );
 }

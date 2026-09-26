@@ -1,29 +1,29 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest';
 
-import { DEFAULT_CONFIG_URL, CONFIG_URL_KEY, resolveConfigUrl } from '../configUrl'
+import { DEFAULT_CONFIG_URL, CONFIG_URL_KEY, resolveConfigUrl } from '../configUrl';
 
 describe('resolveConfigUrl', () => {
   beforeEach(() => {
-    localStorage.clear()
-  })
+    localStorage.clear();
+  });
 
   it('defaults to the sample catalog under /sample', () => {
-    expect(DEFAULT_CONFIG_URL).toBe('/sample/configs.json')
-    expect(resolveConfigUrl()).toBe('/sample/configs.json')
-  })
+    expect(DEFAULT_CONFIG_URL).toBe('/sample/configs.json');
+    expect(resolveConfigUrl()).toBe('/sample/configs.json');
+  });
 
   it('returns default when localStorage is empty', () => {
-    expect(resolveConfigUrl()).toBe(DEFAULT_CONFIG_URL)
-  })
+    expect(resolveConfigUrl()).toBe(DEFAULT_CONFIG_URL);
+  });
 
   it('returns stored config url when set', () => {
-    localStorage.setItem(CONFIG_URL_KEY, 'https://cdn.example.com/configs.json')
-    expect(CONFIG_URL_KEY).toBe('tdmusic.configUrl')
-    expect(resolveConfigUrl()).toBe('https://cdn.example.com/configs.json')
-  })
+    localStorage.setItem(CONFIG_URL_KEY, 'https://cdn.example.com/configs.json');
+    expect(CONFIG_URL_KEY).toBe('tdmusic.configUrl');
+    expect(resolveConfigUrl()).toBe('https://cdn.example.com/configs.json');
+  });
 
   it('trims whitespace and falls back for blank', () => {
-    localStorage.setItem(CONFIG_URL_KEY, '   ')
-    expect(resolveConfigUrl()).toBe(DEFAULT_CONFIG_URL)
-  })
-})
+    localStorage.setItem(CONFIG_URL_KEY, '   ');
+    expect(resolveConfigUrl()).toBe(DEFAULT_CONFIG_URL);
+  });
+});

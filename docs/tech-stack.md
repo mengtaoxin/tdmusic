@@ -4,25 +4,25 @@ tdmusic is a React SPA (Vite) at the repo root — no separate `api/` or `web/` 
 
 ## Frontend
 
-| Area          | Choice                                      |
-| ------------- | ------------------------------------------- |
-| Framework     | React 19                                    |
-| Build         | Vite 8                                      |
-| Language      | TypeScript 6.x                              |
-| Routing       | TanStack Router                             |
-| State         | Zustand                                     |
-| i18n          | react-i18next (en default, zh)              |
-| UI            | MUI 9 + Emotion + Material Icons            |
-| Virtual lists | @tanstack/react-virtual                     |
-| Markdown      | marked (Config Guides page)                 |
-| Audio meta    | music-metadata                              |
-| Shared kit    | tdkit → @mengtaoxin/tdkit (GitHub Packages) |
-| Lint / format | ESLint + oxlint + Prettier                  |
-| Unit tests    | Vitest + Testing Library                    |
+| Area          | Choice                                          |
+| ------------- | ----------------------------------------------- |
+| Framework     | React 19                                        |
+| Build         | Vite 8                                          |
+| Language      | TypeScript 6.x                                  |
+| Routing       | TanStack Router                                 |
+| State         | Zustand                                         |
+| i18n          | react-i18next (en default, zh)                  |
+| UI            | MUI 9 + Emotion + Material Icons                |
+| Virtual lists | @tanstack/react-virtual                         |
+| Markdown      | marked (Config Guides page)                     |
+| Audio meta    | music-metadata                                  |
+| Shared kit    | tdkit → @mengtaoxin/tdkit (GitHub Packages)     |
+| Lint / format | oxlint + oxfmt                                  |
+| Unit tests    | Vitest + Testing Library                        |
 | Coverage      | `@vitest/coverage-v8` (`npm run test:coverage`) |
-| E2E           | Playwright                                  |
-| PWA           | vite-plugin-pwa (manifest + app-shell SW)   |
-| Node          | see `package.json` `engines`                |
+| E2E           | Playwright                                      |
+| PWA           | vite-plugin-pwa (manifest + app-shell SW)       |
+| Node          | see `package.json` `engines`                    |
 
 Prefer MUI components and theme/`sx`; use CSS modules or `src/styles/` for local tweaks. No Vue, Nuxt, or Tailwind.
 

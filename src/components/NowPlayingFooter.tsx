@@ -1,63 +1,63 @@
-import Box from '@mui/material/Box'
-import IconButton from '@mui/material/IconButton'
-import LinearProgress from '@mui/material/LinearProgress'
-import Avatar from '@mui/material/Avatar'
-import { useTheme } from '@mui/material/styles'
-import MusicNoteIcon from '@mui/icons-material/MusicNote'
-import PauseIcon from '@mui/icons-material/Pause'
-import PlayArrowIcon from '@mui/icons-material/PlayArrow'
-import SkipNextIcon from '@mui/icons-material/SkipNext'
-import SkipPreviousIcon from '@mui/icons-material/SkipPrevious'
-import { useNavigate } from '@tanstack/react-router'
-import { useTranslation } from 'react-i18next'
-import type { MouseEvent } from 'react'
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import LinearProgress from '@mui/material/LinearProgress';
+import Avatar from '@mui/material/Avatar';
+import { useTheme } from '@mui/material/styles';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import PauseIcon from '@mui/icons-material/Pause';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
+import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
+import { useNavigate } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
+import type { MouseEvent } from 'react';
 
-import { CoverImg } from '@/components/CoverImg'
-import { useTrackDownload } from '@/hooks/useTrackDownload'
-import { localizeArtistName } from '@/lib/catalog/displayLabels'
-import { useCatalogStore } from '@/stores/catalog'
-import { usePlayerStore } from '@/stores/player'
+import { CoverImg } from '@/components/CoverImg';
+import { useTrackDownload } from '@/hooks/useTrackDownload';
+import { localizeArtistName } from '@/lib/catalog/displayLabels';
+import { useCatalogStore } from '@/stores/catalog';
+import { usePlayerStore } from '@/stores/player';
 
 export function NowPlayingFooter() {
-  const { t } = useTranslation()
-  const theme = useTheme()
-  const navigate = useNavigate()
-  const currentId = usePlayerStore((s) => s.currentId)
-  const currentTime = usePlayerStore((s) => s.currentTime)
-  const duration = usePlayerStore((s) => s.duration)
-  const playing = usePlayerStore((s) => s.playing)
-  const prev = usePlayerStore((s) => s.prev)
-  const next = usePlayerStore((s) => s.next)
-  const togglePlay = usePlayerStore((s) => s.togglePlay)
-  const seek = usePlayerStore((s) => s.seek)
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const navigate = useNavigate();
+  const currentId = usePlayerStore((s) => s.currentId);
+  const currentTime = usePlayerStore((s) => s.currentTime);
+  const duration = usePlayerStore((s) => s.duration);
+  const playing = usePlayerStore((s) => s.playing);
+  const prev = usePlayerStore((s) => s.prev);
+  const next = usePlayerStore((s) => s.next);
+  const togglePlay = usePlayerStore((s) => s.togglePlay);
+  const seek = usePlayerStore((s) => s.seek);
   const current = useCatalogStore((s) =>
     currentId ? s.snapshot.trackById.get(currentId) : undefined,
-  )
-  const { downloading } = useTrackDownload(current)
+  );
+  const { downloading } = useTrackDownload(current);
 
-  if (!current) return null
+  if (!current) return null;
 
-  const progress = duration ? (currentTime / duration) * 100 : 0
+  const progress = duration ? (currentTime / duration) * 100 : 0;
 
   function openNowPlaying() {
-    void navigate({ to: '/now-playing' })
+    void navigate({ to: '/now-playing' });
   }
 
   function onSeek(pct: number) {
-    if (!duration) return
-    seek((pct / 100) * duration)
+    if (!duration) return;
+    seek((pct / 100) * duration);
   }
 
   function onProgressClick(event: MouseEvent<HTMLElement>) {
-    if (!duration) return
-    const el = event.currentTarget
-    const rect = el.getBoundingClientRect()
-    if (rect.width <= 0) return
-    const pct = Math.min(100, Math.max(0, ((event.clientX - rect.left) / rect.width) * 100))
-    onSeek(pct)
+    if (!duration) return;
+    const el = event.currentTarget;
+    const rect = el.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const pct = Math.min(100, Math.max(0, ((event.clientX - rect.left) / rect.width) * 100));
+    onSeek(pct);
   }
 
-  const footerGradient = `linear-gradient(90deg, ${theme.layout.footerStart} 0%, ${theme.layout.footerMid} 55%, ${theme.layout.footerEnd} 100%)`
+  const footerGradient = `linear-gradient(90deg, ${theme.layout.footerStart} 0%, ${theme.layout.footerMid} 55%, ${theme.layout.footerEnd} 100%)`;
 
   return (
     <Box
@@ -147,16 +147,16 @@ export function NowPlayingFooter() {
         <IconButton
           data-testid="footer-prev"
           onClick={(event) => {
-            event.stopPropagation()
-            prev()
+            event.stopPropagation();
+            prev();
           }}
         >
           <SkipPreviousIcon />
         </IconButton>
         <IconButton
           onClick={(event) => {
-            event.stopPropagation()
-            togglePlay()
+            event.stopPropagation();
+            togglePlay();
           }}
         >
           {playing ? <PauseIcon /> : <PlayArrowIcon />}
@@ -164,13 +164,13 @@ export function NowPlayingFooter() {
         <IconButton
           data-testid="footer-next"
           onClick={(event) => {
-            event.stopPropagation()
-            next()
+            event.stopPropagation();
+            next();
           }}
         >
           <SkipNextIcon />
         </IconButton>
       </Box>
     </Box>
-  )
+  );
 }

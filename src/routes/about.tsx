@@ -1,21 +1,21 @@
-import { createFileRoute } from '@tanstack/react-router'
-import Container from '@mui/material/Container'
-import IconButton from '@mui/material/IconButton'
-import Typography from '@mui/material/Typography'
-import GitHubIcon from '@mui/icons-material/GitHub'
-import Box from '@mui/material/Box'
-import { useTranslation } from 'react-i18next'
+import { createFileRoute } from '@tanstack/react-router';
+import Container from '@mui/material/Container';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import GitHubIcon from '@mui/icons-material/GitHub';
+import Box from '@mui/material/Box';
+import { useTranslation } from 'react-i18next';
 
-import brandIconUrl from '@/assets/brand-icon.png'
+import brandIconUrl from '@/assets/brand-icon.png';
 
 export const Route = createFileRoute('/about')({
   component: AboutPage,
-})
+});
 
-const GITHUB_URL = 'https://github.com/mengtaoxin/tdmusic'
+const GITHUB_URL = 'https://github.com/mengtaoxin/tdmusic';
 
 function AboutPage() {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return (
     <Container maxWidth={false} sx={{ textAlign: 'center' }}>
@@ -48,5 +48,5 @@ function AboutPage() {
         <GitHubIcon fontSize="large" />
       </IconButton>
     </Container>
-  )
+  );
 }

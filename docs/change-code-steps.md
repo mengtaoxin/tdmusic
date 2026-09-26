@@ -2,12 +2,12 @@
 
 Ordered workflow for every code change. Domain details stay in the linked docs — do not copy them here.
 
-| Need | Doc |
-| ---- | --- |
-| Commands | [commands.md](commands.md) |
-| Test layers and naming | [testing.md](testing.md) |
-| Where files go | [file-structure.md](file-structure.md) |
-| Style, i18n, MUI | [conventions.md](conventions.md) |
+| Need                   | Doc                                    |
+| ---------------------- | -------------------------------------- |
+| Commands               | [commands.md](commands.md)             |
+| Test layers and naming | [testing.md](testing.md)               |
+| Where files go         | [file-structure.md](file-structure.md) |
+| Style, i18n, MUI       | [conventions.md](conventions.md)       |
 
 ## 1. Inspect structure
 

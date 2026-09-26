@@ -35,9 +35,7 @@
   "playlists": [
     {
       "title": "My Playlist1",
-      "music-list": [
-        { "id": "sample-1" }
-      ]
+      "music-list": [{ "id": "sample-1" }]
     }
   ]
 }

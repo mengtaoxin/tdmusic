@@ -1,79 +1,79 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import AppBar from '@mui/material/AppBar'
-import Box from '@mui/material/Box'
-import IconButton from '@mui/material/IconButton'
-import Toolbar from '@mui/material/Toolbar'
-import MenuIcon from '@mui/icons-material/Menu'
-import { Link, useRouterState } from '@tanstack/react-router'
-import { useTranslation } from 'react-i18next'
+import { useCallback, useEffect, useRef, useState } from 'react';
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import Toolbar from '@mui/material/Toolbar';
+import MenuIcon from '@mui/icons-material/Menu';
+import { Link, useRouterState } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 
-import brandIconUrl from '@/assets/brand-icon.png'
-import { AppDesktopNav, type DesktopMenuState } from '@/components/nav/AppDesktopNav'
-import { AppNavDrawer } from '@/components/nav/AppNavDrawer'
-import { FeedbackConfirmDialog } from '@/components/nav/FeedbackConfirmDialog'
-import { GITHUB_ISSUES_URL, moreChildPaths } from '@/components/nav/navConfig'
-import i18n from '@/i18n'
-import { writeStoredLocale, type AppLocale } from '@/lib/locale'
-import { shouldCollapseNav } from '@/lib/navLayout'
+import brandIconUrl from '@/assets/brand-icon.png';
+import { AppDesktopNav, type DesktopMenuState } from '@/components/nav/AppDesktopNav';
+import { AppNavDrawer } from '@/components/nav/AppNavDrawer';
+import { FeedbackConfirmDialog } from '@/components/nav/FeedbackConfirmDialog';
+import { GITHUB_ISSUES_URL, moreChildPaths } from '@/components/nav/navConfig';
+import i18n from '@/i18n';
+import { writeStoredLocale, type AppLocale } from '@/lib/locale';
+import { shouldCollapseNav } from '@/lib/navLayout';
 
 export function AppHeader() {
-  const { t, i18n: i18nInstance } = useTranslation()
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const [compactNav, setCompactNav] = useState(true)
-  const [confirmFeedbackOpen, setConfirmFeedbackOpen] = useState(false)
-  const [desktopMenu, setDesktopMenu] = useState<DesktopMenuState>(null)
-  const [drawerExpanded, setDrawerExpanded] = useState<Record<string, boolean>>({})
+  const { t, i18n: i18nInstance } = useTranslation();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [compactNav, setCompactNav] = useState(true);
+  const [confirmFeedbackOpen, setConfirmFeedbackOpen] = useState(false);
+  const [desktopMenu, setDesktopMenu] = useState<DesktopMenuState>(null);
+  const [drawerExpanded, setDrawerExpanded] = useState<Record<string, boolean>>({});
 
-  const toolbarRef = useRef<HTMLDivElement | null>(null)
-  const brandRef = useRef<HTMLDivElement | null>(null)
-  const desktopNavRef = useRef<HTMLElement | null>(null)
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
+  const brandRef = useRef<HTMLDivElement | null>(null);
+  const desktopNavRef = useRef<HTMLElement | null>(null);
 
-  const locale = (i18nInstance.language?.startsWith('zh') ? 'zh' : 'en') as AppLocale
-  const moreGroupActive = moreChildPaths.includes(pathname)
+  const locale = (i18nInstance.language?.startsWith('zh') ? 'zh' : 'en') as AppLocale;
+  const moreGroupActive = moreChildPaths.includes(pathname);
 
   const updateCompactNav = useCallback(() => {
-    const toolbar = toolbarRef.current
-    const brand = brandRef.current
-    const nav = desktopNavRef.current
-    if (!toolbar || !brand || !nav) return
-    const availableWidth = toolbar.clientWidth - brand.offsetWidth
-    setCompactNav(shouldCollapseNav(nav.scrollWidth, availableWidth))
-  }, [])
+    const toolbar = toolbarRef.current;
+    const brand = brandRef.current;
+    const nav = desktopNavRef.current;
+    if (!toolbar || !brand || !nav) return;
+    const availableWidth = toolbar.clientWidth - brand.offsetWidth;
+    setCompactNav(shouldCollapseNav(nav.scrollWidth, availableWidth));
+  }, []);
 
   useEffect(() => {
-    const toolbar = toolbarRef.current
+    const toolbar = toolbarRef.current;
     if (!toolbar || typeof ResizeObserver === 'undefined') {
-      updateCompactNav()
-      return
+      updateCompactNav();
+      return;
     }
     const observer = new ResizeObserver(() => {
-      updateCompactNav()
-    })
-    observer.observe(toolbar)
-    if (desktopNavRef.current) observer.observe(desktopNavRef.current)
-    updateCompactNav()
-    return () => observer.disconnect()
-  }, [updateCompactNav, locale])
+      updateCompactNav();
+    });
+    observer.observe(toolbar);
+    if (desktopNavRef.current) observer.observe(desktopNavRef.current);
+    updateCompactNav();
+    return () => observer.disconnect();
+  }, [updateCompactNav, locale]);
 
   useEffect(() => {
-    setDrawerOpen(false)
-    setDesktopMenu(null)
-  }, [pathname])
+    setDrawerOpen(false);
+    setDesktopMenu(null);
+  }, [pathname]);
 
   useEffect(() => {
-    const id = requestAnimationFrame(() => updateCompactNav())
-    return () => cancelAnimationFrame(id)
-  }, [locale, t, updateCompactNav])
+    const id = requestAnimationFrame(() => updateCompactNav());
+    return () => cancelAnimationFrame(id);
+  }, [locale, t, updateCompactNav]);
 
   function setLocale(value: AppLocale) {
-    writeStoredLocale(value)
-    void i18n.changeLanguage(value)
+    writeStoredLocale(value);
+    void i18n.changeLanguage(value);
   }
 
   function confirmOpenFeedback() {
-    setConfirmFeedbackOpen(false)
-    window.open(GITHUB_ISSUES_URL, '_blank', 'noopener,noreferrer')
+    setConfirmFeedbackOpen(false);
+    window.open(GITHUB_ISSUES_URL, '_blank', 'noopener,noreferrer');
   }
 
   return (
@@ -86,7 +86,7 @@ export function AppHeader() {
         expanded={drawerExpanded}
         onClose={() => setDrawerOpen(false)}
         onToggleGroup={(key) => {
-          setDrawerExpanded((prev) => ({ ...prev, [key]: !prev[key] }))
+          setDrawerExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
         }}
         onLocale={setLocale}
         onFeedback={() => setConfirmFeedbackOpen(true)}
@@ -201,7 +201,7 @@ export function AppHeader() {
             desktopMenu={desktopMenu}
             setDesktopMenu={setDesktopMenu}
             navRef={(node) => {
-              desktopNavRef.current = node
+              desktopNavRef.current = node;
             }}
             onLocale={setLocale}
             onFeedback={() => setConfirmFeedbackOpen(true)}
@@ -209,5 +209,5 @@ export function AppHeader() {
         </Toolbar>
       </AppBar>
     </>
-  )
+  );
 }

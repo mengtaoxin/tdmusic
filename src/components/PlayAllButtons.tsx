@@ -1,16 +1,16 @@
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import PlayArrowIcon from '@mui/icons-material/PlayArrow'
-import ShuffleIcon from '@mui/icons-material/Shuffle'
-import { useTranslation } from 'react-i18next'
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import ShuffleIcon from '@mui/icons-material/Shuffle';
+import { useTranslation } from 'react-i18next';
 
 export type PlayAllButtonsProps = {
-  onPlayAll: () => void
-  onShuffleAll: () => void
-}
+  onPlayAll: () => void;
+  onShuffleAll: () => void;
+};
 
 export function PlayAllButtons({ onPlayAll, onShuffleAll }: PlayAllButtonsProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
@@ -31,5 +31,5 @@ export function PlayAllButtons({ onPlayAll, onShuffleAll }: PlayAllButtonsProps)
         {t('player.shuffleAll')}
       </Button>
     </Box>
-  )
+  );
 }

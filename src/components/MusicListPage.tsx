@@ -1,34 +1,34 @@
-import Alert from '@mui/material/Alert'
-import { useTranslation } from 'react-i18next'
+import Alert from '@mui/material/Alert';
+import { useTranslation } from 'react-i18next';
 
-import { CatalogPageShell } from '@/components/CatalogPageShell'
-import { PlayAllButtons } from '@/components/PlayAllButtons'
-import { TrackListItem } from '@/components/TrackListItem'
-import { VirtualRowList } from '@/components/VirtualRowList'
-import { useTrackListPlayback } from '@/hooks/useTrackListPlayback'
-import { selectTracks, useCatalogStore } from '@/stores/catalog'
+import { CatalogPageShell } from '@/components/CatalogPageShell';
+import { PlayAllButtons } from '@/components/PlayAllButtons';
+import { TrackListItem } from '@/components/TrackListItem';
+import { VirtualRowList } from '@/components/VirtualRowList';
+import { useTrackListPlayback } from '@/hooks/useTrackListPlayback';
+import { selectTracks, useCatalogStore } from '@/stores/catalog';
 
-const TRACK_ROW_HEIGHT = 64
+const TRACK_ROW_HEIGHT = 64;
 
 export function MusicListPage() {
-  const { t } = useTranslation()
-  const tracks = useCatalogStore(selectTracks)
-  const loading = useCatalogStore((s) => s.loading)
-  const loadError = useCatalogStore((s) => s.loadError)
-  const errors = useCatalogStore((s) => s.errors)
+  const { t } = useTranslation();
+  const tracks = useCatalogStore(selectTracks);
+  const loading = useCatalogStore((s) => s.loading);
+  const loadError = useCatalogStore((s) => s.loadError);
+  const errors = useCatalogStore((s) => s.errors);
   const { currentId, playAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(
     tracks.map((track) => track.id),
-  )
+  );
 
   function playAllInOrder() {
-    if (!tracks.length) return
-    playAt(0, { shuffle: false })
+    if (!tracks.length) return;
+    playAt(0, { shuffle: false });
   }
 
   function shufflePlayAll() {
-    if (!tracks.length) return
-    const start = Math.floor(Math.random() * tracks.length)
-    playAt(start, { shuffle: true })
+    if (!tracks.length) return;
+    const start = Math.floor(Math.random() * tracks.length);
+    playAt(start, { shuffle: true });
   }
 
   return (
@@ -71,5 +71,5 @@ export function MusicListPage() {
         )}
       />
     </CatalogPageShell>
-  )
+  );
 }

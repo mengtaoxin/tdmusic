@@ -8,36 +8,36 @@ const EXT_TO_MIME: Record<string, string> = {
   wav: 'audio/wav',
   aac: 'audio/aac',
   webm: 'audio/webm',
-}
+};
 
 /** MIME for `<audio>` from a track path/URL extension; undefined when unknown. */
 export function audioMimeFromPath(path: string): string | undefined {
-  const trimmed = path.trim()
-  if (!trimmed) return undefined
+  const trimmed = path.trim();
+  if (!trimmed) return undefined;
 
-  let pathname = trimmed
+  let pathname = trimmed;
   try {
     if (/^https?:\/\//i.test(trimmed)) {
-      pathname = new URL(trimmed).pathname
+      pathname = new URL(trimmed).pathname;
     } else {
-      const q = pathname.indexOf('?')
-      const h = pathname.indexOf('#')
-      const cut = Math.min(q >= 0 ? q : pathname.length, h >= 0 ? h : pathname.length)
-      pathname = pathname.slice(0, cut)
+      const q = pathname.indexOf('?');
+      const h = pathname.indexOf('#');
+      const cut = Math.min(q >= 0 ? q : pathname.length, h >= 0 ? h : pathname.length);
+      pathname = pathname.slice(0, cut);
     }
   } catch {
-    return undefined
+    return undefined;
   }
 
-  const match = /\.([^./]+)$/.exec(pathname)
-  if (!match?.[1]) return undefined
-  let ext = match[1]
+  const match = /\.([^./]+)$/.exec(pathname);
+  if (!match?.[1]) return undefined;
+  let ext = match[1];
   try {
-    ext = decodeURIComponent(ext)
+    ext = decodeURIComponent(ext);
   } catch {
     // keep raw extension
   }
-  return EXT_TO_MIME[ext.toLowerCase()]
+  return EXT_TO_MIME[ext.toLowerCase()];
 }
 
 /**
@@ -46,7 +46,7 @@ export function audioMimeFromPath(path: string): string | undefined {
  * derived type. Does not mutate IndexedDB.
  */
 export function blobForPlayableObjectUrl(sourceUrl: string, blob: Blob): Blob {
-  const mime = audioMimeFromPath(sourceUrl)
-  if (!mime || blob.type === mime) return blob
-  return new Blob([blob], { type: mime })
+  const mime = audioMimeFromPath(sourceUrl);
+  if (!mime || blob.type === mime) return blob;
+  return new Blob([blob], { type: mime });
 }

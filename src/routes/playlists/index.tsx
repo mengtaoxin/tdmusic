@@ -1,25 +1,25 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import Box from '@mui/material/Box'
-import Container from '@mui/material/Container'
-import Typography from '@mui/material/Typography'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import QueueMusicIcon from '@mui/icons-material/QueueMusic'
-import List from '@mui/material/List'
-import ListItemButton from '@mui/material/ListItemButton'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import ListItemText from '@mui/material/ListItemText'
-import { useTranslation } from 'react-i18next'
+import { createFileRoute, Link } from '@tanstack/react-router';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import QueueMusicIcon from '@mui/icons-material/QueueMusic';
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { useTranslation } from 'react-i18next';
 
-import { playlistPath } from '@/lib/routes/playlistRoutes'
-import { useCatalogStore } from '@/stores/catalog'
+import { playlistPath } from '@/lib/routes/playlistRoutes';
+import { useCatalogStore } from '@/stores/catalog';
 
 export const Route = createFileRoute('/playlists/')({
   component: PlaylistListPage,
-})
+});
 
 function PlaylistListPage() {
-  const { t } = useTranslation()
-  const playlists = useCatalogStore((s) => s.playlists)
+  const { t } = useTranslation();
+  const playlists = useCatalogStore((s) => s.playlists);
 
   return (
     <Container maxWidth={false} className="page">
@@ -56,5 +56,5 @@ function PlaylistListPage() {
         </List>
       )}
     </Container>
-  )
+  );
 }

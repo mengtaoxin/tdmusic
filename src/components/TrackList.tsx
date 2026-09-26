@@ -1,15 +1,15 @@
-import List from '@mui/material/List'
+import List from '@mui/material/List';
 
-import { TrackListItem } from '@/components/TrackListItem'
-import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
+import { TrackListItem } from '@/components/TrackListItem';
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
 
 export type TrackListProps = {
-  tracks: DisplayTrack[]
-  currentId?: string | null
-  onSelect?: (index: number) => void
-  onPlayNext?: (id: string) => void
-  onAddToQueue?: (id: string) => void
-}
+  tracks: DisplayTrack[];
+  currentId?: string | null;
+  onSelect?: (index: number) => void;
+  onPlayNext?: (id: string) => void;
+  onAddToQueue?: (id: string) => void;
+};
 
 export function TrackList({
   tracks,
@@ -31,5 +31,5 @@ export function TrackList({
         />
       ))}
     </List>
-  )
+  );
 }

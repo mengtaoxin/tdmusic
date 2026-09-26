@@ -27,13 +27,11 @@ Unset `PLAYWRIGHT_BROWSERS_PATH` if a sandbox injected it, so browsers land in t
 ## Format / lint / type-check
 
 ```sh
-npm run format && npm run lint && npm run type-check   # write
-npx prettier --check --experimental-cli src/ e2e/ \
-  && npx oxlint . && npx eslint . --cache \
-  && npm run type-check                                 # check only
+npm run fmt && npm run lint:fix && npm run type-check   # write
+npm run fmt:check && npm run lint && npm run type-check   # check only
 ```
 
-`npm run format` and `npm run lint` write files by default.
+`npm run fmt` and `npm run lint:fix` write files; `fmt:check` / `lint` do not.
 
 ## Dev server
 
@@ -53,12 +51,12 @@ Type-check + Vite production build → `dist/`.
 
 ## Tests
 
-| Command | Notes |
-| ------- | ----- |
-| `npm run test:unit` | Vitest (all unit specs) |
-| `npm run test:unit -- path/to/spec.ts` | One unit file |
-| `npm run test:coverage` | Vitest with V8 coverage (`text` + `coverage/` HTML) |
-| `npm run test:e2e -- --project chromium` | Playwright; pick projects explicitly |
-| `npm run test:e2e -- --project chromium -- path/to/spec.ts` | One e2e file |
+| Command                                                     | Notes                                               |
+| ----------------------------------------------------------- | --------------------------------------------------- |
+| `npm run test:unit`                                         | Vitest (all unit specs)                             |
+| `npm run test:unit -- path/to/spec.ts`                      | One unit file                                       |
+| `npm run test:coverage`                                     | Vitest with V8 coverage (`text` + `coverage/` HTML) |
+| `npm run test:e2e -- --project chromium`                    | Playwright; pick projects explicitly                |
+| `npm run test:e2e -- --project chromium -- path/to/spec.ts` | One e2e file                                        |
 
 E2E defaults in config include chromium, firefox, and webkit; always pass `--project` when you want a subset. Agents should run e2e / Playwright install outside the sandbox (`required_permissions: ["all"]`).

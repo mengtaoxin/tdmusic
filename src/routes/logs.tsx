@@ -1,50 +1,50 @@
-import { useEffect, useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Container from '@mui/material/Container'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import Typography from '@mui/material/Typography'
-import { useTranslation } from 'react-i18next'
+import { useEffect, useState } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
-import { TdLog, type TdLogRecord } from 'tdkit'
+import { TdLog, type TdLogRecord } from 'tdkit';
 
 export const Route = createFileRoute('/logs')({
   component: LogsPage,
-})
+});
 
 function LogsPage() {
-  const { t } = useTranslation()
-  const [logs, setLogs] = useState<TdLogRecord[]>([])
-  const [clearing, setClearing] = useState(false)
-  const [confirmClearOpen, setConfirmClearOpen] = useState(false)
+  const { t } = useTranslation();
+  const [logs, setLogs] = useState<TdLogRecord[]>([]);
+  const [clearing, setClearing] = useState(false);
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
 
   async function refresh() {
-    const page = await TdLog.query({ page: 1, pageSize: 100 })
-    setLogs(page.records)
+    const page = await TdLog.query({ page: 1, pageSize: 100 });
+    setLogs(page.records);
   }
 
   async function confirmClearLogs() {
-    setConfirmClearOpen(false)
-    setClearing(true)
+    setConfirmClearOpen(false);
+    setClearing(true);
     try {
-      await TdLog.clean()
-      setLogs([])
+      await TdLog.clean();
+      setLogs([]);
     } finally {
-      setClearing(false)
+      setClearing(false);
     }
   }
 
   function formatTime(createdAt: number) {
-    return new Date(createdAt).toLocaleString()
+    return new Date(createdAt).toLocaleString();
   }
 
   useEffect(() => {
-    void refresh()
-  }, [])
+    void refresh();
+  }, []);
 
   return (
     <Container maxWidth={false} data-testid="logs-page" className="page-narrow">
@@ -130,5 +130,5 @@ function LogsPage() {
         </Box>
       )}
     </Container>
-  )
+  );
 }

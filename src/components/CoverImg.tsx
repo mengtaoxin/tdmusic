@@ -1,20 +1,20 @@
-import { useRef, type CSSProperties, type MouseEvent } from 'react'
-import CircularProgress from '@mui/material/CircularProgress'
-import { useTranslation } from 'react-i18next'
+import { useRef, type CSSProperties, type MouseEvent } from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
+import { useTranslation } from 'react-i18next';
 
-import { useLazyLoad } from '@/hooks/useLazyLoad'
+import { useLazyLoad } from '@/hooks/useLazyLoad';
 
 export type CoverImgProps = {
-  src?: string
-  alt?: string
-  cover?: boolean
-  aspectRatio?: string | number
+  src?: string;
+  alt?: string;
+  cover?: boolean;
+  aspectRatio?: string | number;
   /** Load immediately instead of waiting for viewport intersection. Prefer false. */
-  eager?: boolean
+  eager?: boolean;
   /** Show a simple spinner while audio caches. */
-  downloading?: boolean
-  className?: string
-}
+  downloading?: boolean;
+  className?: string;
+};
 
 export function CoverImg({
   src,
@@ -25,17 +25,17 @@ export function CoverImg({
   downloading = false,
   className,
 }: CoverImgProps) {
-  const { t } = useTranslation()
-  const rootRef = useRef<HTMLDivElement | null>(null)
-  const visible = useLazyLoad(rootRef, eager)
+  const { t } = useTranslation();
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const visible = useLazyLoad(rootRef, eager);
 
   const rootStyle: CSSProperties | undefined =
-    aspectRatio != null ? { aspectRatio: String(aspectRatio) } : undefined
+    aspectRatio != null ? { aspectRatio: String(aspectRatio) } : undefined;
 
-  const showImage = Boolean(visible && src && !downloading)
+  const showImage = Boolean(visible && src && !downloading);
 
   function preventContextMenu(event: MouseEvent) {
-    event.preventDefault()
+    event.preventDefault();
   }
 
   return (
@@ -61,5 +61,5 @@ export function CoverImg({
         </div>
       ) : null}
     </div>
-  )
+  );
 }

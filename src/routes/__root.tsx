@@ -1,11 +1,11 @@
-import { createRootRoute } from '@tanstack/react-router'
+import { createRootRoute } from '@tanstack/react-router';
 
-import { AppShell } from '@/components/AppShell'
-import { ensureCatalogLoaded } from '@/lib/catalog/catalogBootstrap'
+import { AppShell } from '@/components/AppShell';
+import { ensureCatalogLoaded } from '@/lib/catalog/catalogBootstrap';
 
 export const Route = createRootRoute({
   beforeLoad: async () => {
-    await ensureCatalogLoaded()
+    await ensureCatalogLoaded();
   },
   component: AppShell,
-})
+});

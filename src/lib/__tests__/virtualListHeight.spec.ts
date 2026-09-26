@@ -1,51 +1,51 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest';
 
 import {
   alignStartScrollOffset,
   capVirtualListHeight,
   virtualListNeedsScroll,
-} from '../virtualListHeight'
+} from '../virtualListHeight';
 
 describe('capVirtualListHeight', () => {
   it('shrinks to content height for short lists', () => {
-    expect(capVirtualListHeight(3, 64, 800)).toBe(192)
-  })
+    expect(capVirtualListHeight(3, 64, 800)).toBe(192);
+  });
 
   it('caps to the host height for long lists', () => {
-    expect(capVirtualListHeight(200, 64, 800)).toBe(800)
-  })
+    expect(capVirtualListHeight(200, 64, 800)).toBe(800);
+  });
 
   it('falls back to a short viewport when host is unmeasured', () => {
-    expect(capVirtualListHeight(200, 64, 0)).toBe(64 * 12)
-    expect(capVirtualListHeight(5, 64, 0)).toBe(320)
-  })
-})
+    expect(capVirtualListHeight(200, 64, 0)).toBe(64 * 12);
+    expect(capVirtualListHeight(5, 64, 0)).toBe(320);
+  });
+});
 
 describe('virtualListNeedsScroll', () => {
   it('is false when content fits the host', () => {
-    expect(virtualListNeedsScroll(3, 64, 800)).toBe(false)
-  })
+    expect(virtualListNeedsScroll(3, 64, 800)).toBe(false);
+  });
 
   it('is true when content exceeds the host', () => {
-    expect(virtualListNeedsScroll(200, 64, 800)).toBe(true)
-  })
+    expect(virtualListNeedsScroll(200, 64, 800)).toBe(true);
+  });
 
   it('is false until the host has been measured', () => {
-    expect(virtualListNeedsScroll(200, 64, 0)).toBe(false)
-  })
-})
+    expect(virtualListNeedsScroll(200, 64, 0)).toBe(false);
+  });
+});
 
 describe('alignStartScrollOffset', () => {
   it('places the given index at the top of the viewport', () => {
-    expect(alignStartScrollOffset(5, 64, 20, 192)).toBe(320)
-  })
+    expect(alignStartScrollOffset(5, 64, 20, 192)).toBe(320);
+  });
 
   it('clamps near the end so the list does not overscroll', () => {
-    expect(alignStartScrollOffset(18, 64, 20, 192)).toBe(20 * 64 - 192)
-  })
+    expect(alignStartScrollOffset(18, 64, 20, 192)).toBe(20 * 64 - 192);
+  });
 
   it('is 0 for the first row or an invalid index', () => {
-    expect(alignStartScrollOffset(0, 64, 20, 192)).toBe(0)
-    expect(alignStartScrollOffset(-1, 64, 20, 192)).toBe(0)
-  })
-})
+    expect(alignStartScrollOffset(0, 64, 20, 192)).toBe(0);
+    expect(alignStartScrollOffset(-1, 64, 20, 192)).toBe(0);
+  });
+});

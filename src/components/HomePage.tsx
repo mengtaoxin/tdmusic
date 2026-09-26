@@ -1,14 +1,14 @@
-import { Link } from '@tanstack/react-router'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Container from '@mui/material/Container'
-import Typography from '@mui/material/Typography'
-import { useTranslation } from 'react-i18next'
+import { Link } from '@tanstack/react-router';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
-import brandIconUrl from '@/assets/brand-icon.png'
+import brandIconUrl from '@/assets/brand-icon.png';
 
 export function HomePage() {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   return (
     <Container
@@ -79,5 +79,5 @@ export function HomePage() {
         </Button>
       </Box>
     </Container>
-  )
+  );
 }

@@ -35,9 +35,7 @@ An array of playlists. Each has a `title` and a `music-list` of `{ "id": "…" }
   "playlists": [
     {
       "title": "My Playlist1",
-      "music-list": [
-        { "id": "sample-1" }
-      ]
+      "music-list": [{ "id": "sample-1" }]
     }
   ]
 }

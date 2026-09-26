@@ -1,16 +1,16 @@
-import { ensureQuota } from './cacheEviction'
+import { ensureQuota } from './cacheEviction';
 import {
   cancelEnsureInFlight,
   clearEnsureInFlight,
   ensureTrackCached,
   type CacheProgress,
-} from './cacheIngest'
+} from './cacheIngest';
 import {
   isTrackDownloading,
   subscribeCacheDownloads,
   trackDownloadPercent,
   type CacheDownloadTrackRef,
-} from './cacheDownloadState'
+} from './cacheDownloadState';
 import {
   clearAllCacheRecords,
   COVER_FILE_KEY,
@@ -24,9 +24,9 @@ import {
   putFiles,
   type ExtractedTrackMeta,
   type TrackCacheMeta,
-} from './cacheStore'
+} from './cacheStore';
 
-export type { CacheProgress, CacheDownloadTrackRef, ExtractedTrackMeta, TrackCacheMeta }
+export type { CacheProgress, CacheDownloadTrackRef, ExtractedTrackMeta, TrackCacheMeta };
 export {
   COVER_FILE_KEY,
   ensureTrackCached,
@@ -39,20 +39,20 @@ export {
   putExtractedTrackMeta,
   subscribeCacheDownloads,
   trackDownloadPercent,
-}
+};
 
 /** Quota-check then store a cover blob under the standard cover key. */
 export async function putCoverFile(sourceUrl: string, blob: Blob): Promise<void> {
-  await ensureQuota(blob.size)
-  await putFiles(sourceUrl, [{ relativePath: COVER_FILE_KEY, blob }])
+  await ensureQuota(blob.size);
+  await putFiles(sourceUrl, [{ relativePath: COVER_FILE_KEY, blob }]);
 }
 
 export async function clearTrackCache(sourceUrl: string): Promise<void> {
-  cancelEnsureInFlight(sourceUrl)
-  await deleteTrackCacheRecords(sourceUrl)
+  cancelEnsureInFlight(sourceUrl);
+  await deleteTrackCacheRecords(sourceUrl);
 }
 
 export async function clearAllMusicCaches(): Promise<void> {
-  clearEnsureInFlight()
-  await clearAllCacheRecords()
+  clearEnsureInFlight();
+  await clearAllCacheRecords();
 }

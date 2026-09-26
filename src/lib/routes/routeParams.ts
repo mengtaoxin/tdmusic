@@ -1,7 +1,7 @@
 export function decodeRouteParam(value: string): string {
   try {
-    return decodeURIComponent(value)
+    return decodeURIComponent(value);
   } catch {
-    return value
+    return value;
   }
 }

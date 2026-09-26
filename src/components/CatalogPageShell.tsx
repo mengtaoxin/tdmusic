@@ -1,7 +1,7 @@
-import type { ReactNode } from 'react'
-import Container from '@mui/material/Container'
-import LinearProgress from '@mui/material/LinearProgress'
-import Typography from '@mui/material/Typography'
+import type { ReactNode } from 'react';
+import Container from '@mui/material/Container';
+import LinearProgress from '@mui/material/LinearProgress';
+import Typography from '@mui/material/Typography';
 
 const fillSx = {
   display: 'flex',
@@ -10,15 +10,15 @@ const fillSx = {
   height: '100%',
   minHeight: 0,
   overflow: 'hidden',
-} as const
+} as const;
 
 export type CatalogPageShellProps = {
-  title: ReactNode
-  className?: string
-  loading?: boolean
-  headerExtra?: ReactNode
-  children: ReactNode
-}
+  title: ReactNode;
+  className?: string;
+  loading?: boolean;
+  headerExtra?: ReactNode;
+  children: ReactNode;
+};
 
 /** Locked-height catalog page chrome (title + optional alerts + loading/list). */
 export function CatalogPageShell({
@@ -36,5 +36,5 @@ export function CatalogPageShell({
       {headerExtra}
       {loading ? <LinearProgress sx={{ mb: 2 }} /> : children}
     </Container>
-  )
+  );
 }

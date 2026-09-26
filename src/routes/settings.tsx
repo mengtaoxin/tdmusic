@@ -1,88 +1,88 @@
-import { useEffect, useState } from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Container from '@mui/material/Container'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import Divider from '@mui/material/Divider'
-import Snackbar from '@mui/material/Snackbar'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
-import { useTranslation } from 'react-i18next'
+import { useEffect, useState } from 'react';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Divider from '@mui/material/Divider';
+import Snackbar from '@mui/material/Snackbar';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
-import { getMusicCacheSizeBytes } from '@/lib/cache/musicCache'
+import { getMusicCacheSizeBytes } from '@/lib/cache/musicCache';
 import {
   clearMusicCachesAndRefresh,
   loadCatalogAndHydratePlayer,
-} from '@/lib/catalog/catalogBootstrap'
-import { clearCachedConfigs } from '@/lib/catalog/loadConfigs'
-import { formatBytes } from '@/lib/formatBytes'
-import { usePlayerStore } from '@/stores/player'
-import { useSettingsStore } from '@/stores/settings'
+} from '@/lib/catalog/catalogBootstrap';
+import { clearCachedConfigs } from '@/lib/catalog/loadConfigs';
+import { formatBytes } from '@/lib/formatBytes';
+import { usePlayerStore } from '@/stores/player';
+import { useSettingsStore } from '@/stores/settings';
 
 export const Route = createFileRoute('/settings')({
   component: SettingsPage,
-})
+});
 
 function SettingsPage() {
-  const { t } = useTranslation()
-  const configUrl = useSettingsStore((s) => s.configUrl)
-  const saveConfigUrl = useSettingsStore((s) => s.saveConfigUrl)
-  const clearNowPlaying = usePlayerStore((s) => s.clearNowPlaying)
+  const { t } = useTranslation();
+  const configUrl = useSettingsStore((s) => s.configUrl);
+  const saveConfigUrl = useSettingsStore((s) => s.saveConfigUrl);
+  const clearNowPlaying = usePlayerStore((s) => s.clearNowPlaying);
 
-  const [draftUrl, setDraftUrl] = useState(configUrl)
-  const [clearing, setClearing] = useState(false)
-  const [confirmClearOpen, setConfirmClearOpen] = useState(false)
-  const [confirmClearConfigsOpen, setConfirmClearConfigsOpen] = useState(false)
-  const [cacheSizeBytes, setCacheSizeBytes] = useState<number | null>(null)
-  const [message, setMessage] = useState('')
+  const [draftUrl, setDraftUrl] = useState(configUrl);
+  const [clearing, setClearing] = useState(false);
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  const [confirmClearConfigsOpen, setConfirmClearConfigsOpen] = useState(false);
+  const [cacheSizeBytes, setCacheSizeBytes] = useState<number | null>(null);
+  const [message, setMessage] = useState('');
 
   async function save() {
-    saveConfigUrl(draftUrl)
-    await loadCatalogAndHydratePlayer()
-    setMessage(t('settings.saved'))
+    saveConfigUrl(draftUrl);
+    await loadCatalogAndHydratePlayer();
+    setMessage(t('settings.saved'));
   }
 
   function confirmClearConfigsCache() {
-    setConfirmClearConfigsOpen(false)
-    clearCachedConfigs()
-    clearNowPlaying()
-    setMessage(t('settings.configsCacheCleared'))
+    setConfirmClearConfigsOpen(false);
+    clearCachedConfigs();
+    clearNowPlaying();
+    setMessage(t('settings.configsCacheCleared'));
   }
 
   async function refreshCacheSize() {
-    setCacheSizeBytes(await getMusicCacheSizeBytes())
+    setCacheSizeBytes(await getMusicCacheSizeBytes());
   }
 
   async function confirmClearCache() {
-    setConfirmClearOpen(false)
-    setClearing(true)
+    setConfirmClearOpen(false);
+    setClearing(true);
     try {
-      await clearMusicCachesAndRefresh()
-      await refreshCacheSize()
-      setMessage(t('settings.cacheCleared'))
+      await clearMusicCachesAndRefresh();
+      await refreshCacheSize();
+      setMessage(t('settings.cacheCleared'));
     } finally {
-      setClearing(false)
+      setClearing(false);
     }
   }
 
   useEffect(() => {
-    void refreshCacheSize()
-  }, [])
+    void refreshCacheSize();
+  }, []);
 
   const settingSx = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
-  } as const
+  } as const;
 
   const hintSx = {
     m: 0,
     mb: '1lh',
-  } as const
+  } as const;
 
   return (
     <Container maxWidth={false} className="page-narrow">
@@ -204,5 +204,5 @@ function SettingsPage() {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       />
     </Container>
-  )
+  );
 }

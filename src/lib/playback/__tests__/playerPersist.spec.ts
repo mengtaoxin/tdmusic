@@ -1,16 +1,16 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { PLAYER_STORAGE_KEY, serializePlayerState } from '../playerStateCodec'
-import { createPlayerPersist } from '../playerPersist'
+import { PLAYER_STORAGE_KEY, serializePlayerState } from '../playerStateCodec';
+import { createPlayerPersist } from '../playerPersist';
 
 describe('createPlayerPersist', () => {
   afterEach(() => {
-    vi.useRealTimers()
-  })
+    vi.useRealTimers();
+  });
 
   it('schedulePersist writes after the debounce delay', () => {
-    vi.useFakeTimers()
-    const setItem = vi.fn<(key: string, value: string) => void>()
+    vi.useFakeTimers();
+    const setItem = vi.fn<(key: string, value: string) => void>();
     const persist = createPlayerPersist({
       getPayload: () => ({
         queue: ['a'],
@@ -22,11 +22,11 @@ describe('createPlayerPersist', () => {
         shuffle: false,
       }),
       setItem,
-    })
+    });
 
-    persist.schedulePersist()
-    expect(setItem).not.toHaveBeenCalled()
-    vi.advanceTimersByTime(400)
+    persist.schedulePersist();
+    expect(setItem).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(400);
     expect(setItem).toHaveBeenCalledWith(
       PLAYER_STORAGE_KEY,
       serializePlayerState({
@@ -38,12 +38,12 @@ describe('createPlayerPersist', () => {
         repeatMode: 'off',
         shuffle: false,
       }),
-    )
-  })
+    );
+  });
 
   it('flushPersist writes immediately and cancels a pending debounce', () => {
-    vi.useFakeTimers()
-    const setItem = vi.fn<(key: string, value: string) => void>()
+    vi.useFakeTimers();
+    const setItem = vi.fn<(key: string, value: string) => void>();
     const persist = createPlayerPersist({
       getPayload: () => ({
         queue: [],
@@ -55,12 +55,12 @@ describe('createPlayerPersist', () => {
         shuffle: false,
       }),
       setItem,
-    })
+    });
 
-    persist.schedulePersist()
-    persist.flushPersist()
-    expect(setItem).toHaveBeenCalledOnce()
-    vi.advanceTimersByTime(400)
-    expect(setItem).toHaveBeenCalledOnce()
-  })
-})
+    persist.schedulePersist();
+    persist.flushPersist();
+    expect(setItem).toHaveBeenCalledOnce();
+    vi.advanceTimersByTime(400);
+    expect(setItem).toHaveBeenCalledOnce();
+  });
+});

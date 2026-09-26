@@ -1,9 +1,9 @@
-import i18n from 'i18next'
-import { initReactI18next } from 'react-i18next'
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
 
-import en from '@/locales/en'
-import zh from '@/locales/zh'
-import { resolveLocale } from '@/lib/locale'
+import en from '@/locales/en';
+import zh from '@/locales/zh';
+import { resolveLocale } from '@/lib/locale';
 
 void i18n.use(initReactI18next).init({
   resources: {
@@ -18,6 +18,6 @@ void i18n.use(initReactI18next).init({
     suffix: '}',
     escapeValue: false,
   },
-})
+});
 
-export default i18n
+export default i18n;

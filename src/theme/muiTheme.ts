@@ -1,32 +1,32 @@
-import { createTheme } from '@mui/material/styles'
+import { createTheme } from '@mui/material/styles';
 
 declare module '@mui/material/styles' {
   interface Theme {
     layout: {
-      pageMaxWidth: string
-      contentMaxWidth: string
-      heroMaxWidth: string
-      coverMaxWidth: string
-      footerClearance: string
-      pageTopInset: string
-      appBarHeight: string
-      homeViewportOffset: string
-      musicListHeight: string
-      radiusMd: string
-      radiusLg: string
-      blurHeader: string
-      coverShadow: string
-      motionRise: string
-      motionCover: string
-      footerStart: string
-      footerMid: string
-      footerEnd: string
-      coverStart: string
-      coverEnd: string
-    }
+      pageMaxWidth: string;
+      contentMaxWidth: string;
+      heroMaxWidth: string;
+      coverMaxWidth: string;
+      footerClearance: string;
+      pageTopInset: string;
+      appBarHeight: string;
+      homeViewportOffset: string;
+      musicListHeight: string;
+      radiusMd: string;
+      radiusLg: string;
+      blurHeader: string;
+      coverShadow: string;
+      motionRise: string;
+      motionCover: string;
+      footerStart: string;
+      footerMid: string;
+      footerEnd: string;
+      coverStart: string;
+      coverEnd: string;
+    };
   }
   interface ThemeOptions {
-    layout?: Theme['layout']
+    layout?: Theme['layout'];
   }
 }
 
@@ -98,4 +98,4 @@ export const muiTheme = createTheme({
     coverStart: '#0f4c4a',
     coverEnd: '#1b3a45',
   },
-})
+});

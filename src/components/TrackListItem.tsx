@@ -1,34 +1,34 @@
-import { useState, type MouseEvent, type PointerEvent } from 'react'
-import Avatar from '@mui/material/Avatar'
-import IconButton from '@mui/material/IconButton'
-import ListItemButton from '@mui/material/ListItemButton'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import ListItemText from '@mui/material/ListItemText'
-import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
-import MusicNoteIcon from '@mui/icons-material/MusicNote'
-import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
-import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay'
-import PlaylistRemoveIcon from '@mui/icons-material/PlaylistRemove'
-import { useTranslation } from 'react-i18next'
+import { useState, type MouseEvent, type PointerEvent } from 'react';
+import Avatar from '@mui/material/Avatar';
+import IconButton from '@mui/material/IconButton';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
+import PlaylistPlayIcon from '@mui/icons-material/PlaylistPlay';
+import PlaylistRemoveIcon from '@mui/icons-material/PlaylistRemove';
+import { useTranslation } from 'react-i18next';
 
-import { CoverImg } from '@/components/CoverImg'
-import { useTrackDownload } from '@/hooks/useTrackDownload'
-import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels'
-import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
-import { usePlayerStore } from '@/stores/player'
+import { CoverImg } from '@/components/CoverImg';
+import { useTrackDownload } from '@/hooks/useTrackDownload';
+import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels';
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
+import { usePlayerStore } from '@/stores/player';
 
 export type TrackListItemProps = {
-  track: DisplayTrack
-  active?: boolean
+  track: DisplayTrack;
+  active?: boolean;
   /** playback = Play next / Add to queue; queue = Remove from queue */
-  actions?: 'playback' | 'queue' | 'none'
-  onSelect?: () => void
-  onPlayNext?: () => void
-  onAddToQueue?: () => void
-  onRemove?: () => void
-}
+  actions?: 'playback' | 'queue' | 'none';
+  onSelect?: () => void;
+  onPlayNext?: () => void;
+  onAddToQueue?: () => void;
+  onRemove?: () => void;
+};
 
 export function TrackListItem({
   track,
@@ -39,31 +39,31 @@ export function TrackListItem({
   onAddToQueue,
   onRemove,
 }: TrackListItemProps) {
-  const { t } = useTranslation()
-  const currentId = usePlayerStore((s) => s.currentId)
-  const { downloading } = useTrackDownload(track)
-  const coverBusy = downloading && currentId === track.id
+  const { t } = useTranslation();
+  const currentId = usePlayerStore((s) => s.currentId);
+  const { downloading } = useTrackDownload(track);
+  const coverBusy = downloading && currentId === track.id;
 
-  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null)
-  const menuOpen = Boolean(menuAnchor)
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const menuOpen = Boolean(menuAnchor);
 
   function openMenu(event: MouseEvent<HTMLElement>) {
-    event.stopPropagation()
-    setMenuAnchor(event.currentTarget)
+    event.stopPropagation();
+    setMenuAnchor(event.currentTarget);
   }
 
   function stopPointerDown(event: PointerEvent) {
-    event.stopPropagation()
+    event.stopPropagation();
   }
 
   function closeMenu() {
-    setMenuAnchor(null)
+    setMenuAnchor(null);
   }
 
-  const artist = localizeArtistName(track.displayArtist, t)
+  const artist = localizeArtistName(track.displayArtist, t);
   const subtitle = track.displayAlbum
     ? `${artist} · ${localizeAlbumName(track.displayAlbum, t)}`
-    : artist
+    : artist;
 
   return (
     <ListItemButton
@@ -113,8 +113,8 @@ export function TrackListItem({
                 <MenuItem
                   data-testid="track-play-next"
                   onClick={() => {
-                    closeMenu()
-                    onPlayNext?.()
+                    closeMenu();
+                    onPlayNext?.();
                   }}
                 >
                   <ListItemIcon>
@@ -125,8 +125,8 @@ export function TrackListItem({
                 <MenuItem
                   data-testid="track-add-to-queue"
                   onClick={() => {
-                    closeMenu()
-                    onAddToQueue?.()
+                    closeMenu();
+                    onAddToQueue?.();
                   }}
                 >
                   <ListItemIcon>
@@ -139,8 +139,8 @@ export function TrackListItem({
               <MenuItem
                 data-testid="track-remove"
                 onClick={() => {
-                  closeMenu()
-                  onRemove?.()
+                  closeMenu();
+                  onRemove?.();
                 }}
               >
                 <ListItemIcon>
@@ -153,5 +153,5 @@ export function TrackListItem({
         </>
       ) : null}
     </ListItemButton>
-  )
+  );
 }

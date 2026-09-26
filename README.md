@@ -31,13 +31,13 @@ Open [http://localhost:3000](http://localhost:3000). Stop with Ctrl+C.
 
 Commands and options: [docs/commands.md](docs/commands.md).
 
-| Command | Purpose |
-| ------- | ------- |
-| `npm install` + Playwright install | Install dependencies and browsers |
-| `npm run dev` | Start the Vite dev server |
-| `npm run build` | Production build |
+| Command                                                | Purpose                                       |
+| ------------------------------------------------------ | --------------------------------------------- |
+| `npm install` + Playwright install                     | Install dependencies and browsers             |
+| `npm run dev`                                          | Start the Vite dev server                     |
+| `npm run build`                                        | Production build                              |
 | `npm run format && npm run lint && npm run type-check` | Format + lint + type-check (**writes files**) |
-| `npm run test:unit` / `test:e2e` | Unit (Vitest) / e2e (Playwright) |
+| `npm run test:unit` / `test:e2e`                       | Unit (Vitest) / e2e (Playwright)              |
 
 ```sh
 npm run test:unit
@@ -50,13 +50,13 @@ npm run test:e2e -- --project chromium -- e2e/app.spec.ts
 
 Your library is whatever **your** `configs.json` describes — host it anywhere reachable, set the URL in Settings, and reload. The file under `public/sample/` is only a sample catalog for trying the app locally.
 
-| Piece | Role |
-| ----- | ---- |
-| Sample (dev) | [`public/sample/configs.json`](public/sample/configs.json) → `/sample/configs.json` |
-| Your catalog | Settings → catalog URL (`tdmusic.configUrl`) |
-| `music-list` | Required: each track needs unique `id` + `path` (URL to the audio) |
+| Piece           | Role                                                                                                                      |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Sample (dev)    | [`public/sample/configs.json`](public/sample/configs.json) → `/sample/configs.json`                                       |
+| Your catalog    | Settings → catalog URL (`tdmusic.configUrl`)                                                                              |
+| `music-list`    | Required: each track needs unique `id` + `path` (URL to the audio)                                                        |
 | Optional fields | `title`, `artist`, `album`, `cover`, `volume-ratio` (win over extracted ID3; `volume-ratio` defaults to `100`, max `100`) |
-| `playlists` | Arrays of `{ title, music-list: [{ id }] }` referencing track ids |
+| `playlists`     | Arrays of `{ title, music-list: [{ id }] }` referencing track ids                                                         |
 
 Example shape:
 
@@ -88,20 +88,20 @@ React · Vite · TypeScript · Zustand · TanStack Router · react-i18next · MU
 
 ## Docs
 
-| Doc | Contents |
-| --- | -------- |
-| [docs/README.zh.md](docs/README.zh.md) | Chinese README |
-| [docs/change-code-steps.md](docs/change-code-steps.md) | TDD, structure, tests, format/check |
-| [docs/file-structure.md](docs/file-structure.md) | Repository layout |
-| [docs/tech-stack.md](docs/tech-stack.md) | Versions and libraries |
-| [docs/commands.md](docs/commands.md) | Script conventions |
-| [docs/conventions.md](docs/conventions.md) | Coding conventions |
-| [docs/testing.md](docs/testing.md) | Test layers and naming |
-| [docs/catalog.md](docs/catalog.md) | `configs.json`, catalog routes, enrich |
-| [docs/cache.md](docs/cache.md) | IndexedDB audio cache and covers |
-| [docs/playback.md](docs/playback.md) | Queue, shuffle, Media Session |
-| [docs/persistence.md](docs/persistence.md) | localStorage, locale, app logs |
-| [docs/ui-chrome.md](docs/ui-chrome.md) | Header layout and nav chrome |
+| Doc                                                    | Contents                               |
+| ------------------------------------------------------ | -------------------------------------- |
+| [docs/README.zh.md](docs/README.zh.md)                 | Chinese README                         |
+| [docs/change-code-steps.md](docs/change-code-steps.md) | TDD, structure, tests, format/check    |
+| [docs/file-structure.md](docs/file-structure.md)       | Repository layout                      |
+| [docs/tech-stack.md](docs/tech-stack.md)               | Versions and libraries                 |
+| [docs/commands.md](docs/commands.md)                   | Script conventions                     |
+| [docs/conventions.md](docs/conventions.md)             | Coding conventions                     |
+| [docs/testing.md](docs/testing.md)                     | Test layers and naming                 |
+| [docs/catalog.md](docs/catalog.md)                     | `configs.json`, catalog routes, enrich |
+| [docs/cache.md](docs/cache.md)                         | IndexedDB audio cache and covers       |
+| [docs/playback.md](docs/playback.md)                   | Queue, shuffle, Media Session          |
+| [docs/persistence.md](docs/persistence.md)             | localStorage, locale, app logs         |
+| [docs/ui-chrome.md](docs/ui-chrome.md)                 | Header layout and nav chrome           |
 
 ## License
 

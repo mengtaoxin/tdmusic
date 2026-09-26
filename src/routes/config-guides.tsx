@@ -1,50 +1,50 @@
-import { useEffect, useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
-import Box from '@mui/material/Box'
-import CircularProgress from '@mui/material/CircularProgress'
-import Container from '@mui/material/Container'
-import Typography from '@mui/material/Typography'
-import { useTranslation } from 'react-i18next'
+import { useEffect, useState } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import { useTranslation } from 'react-i18next';
 
-import { configGuideMarkdownUrl, renderMarkdown } from '@/lib/configGuideMarkdown'
+import { configGuideMarkdownUrl, renderMarkdown } from '@/lib/configGuideMarkdown';
 
 export const Route = createFileRoute('/config-guides')({
   component: ConfigGuidesPage,
-})
+});
 
 function ConfigGuidesPage() {
-  const { t, i18n } = useTranslation()
-  const [html, setHtml] = useState('')
-  const [loadError, setLoadError] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const { t, i18n } = useTranslation();
+  const [html, setHtml] = useState('');
+  const [loadError, setLoadError] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
 
     async function loadGuide(localeValue: string) {
-      setLoading(true)
-      setLoadError(false)
-      setHtml('')
+      setLoading(true);
+      setLoadError(false);
+      setHtml('');
       try {
-        const response = await fetch(configGuideMarkdownUrl(localeValue))
+        const response = await fetch(configGuideMarkdownUrl(localeValue));
         if (!response.ok) {
-          if (!cancelled) setLoadError(true)
-          return
+          if (!cancelled) setLoadError(true);
+          return;
         }
-        const source = await response.text()
-        if (!cancelled) setHtml(renderMarkdown(source))
+        const source = await response.text();
+        if (!cancelled) setHtml(renderMarkdown(source));
       } catch {
-        if (!cancelled) setLoadError(true)
+        if (!cancelled) setLoadError(true);
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) setLoading(false);
       }
     }
 
-    void loadGuide(i18n.language)
+    void loadGuide(i18n.language);
     return () => {
-      cancelled = true
-    }
-  }, [i18n.language])
+      cancelled = true;
+    };
+  }, [i18n.language]);
 
   return (
     <Container maxWidth={false} className="page-narrow">
@@ -111,5 +111,5 @@ function ConfigGuidesPage() {
         />
       )}
     </Container>
-  )
+  );
 }

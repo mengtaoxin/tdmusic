@@ -1,4 +1,4 @@
-import { create } from 'zustand'
+import { create } from 'zustand';
 
 import {
   buildCatalogSnapshot,
@@ -8,29 +8,29 @@ import {
   type CatalogSearchResult,
   type CatalogSnapshot,
   type DisplayTrack,
-} from '@/lib/catalog/catalogIndex'
-import { enqueueEnrich } from '@/lib/catalog/enrichQueue'
-import { enrichOneTrack } from '@/lib/catalog/enrichTracks'
-import type { CatalogError, NormalizedPlaylist } from '@/lib/catalog/normalizeCatalog'
-import type { NormalizedCatalog } from '@/lib/catalog/runCatalogLoad'
+} from '@/lib/catalog/catalogIndex';
+import { enqueueEnrich } from '@/lib/catalog/enrichQueue';
+import { enrichOneTrack } from '@/lib/catalog/enrichTracks';
+import type { CatalogError, NormalizedPlaylist } from '@/lib/catalog/normalizeCatalog';
+import type { NormalizedCatalog } from '@/lib/catalog/runCatalogLoad';
 
 type CatalogState = {
-  snapshot: CatalogSnapshot
-  playlists: NormalizedPlaylist[]
-  errors: CatalogError[]
-  loading: boolean
-  loadError: string | null
-  search: (query: string) => CatalogSearchResult
-  scheduleEnrichment: () => void
-  scheduleEnrichTrack: (id: string) => void
-  resetDisplayFromConfig: () => void
-  beginLoad: () => void
-  applyNormalized: (normalized: NormalizedCatalog) => void
-  failLoad: (message: string) => void
-  finishLoad: () => void
+  snapshot: CatalogSnapshot;
+  playlists: NormalizedPlaylist[];
+  errors: CatalogError[];
+  loading: boolean;
+  loadError: string | null;
+  search: (query: string) => CatalogSearchResult;
+  scheduleEnrichment: () => void;
+  scheduleEnrichTrack: (id: string) => void;
+  resetDisplayFromConfig: () => void;
+  beginLoad: () => void;
+  applyNormalized: (normalized: NormalizedCatalog) => void;
+  failLoad: (message: string) => void;
+  finishLoad: () => void;
   /** Replace track list and rebuild indexes (tests / direct assignment). */
-  setTracks: (next: DisplayTrack[]) => void
-}
+  setTracks: (next: DisplayTrack[]) => void;
+};
 
 async function applyEnrichment(
   get: () => CatalogState,
@@ -38,11 +38,11 @@ async function applyEnrichment(
   track: DisplayTrack,
   options?: { network?: boolean },
 ) {
-  const patch = await enrichOneTrack(track, options)
-  if (!patch) return
-  const result = patchCatalogTrack(get().snapshot, track.id, patch)
-  if (!result) return
-  set({ snapshot: result.snapshot })
+  const patch = await enrichOneTrack(track, options);
+  if (!patch) return;
+  const result = patchCatalogTrack(get().snapshot, track.id, patch);
+  if (!result) return;
+  set({ snapshot: result.snapshot });
 }
 
 export const useCatalogStore = create<CatalogState>((set, get) => ({
@@ -53,11 +53,11 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
   loadError: null,
 
   setTracks(next: DisplayTrack[]) {
-    set({ snapshot: buildCatalogSnapshot(next) })
+    set({ snapshot: buildCatalogSnapshot(next) });
   },
 
   beginLoad() {
-    set({ loading: true, loadError: null })
+    set({ loading: true, loadError: null });
   },
 
   applyNormalized(normalized: NormalizedCatalog) {
@@ -65,7 +65,7 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
       errors: normalized.errors,
       playlists: normalized.playlists,
       snapshot: buildCatalogSnapshot(normalized.tracks.map(toDisplayTrack)),
-    })
+    });
   },
 
   failLoad(message: string) {
@@ -73,38 +73,38 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
       loadError: message,
       playlists: [],
       snapshot: buildCatalogSnapshot([]),
-    })
+    });
   },
 
   finishLoad() {
-    set({ loading: false })
+    set({ loading: false });
   },
 
   scheduleEnrichment() {
     for (const track of get().snapshot.tracks) {
-      void enqueueEnrich(() => applyEnrichment(get, set, track))
+      void enqueueEnrich(() => applyEnrichment(get, set, track));
     }
   },
 
   scheduleEnrichTrack(id: string) {
-    const track = get().snapshot.trackById.get(id)
-    if (!track) return
-    void enqueueEnrich(() => applyEnrichment(get, set, track, { network: true }))
+    const track = get().snapshot.trackById.get(id);
+    if (!track) return;
+    void enqueueEnrich(() => applyEnrichment(get, set, track, { network: true }));
   },
 
   resetDisplayFromConfig() {
     set({
       snapshot: buildCatalogSnapshot(get().snapshot.tracks.map((track) => toDisplayTrack(track))),
-    })
+    });
   },
 
   search(query: string): CatalogSearchResult {
-    return searchCatalog(get().snapshot, query)
+    return searchCatalog(get().snapshot, query);
   },
-}))
+}));
 
 /** Convenience selectors for React components. */
-export const selectTracks = (s: CatalogState) => s.snapshot.tracks
-export const selectTrackById = (s: CatalogState) => s.snapshot.trackById
-export const selectArtists = (s: CatalogState) => s.snapshot.artists
-export const selectAlbums = (s: CatalogState) => s.snapshot.albums
+export const selectTracks = (s: CatalogState) => s.snapshot.tracks;
+export const selectTrackById = (s: CatalogState) => s.snapshot.trackById;
+export const selectArtists = (s: CatalogState) => s.snapshot.artists;
+export const selectAlbums = (s: CatalogState) => s.snapshot.albums;

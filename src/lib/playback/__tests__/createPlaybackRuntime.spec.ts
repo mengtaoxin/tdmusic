@@ -1,10 +1,10 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest';
 
-import { createPlaybackRuntime } from '../createPlaybackRuntime'
-import type { PlaybackAudioElement } from '../playbackSession'
+import { createPlaybackRuntime } from '../createPlaybackRuntime';
+import type { PlaybackAudioElement } from '../playbackSession';
 
 function noop() {
-  return vi.fn<() => void>()
+  return vi.fn<() => void>();
 }
 
 function makeAudio(): PlaybackAudioElement {
@@ -20,15 +20,15 @@ function makeAudio(): PlaybackAudioElement {
     pause: vi.fn<() => void>(),
     addEventListener: vi.fn<PlaybackAudioElement['addEventListener']>(),
     removeEventListener: vi.fn<PlaybackAudioElement['removeEventListener']>(),
-  }
+  };
 }
 
 describe('createPlaybackRuntime', () => {
   it('loads the current track through bound ports', async () => {
-    const audio = makeAudio()
+    const audio = makeAudio();
     const resolvePlayableUrl = vi.fn<(path: string, id: string) => Promise<string>>(async () => {
-      return 'blob:t1'
-    })
+      return 'blob:t1';
+    });
     const runtime = createPlaybackRuntime(() => audio, {
       getCurrentId: () => 't1',
       getQueueLength: () => 1,
@@ -51,10 +51,10 @@ describe('createPlaybackRuntime', () => {
       appendAppLog: vi.fn<(message: string) => void>(),
       scheduleEnrichTrack: vi.fn<(id: string) => void>(),
       setVolumeRatio: vi.fn<(percent: number) => void>(),
-    })
+    });
 
-    await runtime.loadCurrent()
-    expect(resolvePlayableUrl).toHaveBeenCalledWith('/t1.mp3', 't1')
-    expect(audio.src).toBe('blob:t1')
-  })
-})
+    await runtime.loadCurrent();
+    expect(resolvePlayableUrl).toHaveBeenCalledWith('/t1.mp3', 't1');
+    expect(audio.src).toBe('blob:t1');
+  });
+});

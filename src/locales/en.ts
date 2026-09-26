@@ -112,4 +112,4 @@ export default {
     clearConfirm: 'Clear all logs? This cannot be undone.',
     empty: 'No logs yet.',
   },
-}
+};

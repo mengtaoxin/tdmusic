@@ -1,13 +1,13 @@
-import Button from '@mui/material/Button'
-import PlaylistRemoveIcon from '@mui/icons-material/PlaylistRemove'
-import { useTranslation } from 'react-i18next'
+import Button from '@mui/material/Button';
+import PlaylistRemoveIcon from '@mui/icons-material/PlaylistRemove';
+import { useTranslation } from 'react-i18next';
 
 type ClearUpcomingButtonProps = {
-  onClick: () => void
-}
+  onClick: () => void;
+};
 
 export function ClearUpcomingButton({ onClick }: ClearUpcomingButtonProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
   return (
     <Button
       data-testid="clear-upcoming"
@@ -19,5 +19,5 @@ export function ClearUpcomingButton({ onClick }: ClearUpcomingButtonProps) {
     >
       {t('player.clearUpcoming')}
     </Button>
-  )
+  );
 }

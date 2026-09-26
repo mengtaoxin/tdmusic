@@ -1,13 +1,13 @@
-import type { Dispatch, ReactNode, SetStateAction } from 'react'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
-import { Link } from '@tanstack/react-router'
-import { useTranslation } from 'react-i18next'
+import type { Dispatch, ReactNode, SetStateAction } from 'react';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import { Link } from '@tanstack/react-router';
+import { useTranslation } from 'react-i18next';
 
-import type { AppLocale } from '@/lib/locale'
+import type { AppLocale } from '@/lib/locale';
 import {
   isActionNavLink,
   isLocaleNavLink,
@@ -15,21 +15,21 @@ import {
   navItems,
   type NavGroup,
   type NavLink,
-} from '@/components/nav/navConfig'
+} from '@/components/nav/navConfig';
 
-export type DesktopMenuState = { id: string; anchor: HTMLElement } | null
+export type DesktopMenuState = { id: string; anchor: HTMLElement } | null;
 
 export type AppDesktopNavProps = {
-  pathname: string
-  locale: AppLocale
-  compactNav: boolean
-  moreGroupActive: boolean
-  desktopMenu: DesktopMenuState
-  setDesktopMenu: Dispatch<SetStateAction<DesktopMenuState>>
-  navRef: (node: HTMLElement | null) => void
-  onLocale: (locale: AppLocale) => void
-  onFeedback: () => void
-}
+  pathname: string;
+  locale: AppLocale;
+  compactNav: boolean;
+  moreGroupActive: boolean;
+  desktopMenu: DesktopMenuState;
+  setDesktopMenu: Dispatch<SetStateAction<DesktopMenuState>>;
+  navRef: (node: HTMLElement | null) => void;
+  onLocale: (locale: AppLocale) => void;
+  onFeedback: () => void;
+};
 
 export function AppDesktopNav({
   pathname,
@@ -42,10 +42,10 @@ export function AppDesktopNav({
   onLocale,
   onFeedback,
 }: AppDesktopNavProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   function groupActive(item: NavGroup): boolean {
-    return item.key === 'nav.more' ? moreGroupActive : false
+    return item.key === 'nav.more' ? moreGroupActive : false;
   }
 
   function renderChild(child: NavLink): ReactNode {
@@ -56,8 +56,8 @@ export function AppDesktopNav({
           data-testid={`locale-option-${child.locale}`}
           selected={locale === child.locale}
           onClick={() => {
-            onLocale(child.locale)
-            setDesktopMenu(null)
+            onLocale(child.locale);
+            setDesktopMenu(null);
           }}
         >
           <ListItemIcon>
@@ -65,7 +65,7 @@ export function AppDesktopNav({
           </ListItemIcon>
           {t(child.key)}
         </MenuItem>
-      )
+      );
     }
     if (isActionNavLink(child)) {
       return (
@@ -73,8 +73,8 @@ export function AppDesktopNav({
           key={child.key}
           data-testid="nav-feedback"
           onClick={() => {
-            setDesktopMenu(null)
-            onFeedback()
+            setDesktopMenu(null);
+            onFeedback();
           }}
         >
           <ListItemIcon>
@@ -82,7 +82,7 @@ export function AppDesktopNav({
           </ListItemIcon>
           {t(child.key)}
         </MenuItem>
-      )
+      );
     }
     return (
       <MenuItem key={child.key} component={Link} to={child.to} onClick={() => setDesktopMenu(null)}>
@@ -91,7 +91,7 @@ export function AppDesktopNav({
         </ListItemIcon>
         {t(child.key)}
       </MenuItem>
-    )
+    );
   }
 
   return (
@@ -119,8 +119,8 @@ export function AppDesktopNav({
     >
       {navItems.map((item) => {
         if (isNavGroup(item)) {
-          const menuId = `${item.menuTestId}-${pathname}`
-          const open = desktopMenu?.id === menuId
+          const menuId = `${item.menuTestId}-${pathname}`;
+          const open = desktopMenu?.id === menuId;
           return (
             <Box key={menuId}>
               <Button
@@ -164,7 +164,7 @@ export function AppDesktopNav({
                 {item.children.map((child) => renderChild(child))}
               </Menu>
             </Box>
-          )
+          );
         }
         return (
           <Button
@@ -184,8 +184,8 @@ export function AppDesktopNav({
           >
             {t(item.key)}
           </Button>
-        )
+        );
       })}
     </Box>
-  )
+  );
 }

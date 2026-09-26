@@ -1,50 +1,50 @@
-import { useState, type KeyboardEvent } from 'react'
-import { Link } from '@tanstack/react-router'
-import Box from '@mui/material/Box'
-import Chip from '@mui/material/Chip'
-import Container from '@mui/material/Container'
-import InputAdornment from '@mui/material/InputAdornment'
-import List from '@mui/material/List'
-import TextField from '@mui/material/TextField'
-import Typography from '@mui/material/Typography'
-import SearchIcon from '@mui/icons-material/Search'
-import { useTranslation } from 'react-i18next'
+import { useState, type KeyboardEvent } from 'react';
+import { Link } from '@tanstack/react-router';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Container from '@mui/material/Container';
+import InputAdornment from '@mui/material/InputAdornment';
+import List from '@mui/material/List';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import SearchIcon from '@mui/icons-material/Search';
+import { useTranslation } from 'react-i18next';
 
-import { TrackListItem } from '@/components/TrackListItem'
-import { useTrackListPlayback } from '@/hooks/useTrackListPlayback'
-import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels'
-import { albumPath } from '@/lib/routes/albumRoutes'
-import { artistAlbumsPath } from '@/lib/routes/artistRoutes'
-import { pushSearchHistory, readSearchHistory } from '@/lib/searchHistory'
-import { selectTracks, useCatalogStore } from '@/stores/catalog'
+import { TrackListItem } from '@/components/TrackListItem';
+import { useTrackListPlayback } from '@/hooks/useTrackListPlayback';
+import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels';
+import { albumPath } from '@/lib/routes/albumRoutes';
+import { artistAlbumsPath } from '@/lib/routes/artistRoutes';
+import { pushSearchHistory, readSearchHistory } from '@/lib/searchHistory';
+import { selectTracks, useCatalogStore } from '@/stores/catalog';
 
 export function SearchPage() {
-  const { t } = useTranslation()
-  const [query, setQuery] = useState('')
-  const [history, setHistory] = useState<string[]>(() => readSearchHistory())
-  const tracks = useCatalogStore(selectTracks)
-  const search = useCatalogStore((s) => s.search)
+  const { t } = useTranslation();
+  const [query, setQuery] = useState('');
+  const [history, setHistory] = useState<string[]>(() => readSearchHistory());
+  const tracks = useCatalogStore(selectTracks);
+  const search = useCatalogStore((s) => s.search);
 
   const { playById, playNextTrack, addTrackToQueue } = useTrackListPlayback(
     tracks.map((track) => track.id),
-  )
+  );
 
-  const results = search(query)
-  const showHistory = !query.trim() && history.length > 0
+  const results = search(query);
+  const showHistory = !query.trim() && history.length > 0;
 
   function commitHistory() {
-    setHistory(pushSearchHistory(query))
+    setHistory(pushSearchHistory(query));
   }
 
   function applyHistoryItem(term: string) {
-    setQuery(term)
-    setHistory(pushSearchHistory(term))
+    setQuery(term);
+    setHistory(pushSearchHistory(term));
   }
 
   function onSearchKeydown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key !== 'Enter') return
-    event.preventDefault()
-    commitHistory()
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    commitHistory();
   }
 
   return (
@@ -143,5 +143,5 @@ export function SearchPage() {
         </>
       ) : null}
     </Container>
-  )
+  );
 }

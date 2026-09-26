@@ -41,28 +41,28 @@ Repository layout for tdmusic. Changing code: [change-code-steps.md](change-code
 
 ## Path roles
 
-| Path | Role |
-| ---- | ---- |
-| `.cursor/mcp.json` | Shared MCP server config (API keys via env) |
-| `.cursor/rules/` | Versioned Cursor rules |
-| `src/` | React SPA source |
-| `src/components/` | Shared React components (`.tsx`) |
-| `src/hooks/` | React hooks (`use*`) |
-| `src/lib/` | Framework-agnostic helpers (small shared utilities at the root) |
-| `src/lib/cache/` | IndexedDB audio cache; app code imports `musicCache` only |
-| `src/lib/catalog/` | configs.json load, normalize, enrich, display labels, catalog index, load+hydrate orchestration |
-| `src/lib/playback/` | Queue session, player math, persist codec, transport, media session, prefetch |
-| `src/lib/pwa/` | Web app manifest and service-worker options for `vite-plugin-pwa` |
-| `src/lib/routes/` | Album / artist / playlist route helpers |
-| `src/stores/` | Zustand stores |
-| `src/locales/` | Locale message modules (wired via `src/i18n/`) |
-| `src/i18n/` | react-i18next setup |
-| `src/theme/` | MUI theme (`muiTheme`) |
-| `src/styles/` | Global CSS |
-| `src/routes/` | TanStack Router file-based routes (`routeTree.gen.ts` is generated) |
-| `src/__tests__/` | Vitest `setup.ts` and app-level specs — not the default test location |
-| `e2e/` | Playwright specs |
-| `public/` | Static assets; sample catalog at `public/sample/configs.json` → `/sample/configs.json` |
+| Path                | Role                                                                                            |
+| ------------------- | ----------------------------------------------------------------------------------------------- |
+| `.cursor/mcp.json`  | Shared MCP server config (API keys via env)                                                     |
+| `.cursor/rules/`    | Versioned Cursor rules                                                                          |
+| `src/`              | React SPA source                                                                                |
+| `src/components/`   | Shared React components (`.tsx`)                                                                |
+| `src/hooks/`        | React hooks (`use*`)                                                                            |
+| `src/lib/`          | Framework-agnostic helpers (small shared utilities at the root)                                 |
+| `src/lib/cache/`    | IndexedDB audio cache; app code imports `musicCache` only                                       |
+| `src/lib/catalog/`  | configs.json load, normalize, enrich, display labels, catalog index, load+hydrate orchestration |
+| `src/lib/playback/` | Queue session, player math, persist codec, transport, media session, prefetch                   |
+| `src/lib/pwa/`      | Web app manifest and service-worker options for `vite-plugin-pwa`                               |
+| `src/lib/routes/`   | Album / artist / playlist route helpers                                                         |
+| `src/stores/`       | Zustand stores                                                                                  |
+| `src/locales/`      | Locale message modules (wired via `src/i18n/`)                                                  |
+| `src/i18n/`         | react-i18next setup                                                                             |
+| `src/theme/`        | MUI theme (`muiTheme`)                                                                          |
+| `src/styles/`       | Global CSS                                                                                      |
+| `src/routes/`       | TanStack Router file-based routes (`routeTree.gen.ts` is generated)                             |
+| `src/__tests__/`    | Vitest `setup.ts` and app-level specs — not the default test location                           |
+| `e2e/`              | Playwright specs                                                                                |
+| `public/`           | Static assets; sample catalog at `public/sample/configs.json` → `/sample/configs.json`          |
 
 ## Placement rules
 

@@ -1,97 +1,97 @@
-import { useMemo, useRef } from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import Alert from '@mui/material/Alert'
-import Box from '@mui/material/Box'
-import Container from '@mui/material/Container'
-import IconButton from '@mui/material/IconButton'
-import Slider from '@mui/material/Slider'
-import Typography from '@mui/material/Typography'
-import AlbumIcon from '@mui/icons-material/Album'
-import PauseIcon from '@mui/icons-material/Pause'
-import PlayArrowIcon from '@mui/icons-material/PlayArrow'
-import RepeatIcon from '@mui/icons-material/Repeat'
-import RepeatOneIcon from '@mui/icons-material/RepeatOne'
-import ShuffleIcon from '@mui/icons-material/Shuffle'
-import SkipNextIcon from '@mui/icons-material/SkipNext'
-import SkipPreviousIcon from '@mui/icons-material/SkipPrevious'
-import { useTranslation } from 'react-i18next'
+import { useMemo, useRef } from 'react';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import IconButton from '@mui/material/IconButton';
+import Slider from '@mui/material/Slider';
+import Typography from '@mui/material/Typography';
+import AlbumIcon from '@mui/icons-material/Album';
+import PauseIcon from '@mui/icons-material/Pause';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import RepeatIcon from '@mui/icons-material/Repeat';
+import RepeatOneIcon from '@mui/icons-material/RepeatOne';
+import ShuffleIcon from '@mui/icons-material/Shuffle';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
+import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
+import { useTranslation } from 'react-i18next';
 
-import { ClearUpcomingButton } from '@/components/ClearUpcomingButton'
-import { CoverImg } from '@/components/CoverImg'
-import { TrackListItem } from '@/components/TrackListItem'
-import { VirtualRowList } from '@/components/VirtualRowList'
-import { useTrackDownload } from '@/hooks/useTrackDownload'
-import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels'
-import type { DisplayTrack } from '@/lib/catalog/catalogIndex'
-import { playingQueueRowIndex } from '@/lib/playback/queueListScroll'
-import { artistAlbumPath, artistAlbumsPath } from '@/lib/routes/artistRoutes'
-import { selectTrackById, useCatalogStore } from '@/stores/catalog'
-import { usePlayerStore } from '@/stores/player'
+import { ClearUpcomingButton } from '@/components/ClearUpcomingButton';
+import { CoverImg } from '@/components/CoverImg';
+import { TrackListItem } from '@/components/TrackListItem';
+import { VirtualRowList } from '@/components/VirtualRowList';
+import { useTrackDownload } from '@/hooks/useTrackDownload';
+import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels';
+import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
+import { playingQueueRowIndex } from '@/lib/playback/queueListScroll';
+import { artistAlbumPath, artistAlbumsPath } from '@/lib/routes/artistRoutes';
+import { selectTrackById, useCatalogStore } from '@/stores/catalog';
+import { usePlayerStore } from '@/stores/player';
 
 export const Route = createFileRoute('/now-playing')({
   component: NowPlayingPage,
-})
+});
 
-const TRACK_ROW_HEIGHT = 64
+const TRACK_ROW_HEIGHT = 64;
 
 function formatTime(sec: number) {
-  if (!Number.isFinite(sec)) return '0:00'
-  const m = Math.floor(sec / 60)
-  const s = Math.floor(sec % 60)
-  return `${m}:${s.toString().padStart(2, '0')}`
+  if (!Number.isFinite(sec)) return '0:00';
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 function NowPlayingPage() {
-  const { t } = useTranslation()
-  const trackById = useCatalogStore(selectTrackById)
-  const queue = usePlayerStore((s) => s.queue)
-  const currentId = usePlayerStore((s) => s.currentId)
-  const currentIndex = usePlayerStore((s) => s.currentIndex)
-  const currentTime = usePlayerStore((s) => s.currentTime)
-  const duration = usePlayerStore((s) => s.duration)
-  const playing = usePlayerStore((s) => s.playing)
-  const repeatMode = usePlayerStore((s) => s.repeatMode)
-  const shuffle = usePlayerStore((s) => s.shuffle)
-  const seek = usePlayerStore((s) => s.seek)
-  const toggleRepeat = usePlayerStore((s) => s.toggleRepeat)
-  const toggleShuffle = usePlayerStore((s) => s.toggleShuffle)
-  const togglePlay = usePlayerStore((s) => s.togglePlay)
-  const prev = usePlayerStore((s) => s.prev)
-  const next = usePlayerStore((s) => s.next)
-  const goToIndex = usePlayerStore((s) => s.goToIndex)
-  const removeAt = usePlayerStore((s) => s.removeAt)
-  const clearUpcoming = usePlayerStore((s) => s.clearUpcoming)
+  const { t } = useTranslation();
+  const trackById = useCatalogStore(selectTrackById);
+  const queue = usePlayerStore((s) => s.queue);
+  const currentId = usePlayerStore((s) => s.currentId);
+  const currentIndex = usePlayerStore((s) => s.currentIndex);
+  const currentTime = usePlayerStore((s) => s.currentTime);
+  const duration = usePlayerStore((s) => s.duration);
+  const playing = usePlayerStore((s) => s.playing);
+  const repeatMode = usePlayerStore((s) => s.repeatMode);
+  const shuffle = usePlayerStore((s) => s.shuffle);
+  const seek = usePlayerStore((s) => s.seek);
+  const toggleRepeat = usePlayerStore((s) => s.toggleRepeat);
+  const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
+  const togglePlay = usePlayerStore((s) => s.togglePlay);
+  const prev = usePlayerStore((s) => s.prev);
+  const next = usePlayerStore((s) => s.next);
+  const goToIndex = usePlayerStore((s) => s.goToIndex);
+  const removeAt = usePlayerStore((s) => s.removeAt);
+  const clearUpcoming = usePlayerStore((s) => s.clearUpcoming);
 
-  const current = currentId ? trackById.get(currentId) : undefined
-  const { downloading } = useTrackDownload(current)
+  const current = currentId ? trackById.get(currentId) : undefined;
+  const { downloading } = useTrackDownload(current);
 
   const queueRows = useMemo(() => {
-    const rows: { key: string; queueIndex: number; track: DisplayTrack }[] = []
+    const rows: { key: string; queueIndex: number; track: DisplayTrack }[] = [];
     queue.forEach((id, queueIndex) => {
-      const track = trackById.get(id)
-      if (!track) return
-      rows.push({ key: `${queueIndex}:${id}`, queueIndex, track })
-    })
-    return rows
-  }, [queue, trackById])
+      const track = trackById.get(id);
+      if (!track) return;
+      rows.push({ key: `${queueIndex}:${id}`, queueIndex, track });
+    });
+    return rows;
+  }, [queue, trackById]);
 
-  const playingRowIndex = playingQueueRowIndex(queueRows, currentIndex)
-  const entryScrollIndexRef = useRef<number | null>(null)
+  const playingRowIndex = playingQueueRowIndex(queueRows, currentIndex);
+  const entryScrollIndexRef = useRef<number | null>(null);
   if (entryScrollIndexRef.current == null && playingRowIndex != null) {
-    entryScrollIndexRef.current = playingRowIndex
+    entryScrollIndexRef.current = playingRowIndex;
   }
 
-  const queueListHeight = `min(${Math.max(queueRows.length, 1) * TRACK_ROW_HEIGHT}px, ${'calc(100dvh - 64px - 88px - 6rem)'})`
+  const queueListHeight = `min(${Math.max(queueRows.length, 1) * TRACK_ROW_HEIGHT}px, ${'calc(100dvh - 64px - 88px - 6rem)'})`;
 
-  const progress = duration ? (currentTime / duration) * 100 : 0
+  const progress = duration ? (currentTime / duration) * 100 : 0;
 
   const RepeatModeIcon =
-    repeatMode === 'one' ? RepeatOneIcon : repeatMode === 'all' ? RepeatIcon : RepeatIcon
+    repeatMode === 'one' ? RepeatOneIcon : repeatMode === 'all' ? RepeatIcon : RepeatIcon;
 
   function onSeek(_event: Event, value: number | number[]) {
-    const pct = Array.isArray(value) ? value[0]! : value
-    if (!duration) return
-    seek((pct / 100) * duration)
+    const pct = Array.isArray(value) ? value[0]! : value;
+    if (!duration) return;
+    seek((pct / 100) * duration);
   }
 
   return (
@@ -274,5 +274,5 @@ function NowPlayingPage() {
         )}
       />
     </Container>
-  )
+  );
 }

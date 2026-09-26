@@ -1,18 +1,18 @@
-import { deleteTrackCacheRecords, listTrackMetas } from './cacheStore'
+import { deleteTrackCacheRecords, listTrackMetas } from './cacheStore';
 
-const SOFT_QUOTA_RATIO = 0.85
+const SOFT_QUOTA_RATIO = 0.85;
 
 export type StorageEstimate = {
-  usage?: number
-  quota?: number
-}
+  usage?: number;
+  quota?: number;
+};
 
-export type EstimateFn = () => Promise<StorageEstimate>
+export type EstimateFn = () => Promise<StorageEstimate>;
 
 async function defaultEstimate(): Promise<StorageEstimate> {
-  const storage = navigator.storage
-  if (!storage?.estimate) return {}
-  return storage.estimate()
+  const storage = navigator.storage;
+  if (!storage?.estimate) return {};
+  return storage.estimate();
 }
 
 /**
@@ -23,33 +23,33 @@ export async function ensureQuota(
   minBytes: number,
   estimate: EstimateFn = defaultEstimate,
 ): Promise<void> {
-  const initial = await estimate()
+  const initial = await estimate();
   if (
     initial.usage == null ||
     initial.quota == null ||
     !Number.isFinite(initial.usage) ||
     !Number.isFinite(initial.quota)
   ) {
-    return
+    return;
   }
 
-  let usage = initial.usage
-  const quota = initial.quota
-  const limit = quota * SOFT_QUOTA_RATIO
-  if (usage + Math.max(0, minBytes) <= limit) return
+  let usage = initial.usage;
+  const quota = initial.quota;
+  const limit = quota * SOFT_QUOTA_RATIO;
+  if (usage + Math.max(0, minBytes) <= limit) return;
 
   const ready = (await listTrackMetas())
     .filter((m) => m.status === 'ready')
-    .sort((a, b) => a.downloadedAt - b.downloadedAt)
+    .sort((a, b) => a.downloadedAt - b.downloadedAt);
 
   for (const meta of ready) {
-    if (usage + Math.max(0, minBytes) <= limit) break
-    await deleteTrackCacheRecords(meta.sourceUrl)
-    const next = await estimate()
+    if (usage + Math.max(0, minBytes) <= limit) break;
+    await deleteTrackCacheRecords(meta.sourceUrl);
+    const next = await estimate();
     if (next.usage == null || !Number.isFinite(next.usage)) {
       // Cannot observe reclaim; stop after one eviction to avoid wiping cache.
-      break
+      break;
     }
-    usage = next.usage
+    usage = next.usage;
   }
 }

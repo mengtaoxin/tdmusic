@@ -1,11 +1,11 @@
-import { fileURLToPath, URL } from 'node:url'
+import { fileURLToPath, URL } from 'node:url';
 
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { tanstackRouter } from '@tanstack/router-plugin/vite'
-import { VitePWA } from 'vite-plugin-pwa'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { tanstackRouter } from '@tanstack/router-plugin/vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
-import { pwaOptions } from './src/lib/pwa/pwaOptions.ts'
+import { pwaOptions } from './src/lib/pwa/pwaOptions.ts';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -27,4 +27,4 @@ export default defineConfig({
   server: {
     port: 3000,
   },
-})
+});

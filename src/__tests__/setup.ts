@@ -1,34 +1,34 @@
-import 'fake-indexeddb/auto'
-import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
-import { Blob as NodeBlob, File as NodeFile } from 'node:buffer'
-import { afterEach, beforeAll, beforeEach } from 'vitest'
+import 'fake-indexeddb/auto';
+import '@testing-library/jest-dom/vitest';
+import { cleanup } from '@testing-library/react';
+import { Blob as NodeBlob, File as NodeFile } from 'node:buffer';
+import { afterEach, beforeAll, beforeEach } from 'vitest';
 
-import '@/i18n'
-import { bindAppCatalogBootstrap } from '@/stores/bindAppCatalog'
-import { useCatalogStore } from '@/stores/catalog'
-import { usePlayerStore } from '@/stores/player'
-import { useSettingsStore } from '@/stores/settings'
-import { buildCatalogSnapshot } from '@/lib/catalog/catalogIndex'
-import { readStoredConfigUrl } from '@/lib/catalog/configUrl'
+import '@/i18n';
+import { bindAppCatalogBootstrap } from '@/stores/bindAppCatalog';
+import { useCatalogStore } from '@/stores/catalog';
+import { usePlayerStore } from '@/stores/player';
+import { useSettingsStore } from '@/stores/settings';
+import { buildCatalogSnapshot } from '@/lib/catalog/catalogIndex';
+import { readStoredConfigUrl } from '@/lib/catalog/configUrl';
 
-bindAppCatalogBootstrap()
+bindAppCatalogBootstrap();
 
 // jsdom Blob is not structured-cloneable into fake-indexeddb reliably.
-globalThis.Blob = NodeBlob as unknown as typeof globalThis.Blob
-globalThis.File = NodeFile as unknown as typeof globalThis.File
+globalThis.Blob = NodeBlob as unknown as typeof globalThis.Blob;
+globalThis.File = NodeFile as unknown as typeof globalThis.File;
 
 // jsdom's createObjectURL expects browser Blobs; Node Blob needs a stub.
-let blobUrlSeq = 0
+let blobUrlSeq = 0;
 URL.createObjectURL = () => {
-  blobUrlSeq += 1
-  return `blob:http://tdmusic.test/${blobUrlSeq}`
-}
-URL.revokeObjectURL = () => {}
+  blobUrlSeq += 1;
+  return `blob:http://tdmusic.test/${blobUrlSeq}`;
+};
+URL.revokeObjectURL = () => {};
 
 afterEach(() => {
-  cleanup()
-})
+  cleanup();
+});
 
 beforeEach(() => {
   useCatalogStore.setState({
@@ -37,7 +37,7 @@ beforeEach(() => {
     errors: [],
     loading: false,
     loadError: null,
-  })
+  });
   usePlayerStore.setState({
     queue: [],
     originalQueue: [],
@@ -51,18 +51,18 @@ beforeEach(() => {
     loadToken: 0,
     seekTo: null,
     pendingPlay: false,
-  })
+  });
   useSettingsStore.setState({
     configUrl: readStoredConfigUrl(),
-  })
-})
+  });
+});
 
 beforeAll(() => {
   globalThis.ResizeObserver = class ResizeObserver {
     observe() {}
     unobserve() {}
     disconnect() {}
-  }
+  };
 
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
@@ -76,5 +76,5 @@ beforeAll(() => {
       removeEventListener: () => {},
       dispatchEvent: () => false,
     }),
-  })
-})
+  });
+});

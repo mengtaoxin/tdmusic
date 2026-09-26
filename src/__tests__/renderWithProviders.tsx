@@ -1,7 +1,7 @@
-import { type ReactElement, type ReactNode } from 'react'
-import { render, type RenderOptions } from '@testing-library/react'
-import CssBaseline from '@mui/material/CssBaseline'
-import { ThemeProvider } from '@mui/material/styles'
+import { type ReactElement, type ReactNode } from 'react';
+import { render, type RenderOptions } from '@testing-library/react';
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider } from '@mui/material/styles';
 import {
   RouterProvider,
   createMemoryHistory,
@@ -9,10 +9,10 @@ import {
   createRoute,
   createRouter,
   type AnyRouter,
-} from '@tanstack/react-router'
+} from '@tanstack/react-router';
 
-import '@/i18n'
-import { muiTheme } from '@/theme/muiTheme'
+import '@/i18n';
+import { muiTheme } from '@/theme/muiTheme';
 
 const STUB_PATHS = [
   '/now-playing',
@@ -26,12 +26,12 @@ const STUB_PATHS = [
   '/config-guides',
   '/about',
   '/logs',
-] as const
+] as const;
 
 type ProvidersProps = {
-  children: ReactNode
-  withCssBaseline?: boolean
-}
+  children: ReactNode;
+  withCssBaseline?: boolean;
+};
 
 export function TestProviders({ children, withCssBaseline = true }: ProvidersProps) {
   return (
@@ -39,34 +39,34 @@ export function TestProviders({ children, withCssBaseline = true }: ProvidersPro
       {withCssBaseline ? <CssBaseline /> : null}
       {children}
     </ThemeProvider>
-  )
+  );
 }
 
 export function renderWithProviders(
   ui: ReactElement,
   options?: Omit<RenderOptions, 'wrapper'> & { withCssBaseline?: boolean },
 ) {
-  const { withCssBaseline = true, ...renderOptions } = options ?? {}
+  const { withCssBaseline = true, ...renderOptions } = options ?? {};
   return render(ui, {
     wrapper: ({ children }) => (
       <TestProviders withCssBaseline={withCssBaseline}>{children}</TestProviders>
     ),
     ...renderOptions,
-  })
+  });
 }
 
 export type TestRouterOptions = {
   /** UI rendered for the matched index route (or as the sole root UI). */
-  component: () => ReactNode
+  component: () => ReactNode;
   /**
    * Optional layout route that must render `<Outlet />`.
    * When omitted, `component` is mounted directly on the root route.
    */
-  rootComponent?: () => ReactNode
-  initialEntries?: string[]
-  withCssBaseline?: boolean
-  extraPaths?: string[]
-}
+  rootComponent?: () => ReactNode;
+  initialEntries?: string[];
+  withCssBaseline?: boolean;
+  extraPaths?: string[];
+};
 
 /** Minimal TanStack memory router for components that use Link / useNavigate. */
 export function createTestRouter(options: TestRouterOptions): AnyRouter {
@@ -76,7 +76,7 @@ export function createTestRouter(options: TestRouterOptions): AnyRouter {
     initialEntries = ['/'],
     withCssBaseline = true,
     extraPaths = [],
-  } = options
+  } = options;
 
   if (!rootComponent) {
     const rootRoute = createRootRoute({
@@ -85,7 +85,7 @@ export function createTestRouter(options: TestRouterOptions): AnyRouter {
           <Page />
         </TestProviders>
       ),
-    })
+    });
 
     const stubs = [...new Set([...STUB_PATHS, ...extraPaths])].map((path) =>
       createRoute({
@@ -93,23 +93,23 @@ export function createTestRouter(options: TestRouterOptions): AnyRouter {
         path,
         component: () => null,
       }),
-    )
+    );
 
     return createRouter({
       routeTree: rootRoute.addChildren(stubs),
       history: createMemoryHistory({ initialEntries }),
-    })
+    });
   }
 
   const rootRoute = createRootRoute({
     component: rootComponent,
-  })
+  });
 
   const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/',
     component: Page,
-  })
+  });
 
   const stubs = [...new Set([...STUB_PATHS, ...extraPaths])].map((path) =>
     createRoute({
@@ -117,17 +117,17 @@ export function createTestRouter(options: TestRouterOptions): AnyRouter {
       path,
       component: () => null,
     }),
-  )
+  );
 
   return createRouter({
     routeTree: rootRoute.addChildren([indexRoute, ...stubs]),
     history: createMemoryHistory({ initialEntries }),
-  })
+  });
 }
 
 export async function renderWithTestRouter(options: TestRouterOptions) {
-  const router = createTestRouter(options)
-  await router.load()
-  const result = render(<RouterProvider router={router} />)
-  return { ...result, router }
+  const router = createTestRouter(options);
+  await router.load();
+  const result = render(<RouterProvider router={router} />);
+  return { ...result, router };
 }

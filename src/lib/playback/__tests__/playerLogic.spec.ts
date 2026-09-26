@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest';
 
 import {
   appendToQueue,
@@ -12,171 +12,175 @@ import {
   shuffleFromCurrent,
   shuffleUpcoming,
   upcomingQueueIds,
-} from '../playerLogic'
-import { hydratePlayerState, parsePlayerState, serializePlayerState } from '../playerStateCodec'
-import { buildQueueFrom } from '../playFromSession'
+} from '../playerLogic';
+import { hydratePlayerState, parsePlayerState, serializePlayerState } from '../playerStateCodec';
+import { buildQueueFrom } from '../playFromSession';
 
 describe('repeatModeForManualAdvance', () => {
   it('treats repeat one as off so skip/next leave the current track', () => {
-    expect(repeatModeForManualAdvance('one')).toBe('off')
-    expect(repeatModeForManualAdvance('all')).toBe('all')
-    expect(repeatModeForManualAdvance('off')).toBe('off')
-  })
-})
+    expect(repeatModeForManualAdvance('one')).toBe('off');
+    expect(repeatModeForManualAdvance('all')).toBe('all');
+    expect(repeatModeForManualAdvance('off')).toBe('off');
+  });
+});
 
 describe('nextIndex / prevIndex', () => {
   it('advances linearly and stops at end when repeat off', () => {
-    expect(nextIndex(0, 3, { repeatMode: 'off', shuffle: false })).toBe(1)
-    expect(nextIndex(2, 3, { repeatMode: 'off', shuffle: false })).toBeNull()
-  })
+    expect(nextIndex(0, 3, { repeatMode: 'off', shuffle: false })).toBe(1);
+    expect(nextIndex(2, 3, { repeatMode: 'off', shuffle: false })).toBeNull();
+  });
 
   it('wraps with repeat all', () => {
-    expect(nextIndex(2, 3, { repeatMode: 'all', shuffle: false })).toBe(0)
-    expect(prevIndex(0, 3, { repeatMode: 'all' })).toBe(2)
-  })
+    expect(nextIndex(2, 3, { repeatMode: 'all', shuffle: false })).toBe(0);
+    expect(prevIndex(0, 3, { repeatMode: 'all' })).toBe(2);
+  });
 
   it('stays on same track for repeat one', () => {
-    expect(nextIndex(1, 3, { repeatMode: 'one', shuffle: false })).toBe(1)
-  })
+    expect(nextIndex(1, 3, { repeatMode: 'one', shuffle: false })).toBe(1);
+  });
 
   it('advances linearly even when shuffle flag is set (order is pre-shuffled)', () => {
-    expect(nextIndex(0, 3, { repeatMode: 'off', shuffle: true })).toBe(1)
-    expect(nextIndex(2, 3, { repeatMode: 'off', shuffle: true })).toBeNull()
-  })
-})
+    expect(nextIndex(0, 3, { repeatMode: 'off', shuffle: true })).toBe(1);
+    expect(nextIndex(2, 3, { repeatMode: 'off', shuffle: true })).toBeNull();
+  });
+});
 
 describe('shuffleUpcoming', () => {
   it('keeps played prefix and current, shuffles only the rest', () => {
     // Fisher–Yates on ['c','d','e']: j=0, j=0 → ['d','e','c']
-    const values = [0, 0]
-    const rnd = () => values.shift() ?? 0
-    expect(shuffleUpcoming(['a', 'b', 'c', 'd', 'e'], 1, rnd)).toEqual(['a', 'b', 'd', 'e', 'c'])
-  })
+    const values = [0, 0];
+    const rnd = () => values.shift() ?? 0;
+    expect(shuffleUpcoming(['a', 'b', 'c', 'd', 'e'], 1, rnd)).toEqual(['a', 'b', 'd', 'e', 'c']);
+  });
 
   it('returns a copy when nothing follows current', () => {
-    const queue = ['a', 'b']
-    expect(shuffleUpcoming(queue, 1, () => 0)).toEqual(['a', 'b'])
-    expect(shuffleUpcoming(queue, 1, () => 0)).not.toBe(queue)
-  })
-})
+    const queue = ['a', 'b'];
+    expect(shuffleUpcoming(queue, 1, () => 0)).toEqual(['a', 'b']);
+    expect(shuffleUpcoming(queue, 1, () => 0)).not.toBe(queue);
+  });
+});
 
 describe('shuffleFromCurrent', () => {
   it('places current first and shuffles every other id', () => {
     // rest ['a','b','d'] Fisher–Yates with 0,0 → ['b','d','a']
-    const values = [0, 0]
-    const rnd = () => values.shift() ?? 0
-    expect(shuffleFromCurrent(['a', 'b', 'c', 'd'], 2, rnd)).toEqual(['c', 'b', 'd', 'a'])
-  })
+    const values = [0, 0];
+    const rnd = () => values.shift() ?? 0;
+    expect(shuffleFromCurrent(['a', 'b', 'c', 'd'], 2, rnd)).toEqual(['c', 'b', 'd', 'a']);
+  });
 
   it('matches shuffleUpcoming when current is already first', () => {
-    const values = [0, 0]
-    const rnd = () => values.shift() ?? 0
-    expect(shuffleFromCurrent(['a', 'b', 'c', 'd'], 0, rnd)).toEqual(['a', 'c', 'd', 'b'])
-  })
-})
+    const values = [0, 0];
+    const rnd = () => values.shift() ?? 0;
+    expect(shuffleFromCurrent(['a', 'b', 'c', 'd'], 0, rnd)).toEqual(['a', 'c', 'd', 'b']);
+  });
+});
 
 describe('upcomingQueueIds', () => {
-  const queue = ['a', 'b', 'c', 'd', 'e']
+  const queue = ['a', 'b', 'c', 'd', 'e'];
 
   it('takes the next count ids linearly when shuffle off', () => {
     expect(upcomingQueueIds(queue, 1, { count: 3, repeatMode: 'off', shuffle: false })).toEqual([
       'c',
       'd',
       'e',
-    ])
-  })
+    ]);
+  });
 
   it('stops at end when repeat off and fewer than count remain', () => {
     expect(upcomingQueueIds(queue, 3, { count: 3, repeatMode: 'off', shuffle: false })).toEqual([
       'e',
-    ])
-  })
+    ]);
+  });
 
   it('wraps with repeat all and skips current', () => {
     expect(upcomingQueueIds(queue, 3, { count: 3, repeatMode: 'all', shuffle: false })).toEqual([
       'e',
       'a',
       'b',
-    ])
-  })
+    ]);
+  });
 
   it('returns empty for repeat one', () => {
-    expect(upcomingQueueIds(queue, 1, { count: 3, repeatMode: 'one', shuffle: false })).toEqual([])
-  })
+    expect(upcomingQueueIds(queue, 1, { count: 3, repeatMode: 'one', shuffle: false })).toEqual([]);
+  });
 
   it('still advances linearly when shuffle is on (queue already reordered)', () => {
     expect(upcomingQueueIds(queue, 0, { count: 3, repeatMode: 'off', shuffle: true })).toEqual([
       'b',
       'c',
       'd',
-    ])
-  })
+    ]);
+  });
 
   it('returns empty for empty queue or invalid index', () => {
-    expect(upcomingQueueIds([], 0, { count: 3, repeatMode: 'off', shuffle: false })).toEqual([])
-    expect(upcomingQueueIds(queue, -1, { count: 3, repeatMode: 'off', shuffle: false })).toEqual([])
-    expect(upcomingQueueIds(queue, 99, { count: 3, repeatMode: 'off', shuffle: false })).toEqual([])
-  })
-})
+    expect(upcomingQueueIds([], 0, { count: 3, repeatMode: 'off', shuffle: false })).toEqual([]);
+    expect(upcomingQueueIds(queue, -1, { count: 3, repeatMode: 'off', shuffle: false })).toEqual(
+      [],
+    );
+    expect(upcomingQueueIds(queue, 99, { count: 3, repeatMode: 'off', shuffle: false })).toEqual(
+      [],
+    );
+  });
+});
 
 describe('queue edits', () => {
   it('insertAfterCurrent inserts id immediately after current', () => {
-    expect(insertAfterCurrent(['a', 'b', 'c'], 1, 'x')).toEqual(['a', 'b', 'x', 'c'])
-  })
+    expect(insertAfterCurrent(['a', 'b', 'c'], 1, 'x')).toEqual(['a', 'b', 'x', 'c']);
+  });
 
   it('insertAfterCurrent appends when current is last or index invalid', () => {
-    expect(insertAfterCurrent(['a', 'b'], 1, 'x')).toEqual(['a', 'b', 'x'])
-    expect(insertAfterCurrent(['a'], -1, 'x')).toEqual(['a', 'x'])
-  })
+    expect(insertAfterCurrent(['a', 'b'], 1, 'x')).toEqual(['a', 'b', 'x']);
+    expect(insertAfterCurrent(['a'], -1, 'x')).toEqual(['a', 'x']);
+  });
 
   it('appendToQueue appends id at the end', () => {
-    expect(appendToQueue(['a', 'b'], 'c')).toEqual(['a', 'b', 'c'])
-    expect(appendToQueue([], 'a')).toEqual(['a'])
-  })
+    expect(appendToQueue(['a', 'b'], 'c')).toEqual(['a', 'b', 'c']);
+    expect(appendToQueue([], 'a')).toEqual(['a']);
+  });
 
   it('removeAtIndex drops the index and reports whether it was current', () => {
     expect(removeAtIndex(['a', 'b', 'c'], 1, 1)).toEqual({
       queue: ['a', 'c'],
       removedCurrent: true,
-    })
+    });
     expect(removeAtIndex(['a', 'b', 'c'], 2, 0)).toEqual({
       queue: ['a', 'b'],
       removedCurrent: false,
-    })
-  })
+    });
+  });
 
   it('clearUpcoming keeps prefix through current', () => {
-    expect(clearUpcoming(['a', 'b', 'c', 'd'], 1)).toEqual(['a', 'b'])
-    expect(clearUpcoming(['a', 'b'], 1)).toEqual(['a', 'b'])
-  })
-})
+    expect(clearUpcoming(['a', 'b', 'c', 'd'], 1)).toEqual(['a', 'b']);
+    expect(clearUpcoming(['a', 'b'], 1)).toEqual(['a', 'b']);
+  });
+});
 
 describe('buildQueueFrom', () => {
   it('plays startIndex immediately, sync-emits prefix, then chunks the rest', async () => {
-    const ids = Array.from({ length: 5 }, (_, i) => `t${i}`)
-    const heads: string[] = []
-    const chunks: string[][] = []
-    const tasks: Array<() => void> = []
+    const ids = Array.from({ length: 5 }, (_, i) => `t${i}`);
+    const heads: string[] = [];
+    const chunks: string[][] = [];
+    const tasks: Array<() => void> = [];
 
     buildQueueFrom(ids, 1, {
       chunkSize: 2,
       schedule: (cb) => tasks.push(cb),
       onHead: (id) => heads.push(id),
       onChunk: (c) => chunks.push(c),
-    })
+    });
 
-    expect(heads).toEqual(['t1'])
+    expect(heads).toEqual(['t1']);
     // Prefix through startIndex is delivered synchronously.
-    expect(chunks).toEqual([['t0', 't1']])
+    expect(chunks).toEqual([['t0', 't1']]);
 
     while (tasks.length) {
-      const next = tasks.shift()!
-      next()
+      const next = tasks.shift()!;
+      next();
     }
 
-    expect(chunks).toEqual([['t0', 't1'], ['t2', 't3'], ['t4']])
-  })
-})
+    expect(chunks).toEqual([['t0', 't1'], ['t2', 't3'], ['t4']]);
+  });
+});
 
 describe('persist helpers', () => {
   it('round-trips player state with version field', () => {
@@ -188,11 +192,11 @@ describe('persist helpers', () => {
       currentTime: 12.5,
       repeatMode: 'all' as const,
       shuffle: true,
-    }
-    const raw = serializePlayerState(state)
-    expect(JSON.parse(raw).v).toBe(1)
-    expect(parsePlayerState(raw)).toEqual(state)
-  })
+    };
+    const raw = serializePlayerState(state);
+    expect(JSON.parse(raw).v).toBe(1);
+    expect(parsePlayerState(raw)).toEqual(state);
+  });
 
   it('accepts legacy payloads without v or originalQueue', () => {
     expect(
@@ -213,8 +217,8 @@ describe('persist helpers', () => {
       currentTime: 1,
       repeatMode: 'off',
       shuffle: false,
-    })
-  })
+    });
+  });
 
   it('rejects unknown version', () => {
     expect(
@@ -228,8 +232,8 @@ describe('persist helpers', () => {
           shuffle: false,
         }),
       ),
-    ).toBeNull()
-  })
+    ).toBeNull();
+  });
 
   it('hydrates by filtering unknown ids', () => {
     const hydrated = hydratePlayerState(
@@ -243,7 +247,7 @@ describe('persist helpers', () => {
         shuffle: false,
       },
       new Set(['a', 'b']),
-    )
+    );
     expect(hydrated).toEqual({
       queue: ['a', 'b'],
       originalQueue: ['a', 'b'],
@@ -252,14 +256,14 @@ describe('persist helpers', () => {
       currentTime: 3,
       repeatMode: 'off',
       shuffle: false,
-    })
-  })
+    });
+  });
 
   it('mapOccurrenceIndex maps duplicate slots across orders', () => {
-    expect(mapOccurrenceIndex(['a', 'b', 'a', 'c'], 2, ['a', 'b', 'a', 'c'])).toBe(2)
-    expect(mapOccurrenceIndex(['a', 'a', 'c', 'b'], 1, ['a', 'b', 'a', 'c'])).toBe(2)
-    expect(mapOccurrenceIndex(['a', 'b', 'a'], 0, ['a', 'b', 'a'])).toBe(0)
-  })
+    expect(mapOccurrenceIndex(['a', 'b', 'a', 'c'], 2, ['a', 'b', 'a', 'c'])).toBe(2);
+    expect(mapOccurrenceIndex(['a', 'a', 'c', 'b'], 1, ['a', 'b', 'a', 'c'])).toBe(2);
+    expect(mapOccurrenceIndex(['a', 'b', 'a'], 0, ['a', 'b', 'a'])).toBe(0);
+  });
 
   it('hydrates currentIndex for duplicate ids and remaps when filtering', () => {
     const hydrated = hydratePlayerState(
@@ -273,7 +277,7 @@ describe('persist helpers', () => {
         shuffle: false,
       },
       new Set(['a', 'b']),
-    )
+    );
     expect(hydrated).toEqual({
       queue: ['a', 'a', 'b'],
       originalQueue: ['a', 'a', 'b'],
@@ -282,6 +286,6 @@ describe('persist helpers', () => {
       currentTime: 1,
       repeatMode: 'off',
       shuffle: false,
-    })
-  })
-})
+    });
+  });
+});
