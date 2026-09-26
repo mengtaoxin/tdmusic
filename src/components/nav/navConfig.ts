@@ -1,5 +1,6 @@
 import type { SvgIconComponent } from '@mui/icons-material'
 import AlbumIcon from '@mui/icons-material/Album'
+import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined'
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import FeedbackOutlinedIcon from '@mui/icons-material/FeedbackOutlined'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
@@ -43,6 +44,7 @@ export function isLocaleNavLink(item: NavLink): item is NavLocaleLink {
 
 const moreChildren: readonly NavLink[] = [
   { to: '/search', key: 'nav.search', Icon: SearchIcon },
+  { to: '/stats', key: 'nav.stats', Icon: BarChartOutlinedIcon },
   { to: '/settings', key: 'nav.settings', Icon: SettingsIcon },
   { to: '/config-guides', key: 'nav.configGuides', Icon: DescriptionOutlinedIcon },
   { to: '/about', key: 'nav.about', Icon: InfoOutlinedIcon },

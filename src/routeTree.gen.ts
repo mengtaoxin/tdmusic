@@ -17,6 +17,7 @@ import { Route as MusicRouteImport } from './routes/music'
 import { Route as NowPlayingRouteImport } from './routes/now-playing'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as StatsRouteImport } from './routes/stats'
 import { Route as AlbumsIndexRouteImport } from './routes/albums/index'
 import { Route as AlbumsAlbumRouteImport } from './routes/albums/$album'
 import { Route as ArtistsIndexRouteImport } from './routes/artists/index'
@@ -64,6 +65,11 @@ const SearchRoute = SearchRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatsRoute = StatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AlbumsIndexRoute = AlbumsIndexRouteImport.update({
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/now-playing': typeof NowPlayingRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
+  '/stats': typeof StatsRoute
   '/albums/$album': typeof AlbumsAlbumRoute
   '/artists/$name': typeof ArtistsNameRoute
   '/playlists/$name': typeof PlaylistsNameRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/now-playing': typeof NowPlayingRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
+  '/stats': typeof StatsRoute
   '/albums/$album': typeof AlbumsAlbumRoute
   '/artists/$name': typeof ArtistsNameRoute
   '/playlists/$name': typeof PlaylistsNameRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/now-playing': typeof NowPlayingRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
+  '/stats': typeof StatsRoute
   '/albums/$album': typeof AlbumsAlbumRoute
   '/artists/$name': typeof ArtistsNameRoute
   '/playlists/$name': typeof PlaylistsNameRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/now-playing'
     | '/search'
     | '/settings'
+    | '/stats'
     | '/albums/$album'
     | '/artists/$name'
     | '/playlists/$name'
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/now-playing'
     | '/search'
     | '/settings'
+    | '/stats'
     | '/albums/$album'
     | '/artists/$name'
     | '/playlists/$name'
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/now-playing'
     | '/search'
     | '/settings'
+    | '/stats'
     | '/albums/$album'
     | '/artists/$name'
     | '/playlists/$name'
@@ -228,6 +240,7 @@ export interface RootRouteChildren {
   NowPlayingRoute: typeof NowPlayingRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
+  StatsRoute: typeof StatsRoute
   AlbumsAlbumRoute: typeof AlbumsAlbumRoute
   ArtistsNameRoute: typeof ArtistsNameRoute
   PlaylistsNameRoute: typeof PlaylistsNameRoute
@@ -294,6 +307,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stats': {
+      id: '/stats'
+      path: '/stats'
+      fullPath: '/stats'
+      preLoaderRoute: typeof StatsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/albums/': {
@@ -364,6 +384,7 @@ const rootRouteChildren: RootRouteChildren = {
   NowPlayingRoute: NowPlayingRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
+  StatsRoute: StatsRoute,
   AlbumsAlbumRoute: AlbumsAlbumRoute,
   ArtistsNameRoute: ArtistsNameRoute,
   PlaylistsNameRoute: PlaylistsNameRoute,

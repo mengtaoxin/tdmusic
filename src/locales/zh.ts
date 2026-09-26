@@ -10,6 +10,7 @@ export default {
     more: '更多',
     language: '语言',
     settings: '设置',
+    stats: '统计',
     configGuides: 'configs.json 指南',
     about: '关于',
     logs: '日志',
@@ -78,15 +79,23 @@ export default {
     clearConfigsCacheConfirm:
       '确定删除本地 configs.json 缓存，并清空正在播放与播放队列？下次使用时会自动重新下载。',
     clearCache: '一键清除全部缓存',
-    clearCacheHint: '清除已缓存的音频与元数据，并清空正在播放与播放队列。',
+    clearCacheHint: '清除已缓存的音频与元数据、听歌记录，并清空正在播放与播放队列。',
     clearCacheConfirm:
-      '确定清除全部已缓存的音频与元数据，并清空正在播放与播放队列？此操作无法撤销。',
+      '确定清除全部已缓存的音频与元数据、听歌记录，并清空正在播放与播放队列？此操作无法撤销。',
     cacheSize: '已缓存音乐：{size}',
     cancel: '取消',
     confirm: '确认',
     saved: '已保存并重新加载配置。',
     configsCacheCleared: '已删除本地配置缓存。',
     cacheCleared: '已清除全部音乐缓存。',
+  },
+  stats: {
+    rangeLabel: '统计范围',
+    range3: '最近 3 天',
+    range7: '最近 7 天',
+    range30: '最近 30 天',
+    playCount: '{count}',
+    empty: '暂无听歌统计。',
   },
   configGuides: {
     loading: '加载中…',

@@ -1,12 +1,16 @@
 import { TdLog } from 'tdkit'
 
-import { prefetchUpcoming } from '@/lib/playback/prefetchUpcoming'
 import { createPlaybackRuntime } from '@/lib/playback/createPlaybackRuntime'
+import { createPlayHistoryRecorder } from '@/lib/playback/playHistoryRecorder'
+import { savePlayRecord } from '@/lib/playback/playHistoryStore'
+import { prefetchUpcoming } from '@/lib/playback/prefetchUpcoming'
 import { syncMediaSession } from '@/lib/playback/mediaSession'
 import { resolvePlayableUrl } from '@/lib/playback/resolvePlayableUrl'
 import { createVolumeGainController } from '@/lib/playback/volumeGain'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
+
+const playHistory = createPlayHistoryRecorder({ saveRecord: savePlayRecord })
 
 const PREFETCH_COUNT = 3
 
@@ -74,5 +78,6 @@ export function createAppPlaybackTransport(getAudio: () => HTMLAudioElement | nu
       void TdLog.error(message)
     },
     scheduleEnrichTrack: (id) => useCatalogStore.getState().scheduleEnrichTrack(id),
+    playHistory,
   })
 }

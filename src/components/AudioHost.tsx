@@ -55,14 +55,19 @@ export function AudioHost() {
       usePlayerStore.getState().flushPersist()
     }
 
+    function onPageHide() {
+      transport.stopPlayHistory?.()
+      usePlayerStore.getState().flushPersist()
+    }
+
     transport.syncLoopFromRepeatMode()
     document.addEventListener('visibilitychange', onVisibilityFlush)
-    window.addEventListener('pagehide', onVisibilityFlush)
+    window.addEventListener('pagehide', onPageHide)
     transport.syncMediaSession()
 
     return () => {
       document.removeEventListener('visibilitychange', onVisibilityFlush)
-      window.removeEventListener('pagehide', onVisibilityFlush)
+      window.removeEventListener('pagehide', onPageHide)
     }
   }, [transport])
 

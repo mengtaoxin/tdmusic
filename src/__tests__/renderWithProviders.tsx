@@ -22,6 +22,7 @@ const STUB_PATHS = [
   '/albums',
   '/search',
   '/settings',
+  '/stats',
   '/config-guides',
   '/about',
   '/logs',
