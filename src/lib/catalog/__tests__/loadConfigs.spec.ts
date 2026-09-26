@@ -22,7 +22,7 @@ describe('loadConfigsJson', () => {
     const payload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] }
     stubFetchOk(payload)
     const data = await loadConfigsJson()
-    expect(fetch).toHaveBeenCalledWith(DEFAULT_CONFIG_URL)
+    expect(fetch).toHaveBeenCalledWith(DEFAULT_CONFIG_URL, { cache: 'reload' })
     expect(data).toEqual(payload)
   })
 
@@ -43,7 +43,7 @@ describe('loadConfigsJson', () => {
     localStorage.setItem(CONFIG_URL_KEY, url)
     stubFetchOk(payload)
     await loadConfigsJson()
-    expect(fetch).toHaveBeenCalledWith(url)
+    expect(fetch).toHaveBeenCalledWith(url, { cache: 'reload' })
     expect(JSON.parse(localStorage.getItem(CONFIGS_CACHE_KEY)!)).toEqual({
       url,
       data: payload,
@@ -69,7 +69,7 @@ describe('loadConfigsJson', () => {
     localStorage.setItem(CONFIG_URL_KEY, customUrl)
     const secondFetch = stubFetchOk(customPayload)
     const data = await loadConfigsJson()
-    expect(secondFetch).toHaveBeenCalledWith(customUrl)
+    expect(secondFetch).toHaveBeenCalledWith(customUrl, { cache: 'reload' })
     expect(data).toEqual(customPayload)
     expect(JSON.parse(localStorage.getItem(CONFIGS_CACHE_KEY)!)).toEqual({
       url: customUrl,
@@ -85,6 +85,7 @@ describe('loadConfigsJson', () => {
     expect(localStorage.getItem(CONFIGS_CACHE_KEY)).toBeNull()
     const again = await loadConfigsJson()
     expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).toHaveBeenNthCalledWith(2, DEFAULT_CONFIG_URL, { cache: 'reload' })
     expect(again).toEqual(payload)
   })
 

@@ -40,7 +40,7 @@ export async function loadConfigsJson(
   if (cached && cached.url === url) {
     return cached.data
   }
-  const response = await fetchImpl(url)
+  const response = await fetchImpl(url, { cache: 'reload' })
   if (!response.ok) {
     throw new Error(`Failed to load configs: ${response.status}`)
   }
