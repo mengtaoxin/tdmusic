@@ -4,14 +4,10 @@
 
 - Changing code (structure, TDD, tests, format/check, i18n): [docs/change-code-steps.md](docs/change-code-steps.md).
 - Views that need the catalog rely on root `beforeLoad` / `ensureCatalogLoaded` — do not fetch `configs.json` from views.
-- Skills live in `.agents/skills/` — when a Cursor rule or skill description matches the task, read that skill’s `SKILL.md` before coding.
+- Agent-kit skills: match [`.cursor/rules/agent-kit-skills.mdc`](.cursor/rules/agent-kit-skills.mdc), then read the matching `.agents/skills/<name>/SKILL.md` before coding.
 
 ## Read when
 
-- Local ports / EADDRINUSE / start-stop server → `.agents/skills/cursor-local-best-practices/`
-- JS/TS edits or review → `.agents/skills/javascript-typescript-best-practices/`
-- React components, hooks, effects → `.agents/skills/react-best-practices/`
-- MUI / Material Design UI or theme → `.agents/skills/material-design-best-practices/`
 - Changing code → [docs/change-code-steps.md](docs/change-code-steps.md)
 - Running scripts or a test layer → [docs/commands.md](docs/commands.md)
 - Test placement and naming → [docs/testing.md](docs/testing.md)
