@@ -10,6 +10,7 @@ export default {
     more: 'More',
     language: 'Language',
     settings: 'Settings',
+    stats: 'Stats',
     configGuides: 'Guidelines for configs.json',
     about: 'About',
     logs: 'Logs',
@@ -81,15 +82,23 @@ export default {
       'Delete the local configs.json cache and clear now playing and the play queue? It will be downloaded again next time.',
     clearCache: 'Clear all cache',
     clearCacheHint:
-      'Remove cached audio and extracted metadata. Also clears now playing and the play queue.',
+      'Remove cached audio, extracted metadata, and listening history. Also clears now playing and the play queue.',
     clearCacheConfirm:
-      'Clear all cached audio and extracted metadata, and clear now playing and the play queue? This cannot be undone.',
+      'Clear all cached audio, extracted metadata, and listening history, and clear now playing and the play queue? This cannot be undone.',
     cacheSize: 'Cached music: {size}',
     cancel: 'Cancel',
     confirm: 'Confirm',
     saved: 'Settings saved and catalog reloaded.',
     configsCacheCleared: 'Local config cache deleted.',
     cacheCleared: 'All music cache cleared.',
+  },
+  stats: {
+    rangeLabel: 'Date range',
+    range3: 'Last 3 days',
+    range7: 'Last 7 days',
+    range30: 'Last 30 days',
+    playCount: '{count}',
+    empty: 'No listening stats yet.',
   },
   configGuides: {
     loading: 'Loading…',

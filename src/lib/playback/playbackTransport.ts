@@ -31,6 +31,11 @@ export type PlaybackTransportDeps = {
   appendAppLog: (message: string) => void
   scheduleEnrichTrack: (id: string) => void
   setVolumeRatio: (percent: number) => void
+  /** Optional listen-history recorder (play start → pause / ended / switch). */
+  playHistory?: {
+    onPlay: (trackId: string) => void
+    onStop: () => void
+  }
   /** Override session factory (tests). Defaults to createPlaybackSession. */
   createSession?: (
     getAudio: () => PlaybackAudioElement | null,
@@ -71,6 +76,7 @@ export function createPlaybackTransport(deps: PlaybackTransportDeps) {
     schedulePrefetch: deps.schedulePrefetch,
     setVolumeRatio: deps.setVolumeRatio,
     onLoadStart: () => {
+      deps.playHistory?.onStop()
       boundTrackId = null
     },
     onTrackResolved: (id) => {
@@ -83,6 +89,7 @@ export function createPlaybackTransport(deps: PlaybackTransportDeps) {
   }
 
   function onLoadStart(_id: string) {
+    deps.playHistory?.onStop()
     boundTrackId = null
   }
 
@@ -137,6 +144,8 @@ export function createPlaybackTransport(deps: PlaybackTransportDeps) {
 
   function onPlay() {
     deps.setPlaying(true)
+    const id = deps.getCurrentId()
+    if (id && isBoundToCurrent()) deps.playHistory?.onPlay(id)
   }
 
   function onPause() {
@@ -146,6 +155,7 @@ export function createPlaybackTransport(deps: PlaybackTransportDeps) {
     // Track switch pauses the previous src before the new URL resolves.
     if (!isBoundToCurrent()) return
     // External interrupt (other app / OS) pauses without store.pause().
+    deps.playHistory?.onStop()
     deps.clearPendingPlay()
     deps.setPlaying(false)
     deps.flushPersist()
@@ -153,6 +163,7 @@ export function createPlaybackTransport(deps: PlaybackTransportDeps) {
 
   function onEnded() {
     if (!isBoundToCurrent()) return
+    deps.playHistory?.onStop()
     deps.onEnded()
     if (deps.getRepeatMode() === 'one') {
       const audio = deps.getAudio()
@@ -196,5 +207,6 @@ export function createPlaybackTransport(deps: PlaybackTransportDeps) {
     syncLoopFromRepeatMode,
     syncMediaSession: () => deps.syncMediaSession(),
     schedulePrefetch: () => deps.schedulePrefetch(),
+    stopPlayHistory: () => deps.playHistory?.onStop(),
   }
 }

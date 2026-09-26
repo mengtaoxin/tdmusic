@@ -247,4 +247,60 @@ describe('playbackTransport', () => {
     expect(appendAppLog).not.toHaveBeenCalled()
     consoleError.mockRestore()
   })
+
+  it('records play history on play, pause, ended, and track-switch load start', async () => {
+    const audio = makeAudio()
+    const onPlay = vi.fn<(trackId: string) => void>()
+    const onStop = vi.fn<() => void>()
+    let currentId: string | null = 't1'
+
+    const transport = createPlaybackTransport({
+      getAudio: () => audio,
+      getCurrentId: () => currentId,
+      getQueueLength: () => 2,
+      getSeekTo: () => null,
+      getPendingPlay: () => false,
+      getRepeatMode: () => 'off',
+      clearSeekTo: noop(),
+      pause: noop(),
+      skip: noop(),
+      onEnded: noop(),
+      getTrack: (id) =>
+        id === 't1' || id === 't2' ? { id, path: `/${id}.mp3`, volumeRatio: 100 } : undefined,
+      setPlaying: vi.fn<(playing: boolean) => void>(),
+      clearPendingPlay: noop(),
+      flushPersist: noop(),
+      setCurrentTime: vi.fn<(time: number) => void>(),
+      setDuration: vi.fn<(duration: number) => void>(),
+      syncMediaSession: noop(),
+      schedulePrefetch: noop(),
+      resolvePlayableUrl: async () => 'blob:ok',
+      appendAppLog: vi.fn<(message: string) => void>(),
+      scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+      setVolumeRatio: vi.fn<(percent: number) => void>(),
+      playHistory: { onPlay, onStop },
+    })
+
+    await transport.loadCurrent()
+    onPlay.mockClear()
+    onStop.mockClear()
+
+    transport.onPlay()
+    expect(onPlay).toHaveBeenCalledExactlyOnceWith('t1')
+
+    transport.onPause()
+    expect(onStop).toHaveBeenCalledOnce()
+
+    onPlay.mockClear()
+    onStop.mockClear()
+    transport.onPlay()
+    transport.onEnded()
+    expect(onPlay).toHaveBeenCalledExactlyOnceWith('t1')
+    expect(onStop).toHaveBeenCalledOnce()
+
+    onStop.mockClear()
+    currentId = 't2'
+    transport.onLoadStart('t2')
+    expect(onStop).toHaveBeenCalledOnce()
+  })
 })

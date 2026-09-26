@@ -15,6 +15,11 @@ import {
 } from '@/lib/catalog/catalogBootstrap'
 import { enqueueEnrich, getEnrichQueueStatsForTests } from '@/lib/catalog/enrichQueue'
 import * as loadConfigs from '@/lib/catalog/loadConfigs'
+import {
+  listPlayHistory,
+  resetPlayHistoryDbForTests,
+  savePlayRecord,
+} from '@/lib/playback/playHistoryStore'
 import { useCatalogStore } from '@/stores/catalog'
 import { usePlayerStore } from '@/stores/player'
 
@@ -38,6 +43,7 @@ function sampleConfigs() {
 describe('catalogBootstrap', () => {
   beforeEach(async () => {
     await resetCacheDbForTests()
+    await resetPlayHistoryDbForTests()
     vi.restoreAllMocks()
   })
 
@@ -140,6 +146,17 @@ describe('catalogBootstrap', () => {
     expect(after.originalQueue).toEqual([])
     expect(after.currentId).toBeNull()
     expect(after.playing).toBe(false)
+  })
+
+  it('clearMusicCachesAndRefresh also clears play history', async () => {
+    vi.spyOn(useCatalogStore.getState(), 'scheduleEnrichment').mockImplementation(() => {})
+    const now = Date.now()
+    await savePlayRecord({ trackId: 'a', startedAt: now - 2_000, endedAt: now - 1_000 })
+    expect(await listPlayHistory()).toHaveLength(1)
+
+    await clearMusicCachesAndRefresh()
+
+    expect(await listPlayHistory()).toEqual([])
   })
 
   it('clearMusicCachesAndRefresh drops queued enrich work', async () => {
