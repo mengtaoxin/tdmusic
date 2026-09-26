@@ -9,7 +9,8 @@ Repository layout for tdmusic. Changing code: [change-code-steps.md](change-code
 ├── .cursor/rules/                Shared Cursor rules (sandbox, path-scoped)
 ├── docs/                         Project docs (this file, commands, conventions, …)
 ├── e2e/                          Playwright specs
-├── public/                       Static assets + default configs.json
+├── public/                       Static assets
+│   └── sample/                   Sample catalog + mp3s (default config URL)
 ├── src/
 │   ├── __tests__/                Vitest setup + app-level specs only (e.g. App.spec.tsx)
 │   ├── assets/
@@ -61,7 +62,7 @@ Repository layout for tdmusic. Changing code: [change-code-steps.md](change-code
 | `src/routes/` | TanStack Router file-based routes (`routeTree.gen.ts` is generated) |
 | `src/__tests__/` | Vitest `setup.ts` and app-level specs — not the default test location |
 | `e2e/` | Playwright specs |
-| `public/` | Static assets; default `configs.json` at `/configs.json` |
+| `public/` | Static assets; sample catalog at `public/sample/configs.json` → `/sample/configs.json` |
 
 ## Placement rules
 

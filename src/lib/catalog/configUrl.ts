@@ -1,7 +1,7 @@
 import { getItem, removeItem, setItem, type ClientStorage } from '../clientStorage'
 
 export const CONFIG_URL_KEY = 'tdmusic.configUrl'
-export const DEFAULT_CONFIG_URL = '/configs.json'
+export const DEFAULT_CONFIG_URL = '/sample/configs.json'
 
 export function resolveConfigUrl(storage: ClientStorage = localStorage): string {
   const raw = getItem(CONFIG_URL_KEY, storage)

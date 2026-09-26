@@ -4,7 +4,7 @@
 
 A browser music player driven by **your** `configs.json`: list tracks (and optional playlists) in that file, point the app at its URL in Settings, and play. No backend — audio is fetched on play, cached in IndexedDB, and browsable by playlist, artist, album, or search. UI is English / 中文.
 
-**How you use it:** host or edit a `configs.json` with a `music-list` of `{ id, path }` entries and optional `playlists` that reference tracks by `id`, then set the catalog URL in Settings. The repo’s `/configs.json` is only a sample for local demos. Field-by-field help lives in the app under **More → Guidelines for configs.json**.
+**How you use it:** host or edit a `configs.json` with a `music-list` of `{ id, path }` entries and optional `playlists` that reference tracks by `id`, then set the catalog URL in Settings. The repo’s `/sample/configs.json` is only a sample for local demos. Field-by-field help lives in the app under **More → Guidelines for configs.json**.
 
 ## Features
 
@@ -48,11 +48,11 @@ npm run test:e2e -- --project chromium -- e2e/app.spec.ts
 
 ## Catalog (`configs.json`)
 
-Your library is whatever **your** `configs.json` describes — host it anywhere reachable, set the URL in Settings, and reload. The file under `public/` is only a sample catalog for trying the app locally.
+Your library is whatever **your** `configs.json` describes — host it anywhere reachable, set the URL in Settings, and reload. The file under `public/sample/` is only a sample catalog for trying the app locally.
 
 | Piece | Role |
 | ----- | ---- |
-| Sample (dev) | [`public/configs.json`](public/configs.json) → `/configs.json` |
+| Sample (dev) | [`public/sample/configs.json`](public/sample/configs.json) → `/sample/configs.json` |
 | Your catalog | Settings → catalog URL (`tdmusic.configUrl`) |
 | `music-list` | Required: each track needs unique `id` + `path` (URL to the audio) |
 | Optional fields | `title`, `artist`, `album`, `cover`, `volume-ratio` (win over extracted ID3; `volume-ratio` defaults to `100`, max `100`) |

@@ -2,7 +2,7 @@
 
 Audio/cover cache: [cache.md](cache.md). Playback: [playback.md](playback.md).
 
-- Default URL: `/configs.json` (from `public/configs.json`).
+- Default URL: `/sample/configs.json` (from `public/sample/configs.json`).
 - Override with `localStorage` key `tdmusic.configUrl` (Settings page; via `clientStorage`). Empty/whitespace → default.
 - Fetched `configs.json` (default or override URL) is stored under `tdmusic.configs` as `{ url, data }`. Later loads use that cache when `url` matches the resolved config URL; otherwise fetch and replace the cache. Network fetches use `fetch(…, { cache: 'reload' })` so the browser skips its HTTP cache and pulls a fresh copy (then updates that cache). Settings “Delete local config cache” confirms, then removes `tdmusic.configs` and clears now playing / the play queue — the next catalog load fetches again.
 - Settings and **More** link to **Guidelines for configs.json** (`/config-guides`), which fetches and renders locale markdown from `public/how-to-write-config-file.md` (English) or `public/how-to-write-config-file.zh.md` (Chinese), including a short LLM prompt that points at the live guide URL and a sample music-library URL.

@@ -7,6 +7,11 @@ describe('resolveConfigUrl', () => {
     localStorage.clear()
   })
 
+  it('defaults to the sample catalog under /sample', () => {
+    expect(DEFAULT_CONFIG_URL).toBe('/sample/configs.json')
+    expect(resolveConfigUrl()).toBe('/sample/configs.json')
+  })
+
   it('returns default when localStorage is empty', () => {
     expect(resolveConfigUrl()).toBe(DEFAULT_CONFIG_URL)
   })
