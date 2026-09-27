@@ -1,3 +1,5 @@
+import Dexie, { type EntityTable, type Table } from 'dexie';
+
 import { blobForPlayableObjectUrl } from './audioMimeFromPath';
 
 export type TrackCacheMeta = {
@@ -15,69 +17,27 @@ export type ExtractedTrackMeta = {
   updatedAt: number;
 };
 
-const DB_NAME = 'music-cache';
-const DB_VERSION = 1;
-const META_STORE = 'meta';
-const FILES_STORE = 'files';
-const TRACK_META_STORE = 'trackMeta';
-
 export const AUDIO_FILE_KEY = '__audio__';
 export const COVER_FILE_KEY = '__cover__';
 const KEY_SEP = '\0';
 
-const blobUrlCache = new Map<string, string>();
+const db = new Dexie('music-cache') as Dexie & {
+  meta: EntityTable<TrackCacheMeta, 'sourceUrl'>;
+  /** Outbound keys from `fileRecordKey`; values are raw Blobs. */
+  files: Table<Blob, string>;
+  trackMeta: EntityTable<ExtractedTrackMeta, 'sourceUrl'>;
+};
 
-let dbPromise: Promise<IDBDatabase> | null = null;
+db.version(1).stores({
+  meta: 'sourceUrl',
+  files: '',
+  trackMeta: 'sourceUrl',
+});
+
+const blobUrlCache = new Map<string, string>();
 
 export function fileRecordKey(sourceUrl: string, relativePath: string) {
   return `${sourceUrl}${KEY_SEP}${relativePath}`;
-}
-
-function openDb(): Promise<IDBDatabase> {
-  if (!dbPromise) {
-    dbPromise = new Promise((resolve, reject) => {
-      const request = indexedDB.open(DB_NAME, DB_VERSION);
-      request.onerror = () => {
-        dbPromise = null;
-        reject(request.error ?? new Error('IndexedDB open failed'));
-      };
-      request.onsuccess = () => {
-        const db = request.result;
-        db.onclose = () => {
-          dbPromise = null;
-        };
-        resolve(db);
-      };
-      request.onupgradeneeded = () => {
-        const db = request.result;
-        if (!db.objectStoreNames.contains(META_STORE)) {
-          db.createObjectStore(META_STORE, { keyPath: 'sourceUrl' });
-        }
-        if (!db.objectStoreNames.contains(FILES_STORE)) {
-          db.createObjectStore(FILES_STORE);
-        }
-        if (!db.objectStoreNames.contains(TRACK_META_STORE)) {
-          db.createObjectStore(TRACK_META_STORE, { keyPath: 'sourceUrl' });
-        }
-      };
-    });
-  }
-  return dbPromise;
-}
-
-function idbRequest<T>(request: IDBRequest<T>): Promise<T> {
-  return new Promise((resolve, reject) => {
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error ?? new Error('IndexedDB request failed'));
-  });
-}
-
-function idbTransactionDone(tx: IDBTransaction): Promise<void> {
-  return new Promise((resolve, reject) => {
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error ?? new Error('IndexedDB transaction failed'));
-    tx.onabort = () => reject(tx.error ?? new Error('IndexedDB transaction aborted'));
-  });
 }
 
 function revokeAllBlobUrls() {
@@ -98,22 +58,15 @@ function revokeBlobUrlsForSource(sourceUrl: string) {
 }
 
 export async function isTrackCached(sourceUrl: string): Promise<boolean> {
-  const db = await openDb();
-  const meta = await idbRequest(
-    db.transaction(META_STORE, 'readonly').objectStore(META_STORE).get(sourceUrl),
-  );
-  return Boolean(meta && (meta as TrackCacheMeta).status === 'ready');
+  const meta = await db.meta.get(sourceUrl);
+  return meta?.status === 'ready';
 }
 
 export async function getCachedFile(
   sourceUrl: string,
   relativePath: string = AUDIO_FILE_KEY,
 ): Promise<Blob | null> {
-  const db = await openDb();
-  const key = fileRecordKey(sourceUrl, relativePath);
-  const blob = await idbRequest(
-    db.transaction(FILES_STORE, 'readonly').objectStore(FILES_STORE).get(key),
-  );
+  const blob = await db.files.get(fileRecordKey(sourceUrl, relativePath));
   return blob instanceof Blob ? blob : null;
 }
 
@@ -145,108 +98,60 @@ export async function putFiles(
   sourceUrl: string,
   entries: Array<{ relativePath: string; blob: Blob }>,
 ) {
-  const db = await openDb();
-  const tx = db.transaction(FILES_STORE, 'readwrite');
-  const store = tx.objectStore(FILES_STORE);
-  for (const entry of entries) {
-    store.put(entry.blob, fileRecordKey(sourceUrl, entry.relativePath));
-  }
-  await idbTransactionDone(tx);
+  await db.files.bulkPut(
+    entries.map((entry) => entry.blob),
+    entries.map((entry) => fileRecordKey(sourceUrl, entry.relativePath)),
+  );
 }
 
 export async function putMeta(meta: TrackCacheMeta) {
-  const db = await openDb();
-  const tx = db.transaction(META_STORE, 'readwrite');
-  tx.objectStore(META_STORE).put(meta);
-  await idbTransactionDone(tx);
+  await db.meta.put(meta);
 }
 
 export async function putExtractedTrackMeta(meta: ExtractedTrackMeta) {
-  const db = await openDb();
-  const tx = db.transaction(TRACK_META_STORE, 'readwrite');
-  tx.objectStore(TRACK_META_STORE).put(meta);
-  await idbTransactionDone(tx);
+  await db.trackMeta.put(meta);
 }
 
 export async function getExtractedTrackMeta(sourceUrl: string): Promise<ExtractedTrackMeta | null> {
-  const db = await openDb();
-  const meta = await idbRequest(
-    db.transaction(TRACK_META_STORE, 'readonly').objectStore(TRACK_META_STORE).get(sourceUrl),
-  );
-  return (meta as ExtractedTrackMeta) ?? null;
+  return (await db.trackMeta.get(sourceUrl)) ?? null;
 }
 
 export async function listTrackMetas(): Promise<TrackCacheMeta[]> {
-  const db = await openDb();
-  const rows = await idbRequest(
-    db.transaction(META_STORE, 'readonly').objectStore(META_STORE).getAll(),
-  );
-  return (rows as TrackCacheMeta[]) ?? [];
+  return db.meta.toArray();
 }
 
 /** Total size of cached audio and cover blobs in the files store. */
 export async function getMusicCacheSizeBytes(): Promise<number> {
-  const db = await openDb();
-  const blobs = await idbRequest(
-    db.transaction(FILES_STORE, 'readonly').objectStore(FILES_STORE).getAll(),
-  );
   let total = 0;
-  for (const value of blobs ?? []) {
+  await db.files.each((value) => {
     if (value instanceof Blob) total += value.size;
-  }
+  });
   return total;
 }
 
 export async function deleteTrackCacheRecords(sourceUrl: string): Promise<void> {
   revokeBlobUrlsForSource(sourceUrl);
 
-  const db = await openDb();
-  const tx = db.transaction([META_STORE, FILES_STORE, TRACK_META_STORE], 'readwrite');
-  tx.objectStore(META_STORE).delete(sourceUrl);
-  tx.objectStore(TRACK_META_STORE).delete(sourceUrl);
-
-  const filesStore = tx.objectStore(FILES_STORE);
-  const prefix = `${sourceUrl}${KEY_SEP}`;
-  const keys = await idbRequest(filesStore.getAllKeys());
-  for (const key of keys) {
-    if (typeof key === 'string' && key.startsWith(prefix)) {
-      filesStore.delete(key);
-    }
-  }
-
-  await idbTransactionDone(tx);
+  await db.transaction('rw', db.meta, db.files, db.trackMeta, async () => {
+    await Promise.all([
+      db.meta.delete(sourceUrl),
+      db.trackMeta.delete(sourceUrl),
+      db.files.where(':id').startsWith(`${sourceUrl}${KEY_SEP}`).delete(),
+    ]);
+  });
 }
 
 export async function clearAllCacheRecords(): Promise<void> {
   revokeAllBlobUrls();
 
-  const db = await openDb();
-  const tx = db.transaction([META_STORE, FILES_STORE, TRACK_META_STORE], 'readwrite');
-  tx.objectStore(META_STORE).clear();
-  tx.objectStore(FILES_STORE).clear();
-  tx.objectStore(TRACK_META_STORE).clear();
-  await idbTransactionDone(tx);
+  await db.transaction('rw', db.meta, db.files, db.trackMeta, async () => {
+    await Promise.all([db.meta.clear(), db.files.clear(), db.trackMeta.clear()]);
+  });
 }
 
-/** Close shared connection and clear in-memory blob URLs (tests). */
+/** Clear all records and in-memory blob URLs (tests). */
 export async function resetCacheDbForTests(): Promise<void> {
-  revokeAllBlobUrls();
-  if (dbPromise) {
-    try {
-      const db = await dbPromise;
-      db.close();
-    } catch {
-      // ignore open failures during reset
-    }
-    dbPromise = null;
-  }
-  // Delete the database so the next open starts clean for tests.
-  await new Promise<void>((resolve, reject) => {
-    const req = indexedDB.deleteDatabase(DB_NAME);
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error ?? new Error('IndexedDB delete failed'));
-    req.onblocked = () => resolve();
-  });
+  await clearAllCacheRecords();
 }
 
 /** @deprecated Prefer resetCacheDbForTests */

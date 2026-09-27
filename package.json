@@ -24,6 +24,7 @@
     "@mui/material": "^9.4.0",
     "@tanstack/react-router": "^1.170.38",
     "@tanstack/react-virtual": "^3.14.13",
+    "dexie": "^4.4.6",
     "i18next": "^26.4.2",
     "marked": "^18.0.13",
     "music-metadata": "^11.15.0",

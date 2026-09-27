@@ -12,16 +12,18 @@ test('stats ranges and clear-all-cache clears listen history', async ({ page }) 
   await page.goto('/stats');
   await expect(page.getByRole('heading', { name: 'Stats' })).toBeVisible();
 
+  // The app's Dexie schema owns the DB version; seed only after it has created the store.
+  await expect
+    .poll(() =>
+      page.evaluate(async () =>
+        (await indexedDB.databases()).some((info) => info.name === 'play-history'),
+      ),
+    )
+    .toBe(true);
+
   await page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      const req = indexedDB.open('play-history', 1);
-      req.onupgradeneeded = () => {
-        const d = req.result;
-        if (!d.objectStoreNames.contains('plays')) {
-          const store = d.createObjectStore('plays', { keyPath: 'id', autoIncrement: true });
-          store.createIndex('startedAt', 'startedAt', { unique: false });
-        }
-      };
+      const req = indexedDB.open('play-history');
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error ?? new Error('open failed'));
     });

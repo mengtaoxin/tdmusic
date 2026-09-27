@@ -16,6 +16,7 @@ tdmusic is a React SPA (Vite) at the repo root — no separate `api/` or `web/` 
 | Virtual lists | @tanstack/react-virtual                         |
 | Markdown      | marked (Config Guides page)                     |
 | Audio meta    | music-metadata                                  |
+| IndexedDB     | Dexie (no raw `indexedDB` calls in app code)    |
 | Shared kit    | tdkit → @mengtaoxin/tdkit (GitHub Packages)     |
 | Lint / format | oxlint + oxfmt                                  |
 | Unit tests    | Vitest + Testing Library                        |

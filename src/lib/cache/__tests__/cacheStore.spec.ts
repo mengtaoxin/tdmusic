@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   COVER_FILE_KEY,
+  deleteTrackCacheRecords,
   getCachedBlobUrl,
   getCachedFile,
   getMusicCacheSizeBytes,
@@ -102,6 +103,29 @@ describe('music cache', () => {
     ]);
 
     expect(await getMusicCacheSizeBytes()).toBe(10);
+  });
+
+  it('deleteTrackCacheRecords removes only that track’s files and metadata', async () => {
+    const target = 'https://example.com/a.mp3';
+    const sibling = 'https://example.com/a.mp3x';
+    await Promise.all(
+      [target, sibling].flatMap((sourceUrl) => [
+        putFiles(sourceUrl, [
+          { relativePath: AUDIO_FILE_KEY, blob: new Blob(['audio']) },
+          { relativePath: COVER_FILE_KEY, blob: new Blob(['img']) },
+        ]),
+        putMeta({ sourceUrl, status: 'ready', downloadedAt: Date.now() }),
+      ]),
+    );
+
+    await deleteTrackCacheRecords(target);
+
+    expect(await isTrackCached(target)).toBe(false);
+    expect(await getCachedFile(target)).toBeNull();
+    expect(await getCachedFile(target, COVER_FILE_KEY)).toBeNull();
+    expect(await isTrackCached(sibling)).toBe(true);
+    expect(await getCachedFile(sibling)).not.toBeNull();
+    expect(await getCachedFile(sibling, COVER_FILE_KEY)).not.toBeNull();
   });
 
   it('clearAllMusicCaches removes records', async () => {

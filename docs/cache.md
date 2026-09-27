@@ -2,7 +2,9 @@
 
 Catalog load/enrich: [catalog.md](catalog.md). Prefetch / play download path: [playback.md](playback.md).
 
-## Audio cache (IndexedDB `music-cache`, schema v1)
+## Audio cache (IndexedDB `music-cache`, Dexie schema v1)
+
+- Access goes through Dexie in `lib/cache/cacheStore` (and `playHistoryStore` for listen history); do not call `indexedDB` directly. Unit tests run Dexie on `fake-indexeddb`.
 
 - Playable paths (`http(s)://` and site-absolute `/…`) are downloaded into IndexedDB on play. Downloads use `fetch(…, { cache: 'no-cache' })` so the browser revalidates with the origin (avoids re-storing a stale HTTP disk-cache copy after Settings clears IndexedDB).
 - Audio downloads (play and prefetch) go through `ensureTrackCached` and share a global limiter (`downloadLimiter`): at most **3** music-file fetches run at once. Play-path downloads (`priority: 'high'` via `resolvePlayableUrl`) outrank prefetch (`normal`). While any high job is running or waiting, the limiter does not start a **new** normal job, even if a slot is idle; in-flight normals are not aborted. After every high job finishes, waiting normals run (FIFO among the same priority). Same-URL in-flight work is shared and counts as one slot. In-flight prefetch is not aborted when the user skips.
