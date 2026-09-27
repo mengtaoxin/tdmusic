@@ -119,6 +119,7 @@ describe('downloadLimiter', () => {
 
     for (const id of [2, 3, 99]) {
       releases.get(id)!();
+      // oxlint-disable-next-line no-await-in-loop -- each release must settle before the next
       await flush();
     }
     expect(started).toEqual([1, 2, 3, 99, 4, 5, 6]);

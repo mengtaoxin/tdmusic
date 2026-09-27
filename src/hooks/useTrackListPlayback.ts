@@ -1,18 +1,8 @@
-import { useMemo } from 'react';
-
-import { useCatalogStore, selectTracks } from '@/stores/catalog';
 import { usePlayerStore } from '@/stores/player';
 
 /** Play helpers bound to a source id list. Catalog load lives on the root route. */
-export function useTrackListPlayback(sourceIds: string[] | (() => string[])) {
+export function useTrackListPlayback(ids: string[]) {
   const currentId = usePlayerStore((s) => s.currentId);
-  const tracks = useCatalogStore(selectTracks);
-
-  const ids = useMemo(
-    () => (typeof sourceIds === 'function' ? sourceIds() : sourceIds),
-    // callers pass fresh arrays from store selectors
-    [typeof sourceIds === 'function' ? tracks : sourceIds],
-  );
 
   return {
     currentId,

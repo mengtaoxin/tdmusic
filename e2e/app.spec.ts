@@ -53,12 +53,12 @@ test('locks document scroll and reserves gutter on the main scroller', async ({ 
   await expect(page.getByTestId('main-scroller')).toBeVisible();
   const metrics = await page.evaluate(() => {
     const scroller = document.querySelector('[data-testid="main-scroller"]');
-    const page = scroller?.firstElementChild;
+    const pageEl = scroller?.firstElementChild;
     return {
       htmlOverflow: getComputedStyle(document.documentElement).overflow,
       bodyOverflow: getComputedStyle(document.body).overflow,
       gutter: scroller ? getComputedStyle(scroller).scrollbarGutter : null,
-      pagePaddingTop: page ? getComputedStyle(page).paddingTop : null,
+      pagePaddingTop: pageEl ? getComputedStyle(pageEl).paddingTop : null,
     };
   });
   expect(metrics.htmlOverflow).toContain('hidden');

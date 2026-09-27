@@ -44,6 +44,8 @@ export function MusicListPage() {
             </Alert>
           ) : null}
           {errors.map((err, i) => (
+            // Messages can repeat (e.g. several duplicate ids); the list is static per load.
+            // oxlint-disable-next-line react/no-array-index-key
             <Alert key={i} severity="warning" sx={{ mb: 1 }}>
               {t('catalog.configError', { message: err })}
             </Alert>

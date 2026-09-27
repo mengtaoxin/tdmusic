@@ -42,6 +42,8 @@ export async function ensureQuota(
     .filter((m) => m.status === 'ready')
     .sort((a, b) => a.downloadedAt - b.downloadedAt);
 
+  // Sequential on purpose: each eviction must be observed before deciding on the next.
+  /* oxlint-disable no-await-in-loop */
   for (const meta of ready) {
     if (usage + Math.max(0, minBytes) <= limit) break;
     await deleteTrackCacheRecords(meta.sourceUrl);
@@ -52,4 +54,5 @@ export async function ensureQuota(
     }
     usage = next.usage;
   }
+  /* oxlint-enable no-await-in-loop */
 }

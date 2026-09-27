@@ -79,7 +79,7 @@ describe('syncMediaSession', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
-    delete (navigator as any).mediaSession;
+    Reflect.deleteProperty(navigator, 'mediaSession');
   });
 
   it('sets position state from player duration and currentTime', () => {

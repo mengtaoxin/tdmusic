@@ -26,6 +26,8 @@ export function AudioHost() {
     currentId ? (s.snapshot.trackById.get(currentId)?.displayCover ?? null) : null,
   );
 
+  // These store values are re-run triggers only; the transport reads current state via getState().
+  /* oxlint-disable react/exhaustive-effect-dependencies */
   useEffect(() => {
     void transport.loadCurrent();
   }, [loadToken, transport]);
@@ -37,6 +39,7 @@ export function AudioHost() {
   useEffect(() => {
     if (usePlayerStore.getState().currentId) transport.schedulePrefetch();
   }, [queue, transport]);
+  /* oxlint-enable react/exhaustive-effect-dependencies */
 
   useEffect(() => {
     transport.onRepeatModeChange(repeatMode);

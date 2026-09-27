@@ -54,17 +54,22 @@ export function AppHeader() {
     if (desktopNavRef.current) observer.observe(desktopNavRef.current);
     updateCompactNav();
     return () => observer.disconnect();
-  }, [updateCompactNav, locale]);
+  }, [updateCompactNav]);
 
-  useEffect(() => {
+  const [menusPathname, setMenusPathname] = useState(pathname);
+  if (menusPathname !== pathname) {
+    setMenusPathname(pathname);
     setDrawerOpen(false);
     setDesktopMenu(null);
-  }, [pathname]);
+  }
 
+  // Re-measure after translated labels render; locale is the trigger, not an input.
+  /* oxlint-disable react/exhaustive-effect-dependencies */
   useEffect(() => {
     const id = requestAnimationFrame(() => updateCompactNav());
     return () => cancelAnimationFrame(id);
-  }, [locale, t, updateCompactNav]);
+  }, [locale, updateCompactNav]);
+  /* oxlint-enable react/exhaustive-effect-dependencies */
 
   function setLocale(value: AppLocale) {
     writeStoredLocale(value);

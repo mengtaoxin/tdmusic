@@ -38,6 +38,8 @@ function PlaylistListPage() {
         <List sx={{ bgcolor: 'transparent' }}>
           {playlists.map((playlist, index) => (
             <ListItemButton
+              // Titles are not deduplicated by the catalog; the list is static per load.
+              // oxlint-disable-next-line react/no-array-index-key
               key={`${playlist.title}-${index}`}
               component={Link}
               to={playlistPath(playlist.title)}

@@ -68,12 +68,12 @@ export function NowPlayingFooter() {
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: (t) => t.zIndex.appBar,
+        zIndex: (th) => th.zIndex.appBar,
         height: 72,
         background: footerGradient,
         color: 'text.primary',
-        borderTop: (t) =>
-          `1px solid color-mix(in srgb, ${t.palette.secondary.main} 25%, transparent)`,
+        borderTop: (th) =>
+          `1px solid color-mix(in srgb, ${th.palette.secondary.main} 25%, transparent)`,
         boxShadow: 8,
         transition: 'transform 0.25s ease, opacity 0.25s ease',
       }}

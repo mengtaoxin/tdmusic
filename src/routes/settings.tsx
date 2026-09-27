@@ -70,7 +70,7 @@ function SettingsPage() {
   }
 
   useEffect(() => {
-    void refreshCacheSize();
+    void getMusicCacheSizeBytes().then(setCacheSizeBytes);
   }, []);
 
   const settingSx = {

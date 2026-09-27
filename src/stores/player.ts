@@ -147,24 +147,24 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     hydrate(knownIds: Set<string>) {
       const persisted = parsePlayerState(getItem(PLAYER_STORAGE_KEY));
       if (!persisted) return false;
-      const next = hydratePlayerState(persisted, knownIds);
-      if (!next) {
+      const hydrated = hydratePlayerState(persisted, knownIds);
+      if (!hydrated) {
         removeItem(PLAYER_STORAGE_KEY);
         set(clearQueue(readQueueSession(get())));
         clearPlaybackFields();
         return false;
       }
       set({
-        queue: next.queue,
-        originalQueue: next.originalQueue,
-        currentId: next.currentId,
-        currentIndex: next.currentIndex,
-        currentTime: next.currentTime,
-        repeatMode: next.repeatMode,
-        shuffle: next.shuffle,
+        queue: hydrated.queue,
+        originalQueue: hydrated.originalQueue,
+        currentId: hydrated.currentId,
+        currentIndex: hydrated.currentIndex,
+        currentTime: hydrated.currentTime,
+        repeatMode: hydrated.repeatMode,
+        shuffle: hydrated.shuffle,
         playing: false,
         pendingPlay: false,
-        seekTo: next.currentTime,
+        seekTo: hydrated.currentTime,
         loadToken: get().loadToken + 1,
       });
       return true;
