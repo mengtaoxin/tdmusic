@@ -4,7 +4,7 @@
 
 - Changing code (structure, TDD, tests, format/check, i18n): [docs/change-code-steps.md](docs/change-code-steps.md).
 - Views that need the catalog rely on root `beforeLoad` / `ensureCatalogLoaded` — do not fetch `configs.json` from views.
-- Agent-kit skills: match [`.cursor/rules/agent-kit-skills.mdc`](.cursor/rules/agent-kit-skills.mdc), then read the matching `.agents/skills/<name>/SKILL.md` before coding.
+- Skills: [`.cursor/rules/skills-intro.mdc`](.cursor/rules/skills-intro.mdc).
 
 ## Read when
 
