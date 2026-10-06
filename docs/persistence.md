@@ -5,7 +5,7 @@ Catalog config cache usage: [catalog.md](catalog.md). Player queue fields: [play
 ## Client persistence (`localStorage` via `clientStorage`)
 
 - Keys: `tdmusic.locale`, `tdmusic.configUrl`, `tdmusic.configs`, `tdmusic.player`, `tdmusic.searchHistory`.
-- `tdmusic.configs`: JSON `{ url, data }` for the last successfully fetched `configs.json`. Used when `url` matches the resolved config URL.
+- `tdmusic.configs`: JSON `{ url, data }` for the last successfully fetched `configs.json`. Used when `url` matches the resolved config URL, and refreshed in the background on each such load ([catalog.md](catalog.md)).
 - `tdmusic.searchHistory`: JSON string array of recent search queries (newest first, max 10, case-insensitive dedupe). Written when the user presses Enter on Search (or reuses a history chip).
 - Writes catch `QuotaExceededError` and return failure instead of throwing.
 - Player payload includes `v: 1`; unknown versions are ignored. Legacy payloads without `v` are still accepted.

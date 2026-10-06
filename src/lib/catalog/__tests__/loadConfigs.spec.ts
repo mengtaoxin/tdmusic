@@ -12,6 +12,15 @@ function stubFetchOk(payload: unknown) {
   return fetchMock;
 }
 
+function seedCache(url: string, data: unknown) {
+  localStorage.setItem(CONFIGS_CACHE_KEY, JSON.stringify({ url, data }));
+}
+
+function readCache(): unknown {
+  const raw = localStorage.getItem(CONFIGS_CACHE_KEY);
+  return raw == null ? null : JSON.parse(raw);
+}
+
 describe('loadConfigsJson', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -50,13 +59,99 @@ describe('loadConfigsJson', () => {
     });
   });
 
-  it('returns cached configs without fetching on later loads', async () => {
+  it('returns cached configs on later loads and refreshes them in the background', async () => {
     const payload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
     const fetchMock = stubFetchOk(payload);
     await loadConfigsJson();
     const again = await loadConfigsJson();
-    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(again).toEqual(payload);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenNthCalledWith(2, DEFAULT_CONFIG_URL, { cache: 'reload' });
+  });
+
+  it('returns cached configs while the background refresh is still pending', async () => {
+    const cachedPayload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
+    seedCache(DEFAULT_CONFIG_URL, cachedPayload);
+    const fetchMock = vi.fn<typeof fetch>().mockReturnValue(new Promise<Response>(() => {}));
+    vi.stubGlobal('fetch', fetchMock);
+    const data = await loadConfigsJson();
+    expect(data).toEqual(cachedPayload);
+    expect(fetchMock).toHaveBeenCalledWith(DEFAULT_CONFIG_URL, { cache: 'reload' });
+  });
+
+  it('stores the refreshed remote configs for the next load', async () => {
+    const cachedPayload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
+    const remotePayload = { 'music-list': [{ id: 'b', path: '/b.mp3' }] };
+    seedCache(DEFAULT_CONFIG_URL, cachedPayload);
+    stubFetchOk(remotePayload);
+    const data = await loadConfigsJson();
+    expect(data).toEqual(cachedPayload);
+    await vi.waitFor(() => {
+      expect(readCache()).toEqual({ url: DEFAULT_CONFIG_URL, data: remotePayload });
+    });
+  });
+
+  it('keeps the cache when the background refresh fails (offline)', async () => {
+    const cachedPayload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
+    seedCache(DEFAULT_CONFIG_URL, cachedPayload);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fetchMock = vi.fn<typeof fetch>().mockRejectedValue(new TypeError('Failed to fetch'));
+    vi.stubGlobal('fetch', fetchMock);
+    const data = await loadConfigsJson();
+    expect(data).toEqual(cachedPayload);
+    await vi.waitFor(() => expect(warn).toHaveBeenCalled());
+    expect(readCache()).toEqual({ url: DEFAULT_CONFIG_URL, data: cachedPayload });
+  });
+
+  it('keeps the cache when the background refresh gets a non-ok response', async () => {
+    const cachedPayload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
+    seedCache(DEFAULT_CONFIG_URL, cachedPayload);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const json = vi.fn();
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn<typeof fetch>()
+        .mockResolvedValue({ ok: false, status: 503, json } as unknown as Response),
+    );
+    await loadConfigsJson();
+    await vi.waitFor(() => expect(warn).toHaveBeenCalled());
+    expect(json).not.toHaveBeenCalled();
+    expect(readCache()).toEqual({ url: DEFAULT_CONFIG_URL, data: cachedPayload });
+  });
+
+  it('does not overwrite the cache when the config URL changes during the background refresh', async () => {
+    const cachedPayload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
+    const stalePayload = { 'music-list': [{ id: 'stale', path: '/stale.mp3' }] };
+    seedCache(DEFAULT_CONFIG_URL, cachedPayload);
+    let resolveFetch!: (response: Response) => void;
+    const fetchMock = vi.fn<typeof fetch>().mockReturnValue(
+      new Promise<Response>((resolve) => {
+        resolveFetch = resolve;
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    await loadConfigsJson();
+
+    const customUrl = 'https://cdn.example.com/configs.json';
+    const customPayload = { 'music-list': [{ id: 'b', path: '/b.mp3' }] };
+    localStorage.setItem(CONFIG_URL_KEY, customUrl);
+    seedCache(customUrl, customPayload);
+    const json = vi.fn(async () => stalePayload);
+    resolveFetch({ ok: true, json } as unknown as Response);
+
+    await vi.waitFor(() => expect(json).toHaveBeenCalled());
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(readCache()).toEqual({ url: customUrl, data: customPayload });
+  });
+
+  it('throws when there is no cache and the fetch fails', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>().mockRejectedValue(new TypeError('Failed to fetch')),
+    );
+    await expect(loadConfigsJson()).rejects.toThrow('Failed to fetch');
+    expect(readCache()).toBeNull();
   });
 
   it('fetches again when the resolved config URL no longer matches the cache', async () => {

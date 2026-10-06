@@ -31,6 +31,29 @@ export function clearCachedConfigs(storage: ClientStorage = localStorage): void 
   removeItem(CONFIGS_CACHE_KEY, storage);
 }
 
+async function fetchConfigs(url: string, fetchImpl: typeof fetch): Promise<unknown> {
+  const response = await fetchImpl(url, { cache: 'reload' });
+  if (!response.ok) {
+    throw new Error(`Failed to load configs: ${response.status}`);
+  }
+  return response.json();
+}
+
+/** Refresh the cached copy for the next load; failures (e.g. offline) keep the cache. */
+async function revalidateCachedConfigs(
+  url: string,
+  fetchImpl: typeof fetch,
+  storage: ClientStorage,
+): Promise<void> {
+  try {
+    const data = await fetchConfigs(url, fetchImpl);
+    if (resolveConfigUrl(storage) !== url) return;
+    writeConfigsCache(url, data, storage);
+  } catch (error) {
+    console.warn(`Background configs refresh failed for ${url}:`, error);
+  }
+}
+
 export async function loadConfigsJson(
   fetchImpl: typeof fetch = fetch,
   storage: ClientStorage = localStorage,
@@ -38,13 +61,10 @@ export async function loadConfigsJson(
   const url = resolveConfigUrl(storage);
   const cached = readConfigsCache(storage);
   if (cached && cached.url === url) {
+    void revalidateCachedConfigs(url, fetchImpl, storage);
     return cached.data;
   }
-  const response = await fetchImpl(url, { cache: 'reload' });
-  if (!response.ok) {
-    throw new Error(`Failed to load configs: ${response.status}`);
-  }
-  const data = await response.json();
+  const data = await fetchConfigs(url, fetchImpl);
   writeConfigsCache(url, data, storage);
   return data;
 }
