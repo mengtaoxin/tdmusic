@@ -1,10 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 
+import { DownloadAllButton } from '@/components/DownloadAllButton';
 import { TrackList } from '@/components/TrackList';
 import { useTrackListPlayback } from '@/hooks/useTrackListPlayback';
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
@@ -52,6 +54,12 @@ function ArtistAlbumDetailPage() {
         <Alert severity="warning" sx={{ mb: 2 }}>
           {t('artist.albumNotFound')}
         </Alert>
+      ) : null}
+
+      {albumFound ? (
+        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+          <DownloadAllButton tracks={tracks} />
+        </Box>
       ) : null}
 
       {loading ? (

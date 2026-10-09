@@ -1,93 +1,136 @@
 const CONCURRENCY = 3;
 
-export type DownloadPriority = 'high' | 'normal';
+export type DownloadPriority = 'high' | 'normal' | 'low';
 
-type Waiter = {
-  priority: DownloadPriority;
-  resume: () => void;
+const RANK: Record<DownloadPriority, number> = { high: 2, normal: 1, low: 0 };
+
+export type AudioDownloadJob<T> = {
+  done: Promise<T>;
+  /** Raise (never lower) this job's priority; preempts running jobs now below it. */
+  raisePriority: (priority: DownloadPriority) => void;
 };
 
-const pending: Waiter[] = [];
-let active = 0;
-let activeHigh = 0;
+type Job = {
+  rank: number;
+  seq: number;
+  controller: AbortController | null;
+  preempted: boolean;
+  run: () => void;
+};
 
-function hasHighWaiter(): boolean {
-  return pending.some((w) => w.priority === 'high');
+let pending: Job[] = [];
+const running = new Set<Job>();
+let nextSeq = 0;
+
+function sortPending(): void {
+  pending.sort((a, b) => b.rank - a.rank || a.seq - b.seq);
 }
 
-function takeNextWaiter(): Waiter | undefined {
-  if (active >= CONCURRENCY) return undefined;
+function hasHigherThan(rank: number): boolean {
+  for (const job of running) if (job.rank > rank) return true;
+  return pending.some((job) => job.rank > rank);
+}
 
-  const highIndex = pending.findIndex((w) => w.priority === 'high');
-  if (highIndex >= 0) {
-    return pending.splice(highIndex, 1)[0];
+function preemptBelow(rank: number): void {
+  for (const job of running) {
+    if (job.rank < rank && !job.preempted) {
+      job.preempted = true;
+      job.controller?.abort();
+    }
   }
-
-  if (activeHigh > 0) return undefined;
-
-  return pending.shift();
-}
-
-function begin(priority: DownloadPriority): void {
-  active += 1;
-  if (priority === 'high') activeHigh += 1;
-}
-
-function canStartNow(priority: DownloadPriority): boolean {
-  if (active >= CONCURRENCY) return false;
-  if (priority === 'high') return true;
-  return activeHigh === 0 && !hasHighWaiter();
-}
-
-function acquire(priority: DownloadPriority): Promise<void> {
-  if (canStartNow(priority)) {
-    begin(priority);
-    return Promise.resolve();
-  }
-  return new Promise((resolve) => {
-    pending.push({
-      priority,
-      resume: () => {
-        begin(priority);
-        resolve();
-      },
-    });
-  });
 }
 
 function pump(): void {
   for (;;) {
-    const next = takeNextWaiter();
-    if (!next) return;
-    next.resume();
+    const next = pending[0];
+    if (!next || running.size >= CONCURRENCY || hasHigherThan(next.rank)) return;
+    pending.shift();
+    next.run();
   }
 }
 
-function release(priority: DownloadPriority): void {
-  active -= 1;
-  if (priority === 'high') activeHigh -= 1;
-  pump();
+function enqueue(job: Job): void {
+  pending.push(job);
+  sortPending();
 }
 
-/** Run `fn` while holding one of at most 3 global audio-download slots. */
-export async function withAudioDownloadSlot<T>(
-  fn: () => Promise<T>,
+/**
+ * Queue `fn` for one of at most 3 global audio-download slots.
+ * Creating (or raising) a job aborts running jobs of lower priority; they are
+ * re-queued and run again from scratch once no higher-priority job remains.
+ */
+export function startAudioDownloadJob<T>(
+  fn: (signal: AbortSignal) => Promise<T>,
+  priority: DownloadPriority = 'normal',
+): AudioDownloadJob<T> {
+  let resolveDone!: (value: T) => void;
+  let rejectDone!: (reason: unknown) => void;
+  const done = new Promise<T>((resolve, reject) => {
+    resolveDone = resolve;
+    rejectDone = reject;
+  });
+
+  const job: Job = {
+    rank: RANK[priority],
+    seq: nextSeq++,
+    controller: null,
+    preempted: false,
+    run: () => {
+      const controller = new AbortController();
+      job.controller = controller;
+      job.preempted = false;
+      running.add(job);
+      Promise.resolve()
+        .then(() => fn(controller.signal))
+        .then(
+          (value) => {
+            running.delete(job);
+            resolveDone(value);
+            pump();
+          },
+          (error: unknown) => {
+            running.delete(job);
+            if (job.preempted) {
+              enqueue(job);
+            } else {
+              rejectDone(error);
+            }
+            pump();
+          },
+        );
+    },
+  };
+
+  preemptBelow(job.rank);
+  enqueue(job);
+  pump();
+
+  return {
+    done,
+    raisePriority: (next) => {
+      const rank = RANK[next];
+      if (rank <= job.rank) return;
+      job.rank = rank;
+      sortPending();
+      preemptBelow(rank);
+      pump();
+    },
+  };
+}
+
+export function withAudioDownloadSlot<T>(
+  fn: (signal: AbortSignal) => Promise<T>,
   priority: DownloadPriority = 'normal',
 ): Promise<T> {
-  await acquire(priority);
-  try {
-    return await fn();
-  } finally {
-    release(priority);
-  }
+  return startAudioDownloadJob(fn, priority).done;
 }
 
 export function resetDownloadLimiterForTests(): void {
-  pending.length = 0;
-  active = 0;
-  activeHigh = 0;
+  pending = [];
+  running.clear();
+  nextSeq = 0;
 }
 
 export function getDownloadLimiterStatsForTests() {
-  return { active, pending: pending.length };
+  return { active: running.size, pending: pending.length };
 }

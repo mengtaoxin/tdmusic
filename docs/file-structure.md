@@ -69,7 +69,7 @@ Repository layout for tdmusic. Changing code: [change-code-steps.md](change-code
 - Imports use `@/`.
 - Route-level pages → `src/routes/`. Shared UI → `src/components/`. React hooks (`use*`) → `src/hooks/`.
 - Framework-agnostic helpers → `src/lib/`, grouped as `cache/`, `catalog/`, `playback/`, `pwa/`, or `routes/` when they belong to those domains. Small shared utilities may stay at `src/lib/` root.
-- Cache internals (`cacheStore`, `cacheIngest`, `cacheEviction`, `trackMetadata`, `downloadLimiter`) stay inside `src/lib/cache/`; app code imports `musicCache`.
+- Cache internals (`cacheStore`, `cacheIngest`, `cacheEviction`, `trackMetadata`, `downloadLimiter`, `downloadQueue`) stay inside `src/lib/cache/`; app code imports `musicCache`.
 - Catalog query/index helpers (`catalogIndex`: `DisplayTrack`, grouping, search, enrich patches) live in `src/lib/catalog/`; the catalog store holds the snapshot and schedules enrich.
 - Catalog load+hydrate orchestration (`createCatalogBootstrap`, `runCatalogLoad`) lives in `src/lib/catalog/` and is framework-agnostic. App/test startup binds Zustand ports via `bindAppCatalogBootstrap` (`src/stores/bindAppCatalog.ts`). Public `ensureCatalogLoaded` / `loadCatalogAndHydratePlayer` stay on `catalogBootstrap.ts`.
 - Playback queue mutations (`playbackQueue`) and persist codec (`playerStateCodec`) live in `src/lib/playback/`. Transport ports bind at `src/stores/bindAppPlayback.ts` (`createAppPlaybackTransport`); `AudioHost` only wires the element and React effects.

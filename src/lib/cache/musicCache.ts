@@ -25,10 +25,28 @@ import {
   type ExtractedTrackMeta,
   type TrackCacheMeta,
 } from './cacheStore';
+import {
+  clearManualDownloads,
+  enqueueManualDownloads,
+  isTrackQueuedForDownload,
+  resumeManualDownloads,
+  setManualDownloadHooks,
+  subscribeManualDownloads,
+  type ManualDownloadHooks,
+  type ManualDownloadTrackRef,
+} from './downloadQueue';
 
-export type { CacheProgress, CacheDownloadTrackRef, ExtractedTrackMeta, TrackCacheMeta };
+export type {
+  CacheProgress,
+  CacheDownloadTrackRef,
+  ExtractedTrackMeta,
+  ManualDownloadHooks,
+  ManualDownloadTrackRef,
+  TrackCacheMeta,
+};
 export {
   COVER_FILE_KEY,
+  enqueueManualDownloads,
   ensureTrackCached,
   getCachedBlobUrl,
   getCachedFile,
@@ -36,8 +54,12 @@ export {
   getMusicCacheSizeBytes,
   isTrackCached,
   isTrackDownloading,
+  isTrackQueuedForDownload,
   putExtractedTrackMeta,
+  resumeManualDownloads,
+  setManualDownloadHooks,
   subscribeCacheDownloads,
+  subscribeManualDownloads,
   trackDownloadPercent,
 };
 
@@ -54,5 +76,5 @@ export async function clearTrackCache(sourceUrl: string): Promise<void> {
 
 export async function clearAllMusicCaches(): Promise<void> {
   clearEnsureInFlight();
-  await clearAllCacheRecords();
+  await Promise.all([clearManualDownloads(), clearAllCacheRecords()]);
 }

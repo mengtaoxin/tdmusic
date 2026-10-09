@@ -51,7 +51,11 @@ export function ArtistTracksPage({ artistName }: { artistName: string }) {
       ) : null}
 
       {tracks.length > 0 ? (
-        <PlayAllButtons onPlayAll={playAllInOrder} onShuffleAll={shufflePlayAll} />
+        <PlayAllButtons
+          onPlayAll={playAllInOrder}
+          onShuffleAll={shufflePlayAll}
+          downloadTracks={tracks}
+        />
       ) : null}
 
       {loading ? (

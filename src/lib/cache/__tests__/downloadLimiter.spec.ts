@@ -3,13 +3,40 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   getDownloadLimiterStatsForTests,
   resetDownloadLimiterForTests,
+  startAudioDownloadJob,
   withAudioDownloadSlot,
 } from '../downloadLimiter';
 
 async function flush() {
-  await Promise.resolve();
-  await Promise.resolve();
-  await Promise.resolve();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+/** Tasks that record start/abort and settle when released, rejected, or aborted. */
+function createHarness() {
+  const started: number[] = [];
+  const aborted: number[] = [];
+  const releases = new Map<number, () => void>();
+  const rejects = new Map<number, (error: Error) => void>();
+
+  const makeTask = (id: number) => (signal: AbortSignal) =>
+    new Promise<void>((resolve, reject) => {
+      started.push(id);
+      releases.set(id, resolve);
+      rejects.set(id, reject);
+      signal.addEventListener(
+        'abort',
+        () => {
+          aborted.push(id);
+          reject(new Error('aborted'));
+        },
+        { once: true },
+      );
+    });
+
+  const release = (id: number) => releases.get(id)!();
+  const fail = (id: number, error: Error) => rejects.get(id)!(error);
+
+  return { started, aborted, makeTask, release, fail };
 }
 
 describe('downloadLimiter', () => {
@@ -18,252 +45,224 @@ describe('downloadLimiter', () => {
   });
 
   it('runs at most three tasks concurrently', async () => {
-    const started: number[] = [];
-    const finished: number[] = [];
-    const releases = new Map<number, () => void>();
+    const { started, makeTask, release } = createHarness();
 
-    const makeTask = (id: number) => () =>
-      new Promise<void>((resolve) => {
-        started.push(id);
-        releases.set(id, () => {
-          finished.push(id);
-          resolve();
-        });
-      });
-
-    const p1 = withAudioDownloadSlot(makeTask(1));
-    const p2 = withAudioDownloadSlot(makeTask(2));
-    const p3 = withAudioDownloadSlot(makeTask(3));
-    const p4 = withAudioDownloadSlot(makeTask(4));
+    const all = [1, 2, 3, 4].map((id) => withAudioDownloadSlot(makeTask(id)));
 
     await flush();
     expect(started).toEqual([1, 2, 3]);
     expect(getDownloadLimiterStatsForTests()).toEqual({ active: 3, pending: 1 });
 
-    releases.get(1)!();
+    release(1);
     await flush();
     expect(started).toEqual([1, 2, 3, 4]);
-    expect(finished).toEqual([1]);
 
-    releases.get(2)!();
-    releases.get(3)!();
-    releases.get(4)!();
-    await Promise.all([p1, p2, p3, p4]);
-    await flush();
-    expect(finished.sort()).toEqual([1, 2, 3, 4]);
+    for (const id of [2, 3, 4]) release(id);
+    await Promise.all(all);
     expect(getDownloadLimiterStatsForTests()).toEqual({ active: 0, pending: 0 });
   });
 
-  it('starts a waiting high-priority task before a waiting normal one', async () => {
-    const started: number[] = [];
-    const releases = new Map<number, () => void>();
+  it('aborts running normal and low tasks when a high task is created, then restarts them', async () => {
+    const { started, aborted, makeTask, release } = createHarness();
 
-    const makeTask = (id: number) => () =>
-      new Promise<void>((resolve) => {
-        started.push(id);
-        releases.set(id, resolve);
-      });
+    const pNormal = withAudioDownloadSlot(makeTask(1), 'normal');
+    const pLow = withAudioDownloadSlot(makeTask(2), 'low');
+    await flush();
+    expect(started).toEqual([1]);
 
-    const p1 = withAudioDownloadSlot(makeTask(1));
-    const p2 = withAudioDownloadSlot(makeTask(2));
-    const p3 = withAudioDownloadSlot(makeTask(3));
-    const pNormal = withAudioDownloadSlot(makeTask(4), 'normal');
+    const pHigh = withAudioDownloadSlot(makeTask(3), 'high');
+    await flush();
+    expect(aborted).toEqual([1]);
+    expect(started).toEqual([1, 3]);
+
+    release(3);
+    await flush();
+    expect(started).toEqual([1, 3, 1]);
+
+    release(1);
+    await flush();
+    expect(started).toEqual([1, 3, 1, 2]);
+
+    release(2);
+    await Promise.all([pNormal, pLow, pHigh]);
+  });
+
+  it('aborts running low tasks when a normal task is created', async () => {
+    const { started, aborted, makeTask, release } = createHarness();
+
+    const lows = [1, 2].map((id) => withAudioDownloadSlot(makeTask(id), 'low'));
+    await flush();
+    expect(started).toEqual([1, 2]);
+
+    const pNormal = withAudioDownloadSlot(makeTask(3), 'normal');
+    await flush();
+    expect(aborted).toEqual([1, 2]);
+    expect(started).toEqual([1, 2, 3]);
+    expect(getDownloadLimiterStatsForTests()).toEqual({ active: 1, pending: 2 });
+
+    release(3);
+    await flush();
+    expect(started).toEqual([1, 2, 3, 1, 2]);
+
+    release(1);
+    release(2);
+    await Promise.all([...lows, pNormal]);
+  });
+
+  it('restarts preempted tasks before same-priority tasks queued after them', async () => {
+    const { started, makeTask, release } = createHarness();
+
+    const lows = [1, 2, 3, 4].map((id) => withAudioDownloadSlot(makeTask(id), 'low'));
+    await flush();
+    expect(started).toEqual([1, 2, 3]);
+
     const pHigh = withAudioDownloadSlot(makeTask(5), 'high');
-
-    await flush();
-    expect(started).toEqual([1, 2, 3]);
-    expect(getDownloadLimiterStatsForTests()).toEqual({ active: 3, pending: 2 });
-
-    releases.get(1)!();
     await flush();
     expect(started).toEqual([1, 2, 3, 5]);
 
-    releases.get(2)!();
+    release(5);
     await flush();
-    expect(started).toEqual([1, 2, 3, 5]);
+    expect(started).toEqual([1, 2, 3, 5, 1, 2, 3]);
 
-    releases.get(3)!();
+    release(1);
     await flush();
-    expect(started).toEqual([1, 2, 3, 5]);
+    expect(started).toEqual([1, 2, 3, 5, 1, 2, 3, 4]);
 
-    releases.get(5)!();
-    await flush();
-    expect(started).toEqual([1, 2, 3, 5, 4]);
-
-    releases.get(4)!();
-    await Promise.all([p1, p2, p3, pNormal, pHigh]);
+    for (const id of [2, 3, 4]) release(id);
+    await Promise.all([...lows, pHigh]);
   });
 
-  it('starts a late high-priority waiter before several waiting normals', async () => {
-    const started: number[] = [];
-    const releases = new Map<number, () => void>();
+  it('starts a waiting high-priority task before waiting lower ones', async () => {
+    const { started, makeTask, release } = createHarness();
 
-    const makeTask = (id: number) => () =>
-      new Promise<void>((resolve) => {
-        started.push(id);
-        releases.set(id, resolve);
-      });
-
-    const actives = [1, 2, 3].map((id) => withAudioDownloadSlot(makeTask(id)));
-    const normals = [4, 5, 6].map((id) => withAudioDownloadSlot(makeTask(id), 'normal'));
+    const highs = [1, 2, 3].map((id) => withAudioDownloadSlot(makeTask(id), 'high'));
+    const pLow = withAudioDownloadSlot(makeTask(4), 'low');
+    const pNormal = withAudioDownloadSlot(makeTask(5), 'normal');
+    const pHigh = withAudioDownloadSlot(makeTask(6), 'high');
     await flush();
     expect(started).toEqual([1, 2, 3]);
 
-    const pHigh = withAudioDownloadSlot(makeTask(99), 'high');
+    release(1);
     await flush();
-    expect(getDownloadLimiterStatsForTests()).toEqual({ active: 3, pending: 4 });
+    expect(started).toEqual([1, 2, 3, 6]);
 
-    releases.get(1)!();
+    for (const id of [2, 3, 6]) release(id);
     await flush();
-    expect(started).toEqual([1, 2, 3, 99]);
+    expect(started).toEqual([1, 2, 3, 6, 5]);
 
-    for (const id of [2, 3, 99]) {
-      releases.get(id)!();
-      // oxlint-disable-next-line no-await-in-loop -- each release must settle before the next
-      await flush();
-    }
-    expect(started).toEqual([1, 2, 3, 99, 4, 5, 6]);
-    for (const id of [4, 5, 6]) releases.get(id)!();
-    await Promise.all([...actives, ...normals, pHigh]);
+    release(5);
+    await flush();
+    expect(started).toEqual([1, 2, 3, 6, 5, 4]);
+
+    release(4);
+    await Promise.all([...highs, pLow, pNormal, pHigh]);
   });
 
-  it('does not start a new normal while a high-priority task is running, even with idle slots', async () => {
-    const started: number[] = [];
-    const releases = new Map<number, () => void>();
-
-    const makeTask = (id: number) => () =>
-      new Promise<void>((resolve) => {
-        started.push(id);
-        releases.set(id, resolve);
-      });
+  it('does not start a new lower task while a higher one is running, even with idle slots', async () => {
+    const { started, makeTask, release } = createHarness();
 
     const pHigh = withAudioDownloadSlot(makeTask(1), 'high');
     await flush();
-    expect(started).toEqual([1]);
 
     const pNormal = withAudioDownloadSlot(makeTask(2), 'normal');
     await flush();
     expect(started).toEqual([1]);
     expect(getDownloadLimiterStatsForTests()).toEqual({ active: 1, pending: 1 });
 
-    releases.get(1)!();
+    release(1);
     await flush();
     expect(started).toEqual([1, 2]);
 
-    releases.get(2)!();
+    release(2);
     await Promise.all([pHigh, pNormal]);
   });
 
-  it('does not start waiting normals when a high-priority task is still running', async () => {
-    const started: number[] = [];
-    const releases = new Map<number, () => void>();
-
-    const makeTask = (id: number) => () =>
-      new Promise<void>((resolve) => {
-        started.push(id);
-        releases.set(id, resolve);
-      });
-
-    const pHigh = withAudioDownloadSlot(makeTask(1), 'high');
-    const pFill2 = withAudioDownloadSlot(makeTask(2), 'normal');
-    const pFill3 = withAudioDownloadSlot(makeTask(3), 'normal');
-    const pWaitNormal = withAudioDownloadSlot(makeTask(4), 'normal');
-    await flush();
-    expect(started).toEqual([1]);
-    expect(getDownloadLimiterStatsForTests()).toEqual({ active: 1, pending: 3 });
-
-    releases.get(1)!();
-    await flush();
-    expect(started).toEqual([1, 2, 3, 4]);
-
-    for (const id of [2, 3, 4]) releases.get(id)!();
-    await Promise.all([pHigh, pFill2, pFill3, pWaitNormal]);
-  });
-
-  it('lets an in-flight normal finish when a high-priority task arrives', async () => {
-    const started: number[] = [];
-    const finished: number[] = [];
-    const releases = new Map<number, () => void>();
-
-    const makeTask = (id: number) => () =>
-      new Promise<void>((resolve) => {
-        started.push(id);
-        releases.set(id, () => {
-          finished.push(id);
-          resolve();
-        });
-      });
+  it('raises a waiting task so it preempts and starts', async () => {
+    const { started, aborted, makeTask, release } = createHarness();
 
     const pNormal = withAudioDownloadSlot(makeTask(1), 'normal');
+    const lowJob = startAudioDownloadJob(makeTask(2), 'low');
     await flush();
     expect(started).toEqual([1]);
 
-    const pHigh = withAudioDownloadSlot(makeTask(2), 'high');
+    lowJob.raisePriority('high');
     await flush();
-    expect(started).toEqual([1, 2]);
-    expect(finished).toEqual([]);
-
-    releases.get(1)!();
-    await flush();
-    expect(finished).toEqual([1]);
+    expect(aborted).toEqual([1]);
     expect(started).toEqual([1, 2]);
 
-    releases.get(2)!();
-    await Promise.all([pNormal, pHigh]);
+    release(2);
+    await flush();
+    expect(started).toEqual([1, 2, 1]);
+
+    release(1);
+    await Promise.all([pNormal, lowJob.done]);
   });
 
-  it('starts waiting normals only after every high-priority task has finished', async () => {
-    const started: number[] = [];
-    const releases = new Map<number, () => void>();
+  it('raises a running task without restarting it and preempts tasks now below it', async () => {
+    const { started, aborted, makeTask, release } = createHarness();
 
-    const makeTask = (id: number) => () =>
-      new Promise<void>((resolve) => {
-        started.push(id);
-        releases.set(id, resolve);
-      });
-
-    const pHigh1 = withAudioDownloadSlot(makeTask(1), 'high');
-    const pHigh2 = withAudioDownloadSlot(makeTask(2), 'high');
-    const pNormal = withAudioDownloadSlot(makeTask(3), 'normal');
+    const lowJob = startAudioDownloadJob(makeTask(1), 'low');
+    const pOtherLow = withAudioDownloadSlot(makeTask(2), 'low');
     await flush();
     expect(started).toEqual([1, 2]);
 
-    releases.get(1)!();
+    lowJob.raisePriority('normal');
     await flush();
+    expect(aborted).toEqual([2]);
     expect(started).toEqual([1, 2]);
 
-    releases.get(2)!();
+    release(1);
     await flush();
-    expect(started).toEqual([1, 2, 3]);
+    expect(started).toEqual([1, 2, 2]);
 
-    releases.get(3)!();
-    await Promise.all([pHigh1, pHigh2, pNormal]);
+    release(2);
+    await Promise.all([lowJob.done, pOtherLow]);
+  });
+
+  it('ignores a raise to an equal or lower priority', async () => {
+    const { started, aborted, makeTask, release } = createHarness();
+
+    const highJob = startAudioDownloadJob(makeTask(1), 'high');
+    await flush();
+    highJob.raisePriority('low');
+    const pNormal = withAudioDownloadSlot(makeTask(2), 'normal');
+    await flush();
+    expect(aborted).toEqual([]);
+    expect(started).toEqual([1]);
+
+    release(1);
+    await flush();
+    release(2);
+    await Promise.all([highJob.done, pNormal]);
+  });
+
+  it('rejects with the task error when the failure is not a preemption', async () => {
+    const { makeTask, fail } = createHarness();
+
+    const p = withAudioDownloadSlot(makeTask(1), 'low');
+    await flush();
+    fail(1, new Error('boom'));
+
+    await expect(p).rejects.toThrow('boom');
+    expect(getDownloadLimiterStatsForTests()).toEqual({ active: 0, pending: 0 });
   });
 
   it('keeps FIFO order among same-priority waiters', async () => {
-    const started: number[] = [];
-    const releases = new Map<number, () => void>();
+    const { started, makeTask, release } = createHarness();
 
-    const makeTask = (id: number) => () =>
-      new Promise<void>((resolve) => {
-        started.push(id);
-        releases.set(id, resolve);
-      });
-
-    const actives = [1, 2, 3].map((id) => withAudioDownloadSlot(makeTask(id), 'high'));
-    const highs = [4, 5].map((id) => withAudioDownloadSlot(makeTask(id), 'high'));
+    const all = [1, 2, 3, 4, 5].map((id) => withAudioDownloadSlot(makeTask(id), 'high'));
     await flush();
     expect(started).toEqual([1, 2, 3]);
 
-    releases.get(1)!();
+    release(1);
     await flush();
     expect(started).toEqual([1, 2, 3, 4]);
 
-    releases.get(2)!();
+    release(2);
     await flush();
     expect(started).toEqual([1, 2, 3, 4, 5]);
 
-    for (const id of [3, 4, 5]) releases.get(id)!();
-    await Promise.all([...actives, ...highs]);
+    for (const id of [3, 4, 5]) release(id);
+    await Promise.all(all);
   });
 });

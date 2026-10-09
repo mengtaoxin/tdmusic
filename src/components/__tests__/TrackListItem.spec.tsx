@@ -1,9 +1,13 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { TrackListItem } from '@/components/TrackListItem';
 import { renderWithProviders } from '@/__tests__/renderWithProviders';
+import { putMeta, resetCacheDbForTests } from '@/lib/cache/cacheStore';
+import { resetDownloadLimiterForTests } from '@/lib/cache/downloadLimiter';
+import { resetManualDownloadsForTests } from '@/lib/cache/downloadQueue';
+import { isTrackQueuedForDownload } from '@/lib/cache/musicCache';
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
 
 function makeTrack(): DisplayTrack {
@@ -18,6 +22,16 @@ function makeTrack(): DisplayTrack {
 }
 
 describe('TrackListItem', () => {
+  beforeEach(async () => {
+    resetManualDownloadsForTests();
+    resetDownloadLimiterForTests();
+    await resetCacheDbForTests();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => new Promise<Response>(() => {})),
+    );
+  });
+
   it('renders the track title', () => {
     renderWithProviders(<TrackListItem track={makeTrack()} />);
     expect(screen.getByText('Song One')).toBeInTheDocument();
@@ -55,5 +69,36 @@ describe('TrackListItem', () => {
     await user.click(screen.getByTestId('track-actions'));
     await user.click(screen.getByTestId('track-remove'));
     expect(onRemove).toHaveBeenCalledOnce();
+  });
+
+  it('queues the track for download from the actions menu', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<TrackListItem track={makeTrack()} />);
+
+    await user.click(screen.getByTestId('track-actions'));
+    const download = screen.getByTestId('track-download');
+    expect(download).toHaveTextContent('Download');
+    await user.click(download);
+
+    await vi.waitFor(() => expect(isTrackQueuedForDownload('/music/t1.mp3')).toBe(true));
+
+    await user.click(screen.getByTestId('track-actions'));
+    const queued = screen.getByTestId('track-download');
+    expect(queued).toHaveTextContent('Queued for download');
+    expect(queued).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('shows a disabled Downloaded item when the track is already cached', async () => {
+    const user = userEvent.setup();
+    await putMeta({ sourceUrl: '/music/t1.mp3', status: 'ready', downloadedAt: 1 });
+    renderWithProviders(<TrackListItem track={makeTrack()} />);
+
+    await user.click(screen.getByTestId('track-actions'));
+
+    await vi.waitFor(() => {
+      const item = screen.getByTestId('track-download');
+      expect(item).toHaveTextContent('Downloaded');
+      expect(item).toHaveAttribute('aria-disabled', 'true');
+    });
   });
 });

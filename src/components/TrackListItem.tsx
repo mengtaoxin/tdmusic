@@ -6,6 +6,8 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import DownloadIcon from '@mui/icons-material/Download';
+import DownloadDoneIcon from '@mui/icons-material/DownloadDone';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
@@ -14,7 +16,9 @@ import PlaylistRemoveIcon from '@mui/icons-material/PlaylistRemove';
 import { useTranslation } from 'react-i18next';
 
 import { CoverImg } from '@/components/CoverImg';
+import { useManualDownload } from '@/hooks/useManualDownload';
 import { useTrackDownload } from '@/hooks/useTrackDownload';
+import { isTrackCached } from '@/lib/cache/musicCache';
 import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels';
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
 import { usePlayerStore } from '@/stores/player';
@@ -43,13 +47,16 @@ export function TrackListItem({
   const currentId = usePlayerStore((s) => s.currentId);
   const { downloading } = useTrackDownload(track);
   const coverBusy = downloading && currentId === track.id;
+  const { remaining: queuedForDownload, downloadAll: downloadTrack } = useManualDownload([track]);
 
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const [cached, setCached] = useState(false);
   const menuOpen = Boolean(menuAnchor);
 
   function openMenu(event: MouseEvent<HTMLElement>) {
     event.stopPropagation();
     setMenuAnchor(event.currentTarget);
+    void isTrackCached(track.path).then(setCached, () => setCached(false));
   }
 
   function stopPointerDown(event: PointerEvent) {
@@ -58,6 +65,12 @@ export function TrackListItem({
 
   function closeMenu() {
     setMenuAnchor(null);
+  }
+
+  function downloadLabel() {
+    if (cached) return t('player.downloaded');
+    if (queuedForDownload > 0) return t('player.downloadQueued');
+    return t('player.download');
   }
 
   const artist = localizeArtistName(track.displayArtist, t);
@@ -149,6 +162,19 @@ export function TrackListItem({
                 {t('player.removeFromQueue')}
               </MenuItem>
             )}
+            <MenuItem
+              data-testid="track-download"
+              disabled={cached || queuedForDownload > 0}
+              onClick={() => {
+                closeMenu();
+                downloadTrack();
+              }}
+            >
+              <ListItemIcon>
+                {cached ? <DownloadDoneIcon fontSize="small" /> : <DownloadIcon fontSize="small" />}
+              </ListItemIcon>
+              {downloadLabel()}
+            </MenuItem>
           </Menu>
         </>
       ) : null}

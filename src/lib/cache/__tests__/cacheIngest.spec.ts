@@ -29,7 +29,7 @@ describe('ensureTrackCached', () => {
     await ensureTrackCached(sourceUrl, 'b');
     expect(await isTrackCached(sourceUrl)).toBe(true);
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledWith(sourceUrl, { cache: 'no-cache' });
+    expect(fetch).toHaveBeenCalledWith(sourceUrl, expect.objectContaining({ cache: 'no-cache' }));
 
     await ensureTrackCached(sourceUrl, 'b');
     expect(fetch).toHaveBeenCalledTimes(1);
@@ -77,7 +77,7 @@ describe('ensureTrackCached', () => {
     await ensureTrackCached(sourceUrl, 'local');
     expect(await isTrackCached(sourceUrl)).toBe(true);
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledWith(sourceUrl, { cache: 'no-cache' });
+    expect(fetch).toHaveBeenCalledWith(sourceUrl, expect.objectContaining({ cache: 'no-cache' }));
 
     await ensureTrackCached(sourceUrl, 'local');
     expect(fetch).toHaveBeenCalledTimes(1);
@@ -144,4 +144,78 @@ describe('ensureTrackCached', () => {
     await expect(ensureTrackCached(sourceUrl, 'boom')).rejects.toThrow(/downloadFailed/);
     expect(isTrackDownloading(track)).toBe(false);
   });
+
+  it('restarts a lower-priority download aborted by a higher-priority one', async () => {
+    const lowUrl = 'https://example.com/low.mp3';
+    const highUrl = 'https://example.com/high.mp3';
+    const { fetchMock, release, calls } = gatedFetch();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const low = ensureTrackCached(lowUrl, 'low', { priority: 'low' });
+    await vi.waitFor(() => expect(calls(lowUrl)).toBe(1));
+
+    const high = ensureTrackCached(highUrl, 'high', { priority: 'high' });
+    await vi.waitFor(() => expect(calls(highUrl)).toBe(1));
+    expect(await isTrackCached(lowUrl)).toBe(false);
+
+    release(highUrl);
+    await high;
+    await vi.waitFor(() => expect(calls(lowUrl)).toBe(2));
+
+    release(lowUrl);
+    await low;
+    expect(await isTrackCached(lowUrl)).toBe(true);
+    expect(await isTrackCached(highUrl)).toBe(true);
+  });
+
+  it('raises an in-flight download when the same URL is requested at a higher priority', async () => {
+    const sharedUrl = 'https://example.com/shared.mp3';
+    const otherUrl = 'https://example.com/other.mp3';
+    const { fetchMock, release, calls } = gatedFetch();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const low = ensureTrackCached(sharedUrl, 'shared', { priority: 'low' });
+    await vi.waitFor(() => expect(calls(sharedUrl)).toBe(1));
+
+    const play = ensureTrackCached(sharedUrl, 'shared', { priority: 'high' });
+    const prefetch = ensureTrackCached(otherUrl, 'other', { priority: 'normal' });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(calls(otherUrl)).toBe(0);
+    expect(calls(sharedUrl)).toBe(1);
+
+    release(sharedUrl);
+    await Promise.all([low, play]);
+    expect(calls(sharedUrl)).toBe(1);
+
+    await vi.waitFor(() => expect(calls(otherUrl)).toBe(1));
+    release(otherUrl);
+    await prefetch;
+  });
 });
+
+/** fetch stub whose responses wait for `release(url)` and reject when aborted. */
+function gatedFetch() {
+  const gates = new Map<string, () => void>();
+  const callCounts = new Map<string, number>();
+
+  const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    callCounts.set(url, (callCounts.get(url) ?? 0) + 1);
+    await new Promise<void>((resolve, reject) => {
+      gates.set(url, resolve);
+      init?.signal?.addEventListener('abort', () => reject(new Error('aborted')), { once: true });
+    });
+    return {
+      ok: true,
+      headers: new Headers({ 'Content-Type': 'audio/mpeg' }),
+      body: null,
+      blob: async () => new Blob([url], { type: 'audio/mpeg' }),
+    } as Response;
+  });
+
+  return {
+    fetchMock,
+    release: (url: string) => gates.get(url)!(),
+    calls: (url: string) => callCounts.get(url) ?? 0,
+  };
+}

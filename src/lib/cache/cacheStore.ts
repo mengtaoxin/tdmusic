@@ -17,6 +17,13 @@ export type ExtractedTrackMeta = {
   updatedAt: number;
 };
 
+/** A user-requested (manual) download that has not finished yet. */
+export type DownloadQueueEntry = {
+  sourceUrl: string;
+  id?: string;
+  addedAt: number;
+};
+
 export const AUDIO_FILE_KEY = '__audio__';
 export const COVER_FILE_KEY = '__cover__';
 const KEY_SEP = '\0';
@@ -26,12 +33,17 @@ const db = new Dexie('music-cache') as Dexie & {
   /** Outbound keys from `fileRecordKey`; values are raw Blobs. */
   files: Table<Blob, string>;
   trackMeta: EntityTable<ExtractedTrackMeta, 'sourceUrl'>;
+  downloadQueue: EntityTable<DownloadQueueEntry, 'sourceUrl'>;
 };
 
 db.version(1).stores({
   meta: 'sourceUrl',
   files: '',
   trackMeta: 'sourceUrl',
+});
+
+db.version(2).stores({
+  downloadQueue: 'sourceUrl, addedAt',
 });
 
 const blobUrlCache = new Map<string, string>();
@@ -149,9 +161,26 @@ export async function clearAllCacheRecords(): Promise<void> {
   });
 }
 
+/** Manual download queue, oldest first. */
+export async function listDownloadQueue(): Promise<DownloadQueueEntry[]> {
+  return db.downloadQueue.orderBy('addedAt').toArray();
+}
+
+export async function putDownloadQueueEntries(entries: DownloadQueueEntry[]): Promise<void> {
+  await db.downloadQueue.bulkPut(entries);
+}
+
+export async function deleteDownloadQueueEntry(sourceUrl: string): Promise<void> {
+  await db.downloadQueue.delete(sourceUrl);
+}
+
+export async function clearDownloadQueue(): Promise<void> {
+  await db.downloadQueue.clear();
+}
+
 /** Clear all records and in-memory blob URLs (tests). */
 export async function resetCacheDbForTests(): Promise<void> {
-  await clearAllCacheRecords();
+  await Promise.all([clearAllCacheRecords(), clearDownloadQueue()]);
 }
 
 /** @deprecated Prefer resetCacheDbForTests */

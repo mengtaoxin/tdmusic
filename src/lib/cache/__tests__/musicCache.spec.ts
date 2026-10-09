@@ -5,6 +5,7 @@ import {
   getCachedFile,
   putFiles,
   AUDIO_FILE_KEY,
+  listDownloadQueue,
   resetCacheDbForTests,
 } from '../cacheStore';
 import * as cacheEviction from '../cacheEviction';
@@ -48,5 +49,19 @@ describe('musicCache facade', () => {
     });
 
     expect(putCover).toHaveBeenCalledWith(sourceUrl, coverBlob);
+  });
+
+  it('clearAllMusicCaches also empties the manual download queue', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => new Promise<Response>(() => {})),
+    );
+    await musicCache.enqueueManualDownloads([{ id: 'q', path: '/queued.mp3' }]);
+    expect(musicCache.isTrackQueuedForDownload('/queued.mp3')).toBe(true);
+
+    await musicCache.clearAllMusicCaches();
+
+    expect(musicCache.isTrackQueuedForDownload('/queued.mp3')).toBe(false);
+    expect(await listDownloadQueue()).toEqual([]);
   });
 });

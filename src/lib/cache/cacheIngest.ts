@@ -8,7 +8,11 @@ import {
 } from './cacheStore';
 import { ensureQuota } from './cacheEviction';
 import { reportCacheDownload, clearCacheDownloadState } from './cacheDownloadState';
-import { withAudioDownloadSlot, type DownloadPriority } from './downloadLimiter';
+import {
+  startAudioDownloadJob,
+  type AudioDownloadJob,
+  type DownloadPriority,
+} from './downloadLimiter';
 import { isPlayablePath } from '../paths';
 
 export type CacheProgress = {
@@ -17,7 +21,7 @@ export type CacheProgress = {
   total: number | null;
 };
 
-const ensureInFlight = new Map<string, Promise<void>>();
+const ensureInFlight = new Map<string, AudioDownloadJob<void>>();
 
 function emitProgress(
   sourceUrl: string,
@@ -31,10 +35,11 @@ function emitProgress(
 
 async function fetchAsBlob(
   sourceUrl: string,
+  signal: AbortSignal,
   id?: string,
   onProgress?: (progress: CacheProgress) => void,
 ): Promise<Blob> {
-  const response = await fetch(sourceUrl, { cache: 'no-cache' });
+  const response = await fetch(sourceUrl, { cache: 'no-cache', signal });
   if (!response.ok) {
     throw new Error(`downloadFailed:${response.status}`);
   }
@@ -80,6 +85,7 @@ async function fetchAsBlob(
 
 async function downloadAndStore(
   sourceUrl: string,
+  signal: AbortSignal,
   id?: string,
   onProgress?: (progress: CacheProgress) => void,
 ): Promise<void> {
@@ -93,7 +99,8 @@ async function downloadAndStore(
   await putMeta(pendingMeta);
 
   try {
-    const blob = await fetchAsBlob(sourceUrl, id, onProgress);
+    const blob = await fetchAsBlob(sourceUrl, signal, id, onProgress);
+    signal.throwIfAborted();
     await ensureQuota(blob.size);
     await putFiles(sourceUrl, [{ relativePath: AUDIO_FILE_KEY, blob }]);
     const meta: TrackCacheMeta = {
@@ -134,18 +141,20 @@ export async function ensureTrackCached(
 
   const existing = ensureInFlight.get(sourceUrl);
   if (existing) {
-    await existing;
+    existing.raisePriority(priority);
+    await existing.done;
     return;
   }
 
-  const job = withAudioDownloadSlot(
-    () => downloadAndStore(sourceUrl, id, onProgress),
+  const job = startAudioDownloadJob(
+    (signal) => downloadAndStore(sourceUrl, signal, id, onProgress),
     priority,
-  ).finally(() => {
-    ensureInFlight.delete(sourceUrl);
+  );
+  const done = job.done.finally(() => {
+    if (ensureInFlight.get(sourceUrl)?.done === done) ensureInFlight.delete(sourceUrl);
   });
-  ensureInFlight.set(sourceUrl, job);
-  await job;
+  ensureInFlight.set(sourceUrl, { done, raisePriority: job.raisePriority });
+  await done;
 }
 
 export function cancelEnsureInFlight(sourceUrl: string) {

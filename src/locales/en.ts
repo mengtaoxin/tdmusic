@@ -62,6 +62,11 @@ export default {
     downloading: 'Downloading',
     playAll: 'Play all',
     shuffleAll: 'Shuffle all',
+    download: 'Download',
+    downloadAll: 'Download all',
+    downloadAllRemaining: 'Downloading ({count})',
+    downloaded: 'Downloaded',
+    downloadQueued: 'Queued for download',
   },
   search: {
     placeholder: 'Search tracks, artists, albums',

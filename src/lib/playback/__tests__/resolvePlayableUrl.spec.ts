@@ -50,7 +50,7 @@ describe('resolvePlayableUrl', () => {
 
     expect(url).toMatch(/^blob:/);
     expect(await isTrackCached(path)).toBe(true);
-    expect(fetch).toHaveBeenCalledWith(path, { cache: 'no-cache' });
+    expect(fetch).toHaveBeenCalledWith(path, expect.objectContaining({ cache: 'no-cache' }));
     const blob = await getCachedFile(path);
     expect(blob).not.toBeNull();
     expect(await blob!.text()).toBe('local');

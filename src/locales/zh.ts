@@ -60,6 +60,11 @@ export default {
     downloading: '正在下载',
     playAll: '顺序播放全部',
     shuffleAll: '随机播放全部',
+    download: '下载',
+    downloadAll: '下载全部',
+    downloadAllRemaining: '下载中（{count}）',
+    downloaded: '已下载',
+    downloadQueued: '已在下载队列',
   },
   search: {
     placeholder: '搜索歌曲、歌手、专辑',
