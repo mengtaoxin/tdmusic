@@ -63,6 +63,7 @@ export default {
     download: '下载',
     downloadAll: '下载全部',
     downloadAllRemaining: '下载中（{count}）',
+    downloadAllConfirm: '确定下载全部 {count} 首歌曲到本机？',
     downloaded: '已下载',
     downloadQueued: '已在下载队列',
   },

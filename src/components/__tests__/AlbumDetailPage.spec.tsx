@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { renderWithProviders } from '@/__tests__/renderWithProviders';
@@ -52,8 +52,7 @@ describe('AlbumDetailPage', () => {
     expect(playFrom).toHaveBeenCalledWith(2, ['a', 'b', 'c'], { shuffle: true });
   });
 
-  it('queues every album track for download from the page actions', async () => {
-    const user = userEvent.setup();
+  async function setUpAlbumDownloads() {
     resetManualDownloadsForTests();
     resetDownloadLimiterForTests();
     await resetCacheDbForTests();
@@ -68,10 +67,34 @@ describe('AlbumDetailPage', () => {
         track('b', 'Track B'),
         track('other', 'Other', 'Album 2'),
       ]);
+  }
+
+  it('does not queue downloads when the download-all confirm is cancelled', async () => {
+    const user = userEvent.setup();
+    await setUpAlbumDownloads();
 
     renderWithProviders(<AlbumDetailPage albumName="Album 1" />);
 
     await user.click(screen.getByRole('button', { name: 'Download all' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('Download all 2 tracks to this device?');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'Download all' })).toBeInTheDocument();
+    expect(await listDownloadQueue()).toEqual([]);
+  });
+
+  it('queues every album track for download after confirming', async () => {
+    const user = userEvent.setup();
+    await setUpAlbumDownloads();
+
+    renderWithProviders(<AlbumDetailPage albumName="Album 1" />);
+
+    await user.click(screen.getByRole('button', { name: 'Download all' }));
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Confirm' }));
 
     expect(await screen.findByRole('button', { name: 'Downloading (2)' })).toBeInTheDocument();
     expect((await listDownloadQueue()).map((entry) => entry.sourceUrl)).toEqual([

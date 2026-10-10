@@ -65,6 +65,7 @@ export default {
     download: 'Download',
     downloadAll: 'Download all',
     downloadAllRemaining: 'Downloading ({count})',
+    downloadAllConfirm: 'Download all {count} tracks to this device?',
     downloaded: 'Downloaded',
     downloadQueued: 'Queued for download',
   },
