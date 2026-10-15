@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ClearUpcomingButton } from '@/components/ClearUpcomingButton';
 import { CoverImg } from '@/components/CoverImg';
-import { TrackListItem } from '@/components/TrackListItem';
+import { TRACK_ROW_HEIGHT, TrackListItem } from '@/components/TrackListItem';
 import { VirtualRowList } from '@/components/VirtualRowList';
 import { useTrackDownload } from '@/hooks/useTrackDownload';
 import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabels';
@@ -31,8 +31,6 @@ import { usePlayerStore } from '@/stores/player';
 export const Route = createFileRoute('/now-playing')({
   component: NowPlayingPage,
 });
-
-const TRACK_ROW_HEIGHT = 64;
 
 function formatTime(sec: number) {
   if (!Number.isFinite(sec)) return '0:00';

@@ -32,6 +32,27 @@ test('queue heading stays on one line on a narrow screen', async ({ page }) => {
   expect(lineCount).toBe(1);
 });
 
+test('queue rows do not overlap their neighbours', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.addInitScript((state) => {
+    localStorage.setItem('tdmusic.player', JSON.stringify(state));
+  }, PLAYER_STATE);
+
+  await page.goto('/now-playing');
+  const rows = page.locator('.queue-list .track-row');
+  await expect(rows).toHaveCount(3);
+
+  const boxes = await rows.evaluateAll((els) =>
+    els.map((el) => {
+      const r = el.getBoundingClientRect();
+      return { top: r.top, bottom: r.bottom };
+    }),
+  );
+  for (let i = 1; i < boxes.length; i++) {
+    expect(boxes[i]!.top).toBeGreaterThanOrEqual(boxes[i - 1]!.bottom);
+  }
+});
+
 test('queue list aligns the playing track at the top after returning to the page', async ({
   page,
 }) => {

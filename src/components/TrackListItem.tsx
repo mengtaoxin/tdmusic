@@ -23,6 +23,8 @@ import { localizeAlbumName, localizeArtistName } from '@/lib/catalog/displayLabe
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
 import { usePlayerStore } from '@/stores/player';
 
+export const TRACK_ROW_HEIGHT = 64;
+
 export type TrackListItemProps = {
   track: DisplayTrack;
   active?: boolean;
@@ -84,7 +86,12 @@ export function TrackListItem({
         selected={active}
         className="track-row"
         onClick={() => onSelect?.()}
-        sx={{ borderRadius: 2, transition: 'background-color 0.2s ease' }}
+        sx={{
+          height: TRACK_ROW_HEIGHT,
+          py: 0.5,
+          borderRadius: 2,
+          transition: 'background-color 0.2s ease',
+        }}
       >
         <Avatar variant="rounded" sx={{ width: 40, height: 40, mr: 1.5, bgcolor: 'action.hover' }}>
           {track.displayCover || coverBusy ? (
