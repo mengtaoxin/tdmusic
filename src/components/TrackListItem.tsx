@@ -79,29 +79,29 @@ export function TrackListItem({
     : artist;
 
   return (
-    <ListItemButton
-      selected={active}
-      className="track-row"
-      onClick={() => onSelect?.()}
-      sx={{ borderRadius: 2, transition: 'background-color 0.2s ease' }}
-    >
-      <Avatar variant="rounded" sx={{ width: 40, height: 40, mr: 1.5, bgcolor: 'action.hover' }}>
-        {track.displayCover || coverBusy ? (
-          <CoverImg src={track.displayCover} downloading={coverBusy} />
-        ) : (
-          <MusicNoteIcon fontSize="small" />
-        )}
-      </Avatar>
-      <ListItemText
-        primary={track.displayTitle}
-        secondary={subtitle}
-        slotProps={{
-          primary: { noWrap: true },
-          secondary: { noWrap: true },
-        }}
-      />
-      {actions !== 'none' ? (
-        <>
+    <>
+      <ListItemButton
+        selected={active}
+        className="track-row"
+        onClick={() => onSelect?.()}
+        sx={{ borderRadius: 2, transition: 'background-color 0.2s ease' }}
+      >
+        <Avatar variant="rounded" sx={{ width: 40, height: 40, mr: 1.5, bgcolor: 'action.hover' }}>
+          {track.displayCover || coverBusy ? (
+            <CoverImg src={track.displayCover} downloading={coverBusy} />
+          ) : (
+            <MusicNoteIcon fontSize="small" />
+          )}
+        </Avatar>
+        <ListItemText
+          primary={track.displayTitle}
+          secondary={subtitle}
+          slotProps={{
+            primary: { noWrap: true },
+            secondary: { noWrap: true },
+          }}
+        />
+        {actions !== 'none' ? (
           <IconButton
             data-testid="track-actions"
             size="small"
@@ -112,72 +112,75 @@ export function TrackListItem({
           >
             <MoreVertIcon fontSize="small" />
           </IconButton>
-          <Menu
-            anchorEl={menuAnchor}
-            open={menuOpen}
-            onClose={closeMenu}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-            transitionDuration={150}
-            slotProps={{ list: { dense: true, sx: { minWidth: 180 } } }}
-          >
-            {actions === 'playback' ? (
-              <>
-                <MenuItem
-                  data-testid="track-play-next"
-                  onClick={() => {
-                    closeMenu();
-                    onPlayNext?.();
-                  }}
-                >
-                  <ListItemIcon>
-                    <PlaylistPlayIcon fontSize="small" />
-                  </ListItemIcon>
-                  {t('player.playNext')}
-                </MenuItem>
-                <MenuItem
-                  data-testid="track-add-to-queue"
-                  onClick={() => {
-                    closeMenu();
-                    onAddToQueue?.();
-                  }}
-                >
-                  <ListItemIcon>
-                    <PlaylistAddIcon fontSize="small" />
-                  </ListItemIcon>
-                  {t('player.addToQueue')}
-                </MenuItem>
-              </>
-            ) : (
+        ) : null}
+      </ListItemButton>
+      {/* Sibling of the row: React events bubble through portals, so a child menu would select the track. */}
+      {actions !== 'none' ? (
+        <Menu
+          anchorEl={menuAnchor}
+          open={menuOpen}
+          onClose={closeMenu}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          transitionDuration={150}
+          slotProps={{ list: { dense: true, sx: { minWidth: 180 } } }}
+        >
+          {actions === 'playback' ? (
+            <>
               <MenuItem
-                data-testid="track-remove"
+                data-testid="track-play-next"
                 onClick={() => {
                   closeMenu();
-                  onRemove?.();
+                  onPlayNext?.();
                 }}
               >
                 <ListItemIcon>
-                  <PlaylistRemoveIcon fontSize="small" />
+                  <PlaylistPlayIcon fontSize="small" />
                 </ListItemIcon>
-                {t('player.removeFromQueue')}
+                {t('player.playNext')}
               </MenuItem>
-            )}
+              <MenuItem
+                data-testid="track-add-to-queue"
+                onClick={() => {
+                  closeMenu();
+                  onAddToQueue?.();
+                }}
+              >
+                <ListItemIcon>
+                  <PlaylistAddIcon fontSize="small" />
+                </ListItemIcon>
+                {t('player.addToQueue')}
+              </MenuItem>
+            </>
+          ) : (
             <MenuItem
-              data-testid="track-download"
-              disabled={cached || queuedForDownload > 0}
+              data-testid="track-remove"
               onClick={() => {
                 closeMenu();
-                downloadTrack();
+                onRemove?.();
               }}
             >
               <ListItemIcon>
-                {cached ? <DownloadDoneIcon fontSize="small" /> : <DownloadIcon fontSize="small" />}
+                <PlaylistRemoveIcon fontSize="small" />
               </ListItemIcon>
-              {downloadLabel()}
+              {t('player.removeFromQueue')}
             </MenuItem>
-          </Menu>
-        </>
+          )}
+          <MenuItem
+            data-testid="track-download"
+            disabled={cached || queuedForDownload > 0}
+            onClick={() => {
+              closeMenu();
+              downloadTrack();
+            }}
+          >
+            <ListItemIcon>
+              {cached ? <DownloadDoneIcon fontSize="small" /> : <DownloadIcon fontSize="small" />}
+            </ListItemIcon>
+            {downloadLabel()}
+          </MenuItem>
+        </Menu>
       ) : null}
-    </ListItemButton>
+    </>
   );
 }

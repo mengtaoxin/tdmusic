@@ -71,6 +71,36 @@ describe('TrackListItem', () => {
     expect(onRemove).toHaveBeenCalledOnce();
   });
 
+  it('does not select the track when dismissing the actions menu by clicking outside', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn<() => void>();
+
+    renderWithProviders(<TrackListItem track={makeTrack()} actions="queue" onSelect={onSelect} />);
+
+    await user.click(screen.getByTestId('track-actions'));
+    const backdrop = document.querySelector<HTMLElement>('.MuiBackdrop-root');
+    expect(backdrop).not.toBeNull();
+    await user.click(backdrop!);
+
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('does not select the track when choosing an actions menu item', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn<() => void>();
+    const onRemove = vi.fn<() => void>();
+
+    renderWithProviders(
+      <TrackListItem track={makeTrack()} actions="queue" onSelect={onSelect} onRemove={onRemove} />,
+    );
+
+    await user.click(screen.getByTestId('track-actions'));
+    await user.click(screen.getByTestId('track-remove'));
+
+    expect(onRemove).toHaveBeenCalledOnce();
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
   it('queues the track for download from the actions menu', async () => {
     const user = userEvent.setup();
     renderWithProviders(<TrackListItem track={makeTrack()} />);
