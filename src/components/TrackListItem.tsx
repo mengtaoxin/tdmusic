@@ -8,6 +8,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import DownloadIcon from '@mui/icons-material/Download';
 import DownloadDoneIcon from '@mui/icons-material/DownloadDone';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
@@ -16,6 +17,7 @@ import PlaylistRemoveIcon from '@mui/icons-material/PlaylistRemove';
 import { useTranslation } from 'react-i18next';
 
 import { CoverImg } from '@/components/CoverImg';
+import { TrackInfoDialog } from '@/components/TrackInfoDialog';
 import { useManualDownload } from '@/hooks/useManualDownload';
 import { useTrackDownload } from '@/hooks/useTrackDownload';
 import { isTrackCached } from '@/lib/cache/musicCache';
@@ -53,6 +55,7 @@ export function TrackListItem({
 
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [cached, setCached] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   const menuOpen = Boolean(menuAnchor);
 
   function openMenu(event: MouseEvent<HTMLElement>) {
@@ -186,7 +189,22 @@ export function TrackListItem({
             </ListItemIcon>
             {downloadLabel()}
           </MenuItem>
+          <MenuItem
+            data-testid="track-info"
+            onClick={() => {
+              closeMenu();
+              setInfoOpen(true);
+            }}
+          >
+            <ListItemIcon>
+              <InfoOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            {t('trackInfo.open')}
+          </MenuItem>
         </Menu>
+      ) : null}
+      {actions !== 'none' ? (
+        <TrackInfoDialog track={track} open={infoOpen} onClose={() => setInfoOpen(false)} />
       ) : null}
     </>
   );

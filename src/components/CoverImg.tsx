@@ -1,4 +1,4 @@
-import { useRef, type CSSProperties, type MouseEvent } from 'react';
+import { useRef, type CSSProperties, type MouseEvent, type SyntheticEvent } from 'react';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useTranslation } from 'react-i18next';
 
@@ -14,6 +14,7 @@ export type CoverImgProps = {
   /** Show a simple spinner while audio caches. */
   downloading?: boolean;
   className?: string;
+  onLoad?: (event: SyntheticEvent<HTMLImageElement>) => void;
 };
 
 export function CoverImg({
@@ -24,6 +25,7 @@ export function CoverImg({
   eager = false,
   downloading = false,
   className,
+  onLoad,
 }: CoverImgProps) {
   const { t } = useTranslation();
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -53,6 +55,7 @@ export function CoverImg({
           src={src}
           alt={alt ?? ''}
           draggable={false}
+          onLoad={onLoad}
         />
       ) : null}
       {downloading ? (

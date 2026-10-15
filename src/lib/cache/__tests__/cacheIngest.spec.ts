@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getCachedFile, isTrackCached, resetCacheDbForTests } from '../cacheStore';
-import { isTrackDownloading, resetCacheDownloadStateForTests } from '../cacheDownloadState';
+import {
+  getTrackDownloadFailure,
+  isTrackDownloading,
+  resetCacheDownloadStateForTests,
+} from '../cacheDownloadState';
 import { resetDownloadLimiterForTests } from '../downloadLimiter';
 import { ensureTrackCached } from '../cacheIngest';
 
@@ -143,6 +147,82 @@ describe('ensureTrackCached', () => {
 
     await expect(ensureTrackCached(sourceUrl, 'boom')).rejects.toThrow(/downloadFailed/);
     expect(isTrackDownloading(track)).toBe(false);
+  });
+
+  it('remembers why the last download failed', async () => {
+    const sourceUrl = 'https://example.com/missing.mp3';
+    vi.spyOn(Date, 'now').mockReturnValue(1234);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        headers: new Headers(),
+        body: null,
+        blob: async () => new Blob([]),
+      }),
+    );
+
+    await expect(ensureTrackCached(sourceUrl, 'missing')).rejects.toThrow(/downloadFailed/);
+
+    expect(getTrackDownloadFailure(sourceUrl)).toEqual({
+      message: 'downloadFailed:404',
+      httpStatus: 404,
+      failedAt: 1234,
+    });
+  });
+
+  it('keeps the error message when the network request fails', async () => {
+    const sourceUrl = 'https://example.com/offline.mp3';
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+
+    await expect(ensureTrackCached(sourceUrl, 'offline')).rejects.toThrow('Failed to fetch');
+
+    expect(getTrackDownloadFailure(sourceUrl)).toMatchObject({ message: 'Failed to fetch' });
+    expect(getTrackDownloadFailure(sourceUrl)?.httpStatus).toBeUndefined();
+  });
+
+  it('forgets the failure once a retry succeeds', async () => {
+    const sourceUrl = 'https://example.com/flaky.mp3';
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+        .mockResolvedValueOnce({
+          ok: true,
+          headers: new Headers({ 'Content-Type': 'audio/mpeg' }),
+          body: null,
+          blob: async () => new Blob(['ok'], { type: 'audio/mpeg' }),
+        }),
+    );
+
+    await expect(ensureTrackCached(sourceUrl, 'flaky')).rejects.toThrow();
+    expect(getTrackDownloadFailure(sourceUrl)).not.toBeNull();
+
+    await ensureTrackCached(sourceUrl, 'flaky');
+    expect(getTrackDownloadFailure(sourceUrl)).toBeNull();
+  });
+
+  it('does not record a failure for a download preempted by a higher priority', async () => {
+    const lowUrl = 'https://example.com/low-preempted.mp3';
+    const highUrl = 'https://example.com/high-preempting.mp3';
+    const { fetchMock, release, calls } = gatedFetch();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const low = ensureTrackCached(lowUrl, 'low', { priority: 'low' });
+    await vi.waitFor(() => expect(calls(lowUrl)).toBe(1));
+    const high = ensureTrackCached(highUrl, 'high', { priority: 'high' });
+    await vi.waitFor(() => expect(calls(highUrl)).toBe(1));
+
+    expect(getTrackDownloadFailure(lowUrl)).toBeNull();
+
+    release(highUrl);
+    await high;
+    await vi.waitFor(() => expect(calls(lowUrl)).toBe(2));
+    release(lowUrl);
+    await low;
+    expect(getTrackDownloadFailure(lowUrl)).toBeNull();
   });
 
   it('restarts a lower-priority download aborted by a higher-priority one', async () => {

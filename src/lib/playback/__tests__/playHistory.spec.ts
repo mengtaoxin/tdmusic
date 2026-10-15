@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getPlayCountStats } from '../playHistory';
+import { getPlayCountStats, getTrackPlayStats } from '../playHistory';
 import { MIN_COUNTED_PLAY_DURATION_MS } from '../playHistoryStats';
 import { resetPlayHistoryDbForTests, savePlayRecord } from '../playHistoryStore';
 
@@ -46,5 +46,36 @@ describe('getPlayCountStats', () => {
       { trackId: 'a', playCount: 2 },
       { trackId: 'b', playCount: 1 },
     ]);
+  });
+});
+
+describe('getTrackPlayStats', () => {
+  beforeEach(async () => {
+    await resetPlayHistoryDbForTests();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('returns 30-day counted plays and the latest start time for one track', async () => {
+    const now = 1_700_000_000_000;
+    vi.spyOn(Date, 'now').mockReturnValue(now);
+    const counted = MIN_COUNTED_PLAY_DURATION_MS + 1;
+
+    await savePlayRecord({ trackId: 'a', startedAt: now - 2 * DAY_MS, endedAt: now });
+    await savePlayRecord({
+      trackId: 'a',
+      startedAt: now - DAY_MS,
+      endedAt: now - DAY_MS + counted,
+    });
+    await savePlayRecord({ trackId: 'a', startedAt: now - 1000, endedAt: now - 500 });
+    await savePlayRecord({ trackId: 'b', startedAt: now - 10, endedAt: now });
+
+    expect(await getTrackPlayStats('a')).toEqual({ playCount: 2, lastPlayedAt: now - 1000 });
+  });
+
+  it('returns zero plays and no last-played time for an unplayed track', async () => {
+    expect(await getTrackPlayStats('never')).toEqual({ playCount: 0, lastPlayedAt: null });
   });
 });

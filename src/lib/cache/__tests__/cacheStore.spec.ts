@@ -6,8 +6,10 @@ import {
   getCachedBlobUrl,
   getCachedFile,
   getMusicCacheSizeBytes,
+  getTrackCacheDetails,
   isTrackCached,
   listTrackMetas,
+  putExtractedTrackMeta,
   putFiles,
   putMeta,
   resetCacheDbForTests,
@@ -103,6 +105,34 @@ describe('music cache', () => {
     ]);
 
     expect(await getMusicCacheSizeBytes()).toBe(10);
+  });
+
+  it('getTrackCacheDetails reports nothing for an uncached track', async () => {
+    expect(await getTrackCacheDetails('https://example.com/none.mp3')).toEqual({
+      status: null,
+      downloadedAt: null,
+      audio: null,
+      cover: null,
+      extracted: null,
+    });
+  });
+
+  it('getTrackCacheDetails reports status, cached time, file sizes, and extracted tags', async () => {
+    const sourceUrl = 'https://example.com/details.mp3';
+    await putFiles(sourceUrl, [
+      { relativePath: AUDIO_FILE_KEY, blob: new Blob(['12345'], { type: 'audio/mpeg' }) },
+      { relativePath: COVER_FILE_KEY, blob: new Blob(['img'], { type: 'image/png' }) },
+    ]);
+    await putMeta({ sourceUrl, status: 'ready', downloadedAt: 42 });
+    await putExtractedTrackMeta({ sourceUrl, title: 'Tagged', updatedAt: 99 });
+
+    expect(await getTrackCacheDetails(sourceUrl)).toEqual({
+      status: 'ready',
+      downloadedAt: 42,
+      audio: { size: 5, type: 'audio/mpeg' },
+      cover: { size: 3, type: 'image/png' },
+      extracted: { sourceUrl, title: 'Tagged', updatedAt: 99 },
+    });
   });
 
   it('deleteTrackCacheRecords removes only that track’s files and metadata', async () => {

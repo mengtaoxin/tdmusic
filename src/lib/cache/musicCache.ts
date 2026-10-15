@@ -6,10 +6,12 @@ import {
   type CacheProgress,
 } from './cacheIngest';
 import {
+  getTrackDownloadFailure,
   isTrackDownloading,
   subscribeCacheDownloads,
   trackDownloadPercent,
   type CacheDownloadTrackRef,
+  type DownloadFailure,
 } from './cacheDownloadState';
 import {
   clearAllCacheRecords,
@@ -19,10 +21,13 @@ import {
   getCachedFile,
   getExtractedTrackMeta,
   getMusicCacheSizeBytes,
+  getTrackCacheDetails,
   isTrackCached,
   putExtractedTrackMeta,
   putFiles,
+  type CachedFileInfo,
   type ExtractedTrackMeta,
+  type TrackCacheDetails,
   type TrackCacheMeta,
 } from './cacheStore';
 import {
@@ -39,9 +44,12 @@ import {
 export type {
   CacheProgress,
   CacheDownloadTrackRef,
+  CachedFileInfo,
+  DownloadFailure,
   ExtractedTrackMeta,
   ManualDownloadHooks,
   ManualDownloadTrackRef,
+  TrackCacheDetails,
   TrackCacheMeta,
 };
 export {
@@ -52,6 +60,8 @@ export {
   getCachedFile,
   getExtractedTrackMeta,
   getMusicCacheSizeBytes,
+  getTrackCacheDetails,
+  getTrackDownloadFailure,
   isTrackCached,
   isTrackDownloading,
   isTrackQueuedForDownload,

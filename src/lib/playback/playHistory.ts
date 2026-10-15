@@ -19,3 +19,20 @@ export async function getPlayCountStats(rangeDays: PlayStatsRangeDays): Promise<
   const records = await listPlayHistory();
   return aggregatePlayCounts(records, { now: Date.now(), rangeDays });
 }
+
+export type TrackPlayStats = {
+  /** Counted plays (>1 min) in the last 30 days. */
+  playCount: number;
+  /** Start of the most recent recorded session, counted or not. */
+  lastPlayedAt: number | null;
+};
+
+export async function getTrackPlayStats(trackId: string): Promise<TrackPlayStats> {
+  const records = (await listPlayHistory()).filter((record) => record.trackId === trackId);
+  const [row] = aggregatePlayCounts(records, { now: Date.now(), rangeDays: 30 });
+  const lastPlayedAt = records.reduce<number | null>(
+    (latest, record) => (latest == null || record.startedAt > latest ? record.startedAt : latest),
+    null,
+  );
+  return { playCount: row?.playCount ?? 0, lastPlayedAt };
+}

@@ -128,6 +128,37 @@ export async function getExtractedTrackMeta(sourceUrl: string): Promise<Extracte
   return (await db.trackMeta.get(sourceUrl)) ?? null;
 }
 
+export type CachedFileInfo = { size: number; type: string };
+
+/** What IndexedDB holds for one track (audio, extracted cover, tags). */
+export type TrackCacheDetails = {
+  status: TrackCacheMeta['status'] | null;
+  downloadedAt: number | null;
+  audio: CachedFileInfo | null;
+  cover: CachedFileInfo | null;
+  extracted: ExtractedTrackMeta | null;
+};
+
+function fileInfo(blob: Blob | null): CachedFileInfo | null {
+  return blob ? { size: blob.size, type: blob.type } : null;
+}
+
+export async function getTrackCacheDetails(sourceUrl: string): Promise<TrackCacheDetails> {
+  const [meta, audio, cover, extracted] = await Promise.all([
+    db.meta.get(sourceUrl),
+    getCachedFile(sourceUrl, AUDIO_FILE_KEY),
+    getCachedFile(sourceUrl, COVER_FILE_KEY),
+    getExtractedTrackMeta(sourceUrl),
+  ]);
+  return {
+    status: meta?.status ?? null,
+    downloadedAt: meta?.downloadedAt ?? null,
+    audio: fileInfo(audio),
+    cover: fileInfo(cover),
+    extracted,
+  };
+}
+
 export async function listTrackMetas(): Promise<TrackCacheMeta[]> {
   return db.meta.toArray();
 }

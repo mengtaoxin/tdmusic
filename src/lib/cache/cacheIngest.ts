@@ -7,7 +7,11 @@ import {
   type TrackCacheMeta,
 } from './cacheStore';
 import { ensureQuota } from './cacheEviction';
-import { reportCacheDownload, clearCacheDownloadState } from './cacheDownloadState';
+import {
+  reportCacheDownload,
+  reportCacheDownloadFailure,
+  clearCacheDownloadState,
+} from './cacheDownloadState';
 import {
   startAudioDownloadJob,
   type AudioDownloadJob,
@@ -150,9 +154,15 @@ export async function ensureTrackCached(
     (signal) => downloadAndStore(sourceUrl, signal, id, onProgress),
     priority,
   );
-  const done = job.done.finally(() => {
-    if (ensureInFlight.get(sourceUrl)?.done === done) ensureInFlight.delete(sourceUrl);
-  });
+  const done = job.done
+    .catch((error: unknown) => {
+      if (ensureInFlight.get(sourceUrl)?.done === done)
+        reportCacheDownloadFailure(sourceUrl, error);
+      throw error;
+    })
+    .finally(() => {
+      if (ensureInFlight.get(sourceUrl)?.done === done) ensureInFlight.delete(sourceUrl);
+    });
   ensureInFlight.set(sourceUrl, { done, raisePriority: job.raisePriority });
   await done;
 }
