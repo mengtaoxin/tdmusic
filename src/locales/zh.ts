@@ -20,11 +20,47 @@ export default {
     beta: 'Beta',
   },
   home: {
-    title: '用自己的歌库，在浏览器里听',
-    lead: '无需账号、无需后端。把曲库交给 tdmusic，打开网页就能播。',
-    pointPlay: '听过的歌会缓存到本机，并预取接下来几首；元数据不全时还能从音频里补全。',
-    pointBrowse: '支持队列、随机、循环与锁屏控制，可按列表、歌手、专辑或搜索浏览。',
+    eyebrow: '个人音乐播放器',
+    title: '一个只读 JSON 文件，就是你的整座音乐库',
+    lead: '纯前端、无服务器：把歌曲和歌单写进 configs.json，tdmusic 就把它变成完整的播放器——按歌手、专辑、歌单浏览，支持队列、随机、循环与锁屏控制。',
     cta: '去听音乐',
+    writeConfig: '编写你的 configs.json',
+    sample: {
+      badge: '只读 · 静态文件',
+      required: '必填',
+      optional: '可选',
+      notes: {
+        musicList: '曲目数组，唯一必填的顶层字段',
+        id: '唯一标识，歌单通过它引用曲目',
+        path: '音频地址（完整 URL 或站内路径），播放后缓存到本机',
+        title: '不填则读取 ID3 标签，再退回文件名',
+        artist: '按歌手归类；不填则读取 ID3',
+        album: '按专辑归类；不填则读取 ID3',
+        cover: '封面图，优先于音频内嵌封面',
+        volumeRatio: '相对响度百分比（0–100），默认 100',
+        moreTracks: '更多曲目，结构相同',
+        playlists: '歌单数组；没有歌单可省略',
+        playlistTitle: '歌单名，也是歌单页地址 /playlists/:title',
+        playlistTracks: '按 id 引用上面的曲目，顺序即播放顺序',
+        morePlaylists: '更多歌单，结构相同',
+      },
+    },
+    features: {
+      noServer: {
+        title: '无需服务器',
+        description:
+          'tdmusic 是纯静态网站，只读取你的 JSON 和音频文件。没有数据库、没有账号，也不上传任何内容。',
+      },
+      yourData: {
+        title: '曲库在你手里',
+        description:
+          '改一个文件就能更新曲目和歌单。放在 GitHub Pages、对象存储或任意静态托管上，在设置里填上地址即可。',
+      },
+      offline: {
+        title: '离线也能听',
+        description: '播放过的歌曲保存在当前浏览器，并预取接下来几首，没有网络也能继续听。',
+      },
+    },
   },
   locale: {
     en: 'English',

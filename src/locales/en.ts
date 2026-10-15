@@ -20,13 +20,48 @@ export default {
     beta: 'Beta',
   },
   home: {
-    title: 'Your music library, in the browser',
-    lead: 'No account. No backend. Point tdmusic at your catalog and play.',
-    pointPlay:
-      'Tracks cache on this device and upcoming songs prefetch; incomplete tags fill in from the audio.',
-    pointBrowse:
-      'Queue, shuffle, repeat, and lock-screen controls — browse by list, artist, album, or search.',
+    eyebrow: 'Personal music player',
+    title: 'One read-only JSON file is your whole music library',
+    lead: 'Pure front end, no server: list your tracks and playlists in configs.json and tdmusic turns it into a full player — browse by artist, album, or playlist, with queue, shuffle, repeat, and lock-screen controls.',
     cta: 'Browse music',
+    writeConfig: 'Write your configs.json',
+    sample: {
+      badge: 'read-only · static file',
+      required: 'required',
+      optional: 'optional',
+      notes: {
+        musicList: 'Your tracks — the only required top-level key',
+        id: 'Unique key; playlists refer to tracks by it',
+        path: 'Audio URL or site path; cached on this device once played',
+        title: 'Falls back to the ID3 tag, then the file name',
+        artist: 'Groups tracks by artist; ID3 fills it if left out',
+        album: 'Groups tracks by album; ID3 fills it if left out',
+        cover: 'Cover image; wins over the embedded artwork',
+        volumeRatio: 'Loudness in percent (0–100), default 100',
+        moreTracks: 'More tracks, same shape',
+        playlists: 'Your playlists; leave out if you have none',
+        playlistTitle: 'Playlist name, also its page /playlists/:title',
+        playlistTracks: 'Tracks by id, in play order',
+        morePlaylists: 'More playlists, same shape',
+      },
+    },
+    features: {
+      noServer: {
+        title: 'No server',
+        description:
+          'tdmusic is a static site that only reads your JSON and audio files. No database, no account, nothing uploaded.',
+      },
+      yourData: {
+        title: 'Your library, your file',
+        description:
+          'Edit one file to change tracks and playlists. Host it on GitHub Pages, object storage, or any static host, then point Settings at it.',
+      },
+      offline: {
+        title: 'Keeps playing offline',
+        description:
+          'Played tracks are saved in this browser and upcoming songs prefetch, so music keeps going without a network.',
+      },
+    },
   },
   locale: {
     en: 'English',
