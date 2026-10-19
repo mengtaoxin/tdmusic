@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 
+import { bindUnloadConfirm } from '@/lib/playback/unloadConfirm';
 import { createAppPlaybackTransport } from '@/stores/bindAppPlayback';
 import { useCatalogStore } from '@/stores/catalog';
 import { usePlayerStore } from '@/stores/player';
@@ -66,11 +67,13 @@ export function AudioHost() {
     transport.syncLoopFromRepeatMode();
     document.addEventListener('visibilitychange', onVisibilityFlush);
     window.addEventListener('pagehide', onPageHide);
+    const unbindUnloadConfirm = bindUnloadConfirm(() => usePlayerStore.getState().playing);
     transport.syncMediaSession();
 
     return () => {
       document.removeEventListener('visibilitychange', onVisibilityFlush);
       window.removeEventListener('pagehide', onPageHide);
+      unbindUnloadConfirm();
     };
   }, [transport]);
 
