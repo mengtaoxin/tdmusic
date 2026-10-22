@@ -72,6 +72,8 @@ export type PlaybackSessionHooks = {
   onTrackResolved?: (id: string) => void;
   /** Called when a load for `id` starts, before resolving the playable URL. */
   onLoadStart?: (id: string) => void;
+  /** Called after `audio.src` is the new URL, so other audio blob URLs can be revoked. */
+  retainAudioBlobUrl?: (url: string) => void;
 };
 
 /**
@@ -119,6 +121,7 @@ export function createPlaybackSession(
       hooks.onTrackResolved?.(id);
       audio.src = url;
       audio.load();
+      hooks.retainAudioBlobUrl?.(url);
       hooks.scheduleEnrichTrack(id);
       const seek = player.getSeekTo();
       const onLoaded = () => {

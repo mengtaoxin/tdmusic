@@ -106,6 +106,18 @@ export function peekBlobUrl(
   return blobUrlCache.get(fileRecordKey(sourceUrl, relativePath));
 }
 
+const AUDIO_BLOB_KEY_SUFFIX = `${KEY_SEP}${AUDIO_FILE_KEY}`;
+
+/** Drop audio object URLs other than `keepUrl`. Cover URLs stay. */
+export function releaseAudioBlobUrlsExcept(keepUrl: string | null): void {
+  for (const [key, url] of blobUrlCache) {
+    if (!key.endsWith(AUDIO_BLOB_KEY_SUFFIX)) continue;
+    if (keepUrl != null && url === keepUrl) continue;
+    URL.revokeObjectURL(url);
+    blobUrlCache.delete(key);
+  }
+}
+
 export async function putFiles(
   sourceUrl: string,
   entries: Array<{ relativePath: string; blob: Blob }>,

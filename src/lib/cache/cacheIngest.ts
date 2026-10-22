@@ -27,6 +27,10 @@ export type CacheProgress = {
 
 const ensureInFlight = new Map<string, AudioDownloadJob<void>>();
 
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'AbortError';
+}
+
 function emitProgress(
   sourceUrl: string,
   id: string | undefined,
@@ -156,8 +160,9 @@ export async function ensureTrackCached(
   );
   const done = job.done
     .catch((error: unknown) => {
-      if (ensureInFlight.get(sourceUrl)?.done === done)
+      if (ensureInFlight.get(sourceUrl)?.done === done && !isAbortError(error)) {
         reportCacheDownloadFailure(sourceUrl, error);
+      }
       throw error;
     })
     .finally(() => {

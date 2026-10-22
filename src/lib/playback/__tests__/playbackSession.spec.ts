@@ -299,6 +299,66 @@ describe('playbackSession', () => {
     expect(schedulePrefetch).toHaveBeenCalledOnce();
   });
 
+  it('releases other audio blob URLs only after the new src is assigned', async () => {
+    const audio = makeAudio();
+    audio.src = 'blob:old';
+    let release: ((url: string) => void) | null = null;
+    const resolvePlayableUrl = vi
+      .fn<(path: string, id: string) => Promise<string>>()
+      .mockImplementation(
+        () =>
+          new Promise<string>((resolve) => {
+            release = resolve;
+          }),
+      );
+    const retainAudioBlobUrl = vi.fn<(url: string) => void>();
+    let srcWhenRetained = '';
+    retainAudioBlobUrl.mockImplementation(() => {
+      srcWhenRetained = audio.src;
+    });
+    let currentId = 't2';
+
+    const session = createPlaybackSession(
+      () => audio,
+      {
+        getCurrentId: () => currentId,
+        getQueueLength: () => 2,
+        getSeekTo: () => null,
+        getPendingPlay: () => false,
+        clearSeekTo: () => {},
+        pause: vi.fn<() => void>(),
+        skip: vi.fn<() => void>(),
+        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3`, volumeRatio: 100 }),
+      },
+      {
+        resolvePlayableUrl,
+        appendAppLog: vi.fn<(message: string) => void>(),
+        scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+        setVolumeRatio: vi.fn<(percent: number) => void>(),
+        schedulePrefetch: vi.fn<() => void>(),
+        retainAudioBlobUrl,
+      },
+    );
+
+    const loading = session.loadCurrent();
+    expect(retainAudioBlobUrl).not.toHaveBeenCalled();
+    expect(audio.src).toBe('blob:old');
+
+    currentId = 't3';
+    release!('blob:stale');
+    await loading;
+    expect(audio.src).toBe('blob:old');
+    expect(retainAudioBlobUrl).not.toHaveBeenCalled();
+
+    currentId = 't2';
+    const retry = session.loadCurrent();
+    release!('blob:t2');
+    await retry;
+    expect(audio.src).toBe('blob:t2');
+    expect(retainAudioBlobUrl).toHaveBeenCalledExactlyOnceWith('blob:t2');
+    expect(srcWhenRetained).toBe('blob:t2');
+  });
+
   it('loadCurrent applies setVolumeRatio before assigning audio src', async () => {
     const audio = makeAudio();
     const setVolumeRatio = vi.fn<(percent: number) => void>();

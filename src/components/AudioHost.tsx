@@ -57,6 +57,7 @@ export function AudioHost() {
   useEffect(() => {
     function onVisibilityFlush() {
       usePlayerStore.getState().flushPersist();
+      transport.onDocumentVisibility();
     }
 
     function onPageHide() {

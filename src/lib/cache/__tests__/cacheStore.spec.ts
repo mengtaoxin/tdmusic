@@ -5,6 +5,7 @@ import {
   deleteTrackCacheRecords,
   getCachedBlobUrl,
   getCachedFile,
+  releaseAudioBlobUrlsExcept,
   getMusicCacheSizeBytes,
   getTrackCacheDetails,
   isTrackCached,
@@ -188,6 +189,35 @@ describe('music cache', () => {
     expect(fromDb).not.toBeNull();
     expect(fromDb!.type).toBe('application/octet-stream');
     expect(await fromDb!.text()).toBe('fLaC-bytes');
+  });
+
+  it('releaseAudioBlobUrlsExcept revokes other audio object URLs and keeps the current one and covers', async () => {
+    const keep = 'https://example.com/keep.mp3';
+    const drop = 'https://example.com/drop.flac';
+    const coverSource = 'https://example.com/cover.mp3';
+    await putFiles(keep, [
+      { relativePath: AUDIO_FILE_KEY, blob: new Blob(['a'], { type: 'audio/mpeg' }) },
+    ]);
+    await putFiles(drop, [
+      { relativePath: AUDIO_FILE_KEY, blob: new Blob(['b'], { type: 'application/octet-stream' }) },
+    ]);
+    await putFiles(coverSource, [
+      { relativePath: COVER_FILE_KEY, blob: new Blob(['c'], { type: 'image/jpeg' }) },
+    ]);
+
+    const keepUrl = await getCachedBlobUrl(keep);
+    const dropUrl = await getCachedBlobUrl(drop);
+    const coverUrl = await getCachedBlobUrl(coverSource, COVER_FILE_KEY);
+    const revoke = vi.spyOn(URL, 'revokeObjectURL');
+
+    releaseAudioBlobUrlsExcept(keepUrl);
+
+    expect(revoke).toHaveBeenCalledWith(dropUrl);
+    expect(revoke).not.toHaveBeenCalledWith(keepUrl);
+    expect(revoke).not.toHaveBeenCalledWith(coverUrl);
+    expect(await getCachedBlobUrl(keep)).toBe(keepUrl);
+    expect(await getCachedBlobUrl(drop)).not.toBe(dropUrl);
+    expect(await getCachedBlobUrl(coverSource, COVER_FILE_KEY)).toBe(coverUrl);
   });
 
   it('getCachedBlobUrl does not rewrite cover blob MIME from the audio path', async () => {
