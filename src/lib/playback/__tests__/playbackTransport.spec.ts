@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createPlaybackSession, type PlaybackAudioElement } from '@/lib/playback/playbackSession';
 import { createPlaybackTransport } from '@/lib/playback/playbackTransport';
@@ -36,6 +36,75 @@ function makeAudio(): TestAudio {
 }
 
 describe('playbackTransport', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('throttles progress updates to about 4Hz and syncs media session position only', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(1_000_000);
+    const audio = makeAudio();
+    audio.duration = 100;
+    const setCurrentTime = vi.fn<(time: number) => void>();
+    const setDuration = vi.fn<(duration: number) => void>();
+    const syncMediaSession = vi.fn<(options?: { metadata?: boolean }) => void>();
+
+    const transport = createPlaybackTransport({
+      getAudio: () => audio,
+      getCurrentId: () => 't1',
+      getQueueLength: () => 1,
+      getSeekTo: () => null,
+      getPendingPlay: () => false,
+      getRepeatMode: () => 'off',
+      clearSeekTo: noop(),
+      pause: noop(),
+      skip: noop(),
+      onEnded: noop(),
+      getTrack: () => ({ id: 't1', path: '/t1.mp3', volumeRatio: 100 }),
+      setPlaying: vi.fn<(playing: boolean) => void>(),
+      clearPendingPlay: noop(),
+      flushPersist: noop(),
+      setCurrentTime,
+      setDuration,
+      syncMediaSession,
+      schedulePrefetch: noop(),
+      resolvePlayableUrl: async () => 'blob:t1',
+      appendAppLog: vi.fn<(message: string) => void>(),
+      scheduleEnrichTrack: vi.fn<(id: string) => void>(),
+      setVolumeRatio: vi.fn<(percent: number) => void>(),
+    });
+
+    await transport.loadCurrent();
+    audio.currentTime = 1;
+    transport.onTimeUpdate();
+    expect(setCurrentTime).toHaveBeenCalledExactlyOnceWith(1);
+    expect(setDuration).toHaveBeenCalledExactlyOnceWith(100);
+    expect(syncMediaSession).toHaveBeenCalledExactlyOnceWith({ metadata: false });
+
+    vi.setSystemTime(1_000_100);
+    audio.currentTime = 1.1;
+    transport.onTimeUpdate();
+    expect(setCurrentTime).toHaveBeenCalledOnce();
+    expect(syncMediaSession).toHaveBeenCalledOnce();
+
+    vi.setSystemTime(1_000_250);
+    audio.currentTime = 1.25;
+    transport.onTimeUpdate();
+    expect(setCurrentTime).toHaveBeenLastCalledWith(1.25);
+    expect(syncMediaSession).toHaveBeenCalledOnce();
+
+    vi.setSystemTime(1_000_300);
+    audio.currentTime = 20;
+    transport.onTimeUpdate();
+    expect(setCurrentTime).toHaveBeenLastCalledWith(20);
+
+    vi.setSystemTime(1_001_300);
+    audio.currentTime = 21;
+    transport.onTimeUpdate();
+    expect(syncMediaSession).toHaveBeenLastCalledWith({ metadata: false });
+    expect(syncMediaSession).toHaveBeenCalledTimes(2);
+  });
+
   it('pendingPlay resumes only when the audio element is bound to the current track', async () => {
     const audio = makeAudio();
     const currentId: string | null = 't1';

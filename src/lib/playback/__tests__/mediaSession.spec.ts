@@ -116,6 +116,26 @@ describe('syncMediaSession', () => {
     expect(setPositionState).not.toHaveBeenCalled();
   });
 
+  it('refreshes position and playback state without replacing metadata', () => {
+    const track = makeTrack();
+    const session = navigator.mediaSession;
+    syncMediaSession(track, makePlayer({ currentTime: 10, playing: true }));
+    const metadata = session.metadata;
+    setActionHandler.mockClear();
+    setPositionState.mockClear();
+
+    syncMediaSession(track, makePlayer({ currentTime: 40, playing: false }), { metadata: false });
+
+    expect(session.metadata).toBe(metadata);
+    expect(session.playbackState).toBe('paused');
+    expect(setPositionState).toHaveBeenCalledWith({
+      duration: 120,
+      playbackRate: 1,
+      position: 40,
+    });
+    expect(setActionHandler).not.toHaveBeenCalled();
+  });
+
   it('binds prev/next track and clears seek ±N so lock screen shows track skip', () => {
     const player = makePlayer();
     syncMediaSession(makeTrack(), player);

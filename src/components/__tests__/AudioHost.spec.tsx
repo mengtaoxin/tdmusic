@@ -17,6 +17,7 @@ vi.mock('@/lib/playback/prefetchUpcoming', () => ({
   prefetchUpcoming: vi.fn<() => Promise<void>>(async () => undefined),
 }));
 
+import { prefetchUpcoming } from '@/lib/playback/prefetchUpcoming';
 import { resolvePlayableUrl } from '@/lib/playback/resolvePlayableUrl';
 
 function makeTrack(id: string, title = id): DisplayTrack {
@@ -130,6 +131,28 @@ describe('AudioHost', () => {
     expect(
       records.some((entry) => /bad/i.test(entry.message) && /fail|download/i.test(entry.message)),
     ).toBe(true);
+  });
+
+  it('skips prefetch while hidden and prefetches again when playback is still running', async () => {
+    useCatalogStore.getState().setTracks([makeTrack('t1', 'One')]);
+    const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
+    try {
+      renderWithProviders(<AudioHost />);
+
+      await bumpLoad(['t1'], 't1');
+      await act(async () => {
+        document.dispatchEvent(new Event('visibilitychange'));
+      });
+      expect(prefetchUpcoming).not.toHaveBeenCalled();
+
+      hidden.mockReturnValue(false);
+      await act(async () => {
+        document.dispatchEvent(new Event('visibilitychange'));
+      });
+      expect(prefetchUpcoming).toHaveBeenCalled();
+    } finally {
+      hidden.mockRestore();
+    }
   });
 
   it('writes an app log when the bound audio element errors', async () => {

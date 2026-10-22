@@ -1,10 +1,12 @@
 import { TdLog } from 'tdkit';
 
+import { abortPrefetchDownloads, releaseAudioBlobUrlsExcept } from '@/lib/cache/musicCache';
+import { createBackgroundPrefetch } from '@/lib/playback/backgroundPrefetch';
 import { createPlaybackRuntime } from '@/lib/playback/createPlaybackRuntime';
 import { createPlayHistoryRecorder } from '@/lib/playback/playHistoryRecorder';
 import { savePlayRecord } from '@/lib/playback/playHistoryStore';
 import { prefetchUpcoming } from '@/lib/playback/prefetchUpcoming';
-import { syncMediaSession } from '@/lib/playback/mediaSession';
+import { syncMediaSession, type MediaSessionSyncOptions } from '@/lib/playback/mediaSession';
 import { resolvePlayableUrl } from '@/lib/playback/resolvePlayableUrl';
 import { createVolumeGainController } from '@/lib/playback/volumeGain';
 import { useCatalogStore } from '@/stores/catalog';
@@ -20,7 +22,7 @@ function resolveTrackForPrefetch(id: string) {
   return { id: track.id, path: track.path };
 }
 
-function schedulePrefetch() {
+function prefetchUpcomingFromPlayer() {
   const player = usePlayerStore.getState();
   void prefetchUpcoming(player.queue, player.currentIndex, {
     count: PREFETCH_COUNT,
@@ -29,6 +31,18 @@ function schedulePrefetch() {
     resolveTrack: resolveTrackForPrefetch,
     onTrackCached: (id) => useCatalogStore.getState().scheduleEnrichTrack(id),
   });
+}
+
+const backgroundPrefetch = createBackgroundPrefetch({
+  isDocumentHidden: () => typeof document !== 'undefined' && document.hidden,
+  abortPrefetchDownloads,
+  prefetch: prefetchUpcomingFromPlayer,
+  isPlaying: () => usePlayerStore.getState().playing,
+  hasCurrentTrack: () => usePlayerStore.getState().currentId != null,
+});
+
+function schedulePrefetch() {
+  backgroundPrefetch.schedule();
 }
 
 /** Bind Zustand / cache / log ports to a playback transport for one audio element. */
@@ -65,15 +79,21 @@ export function createAppPlaybackTransport(getAudio: () => HTMLAudioElement | nu
     setDuration: (duration) => {
       usePlayerStore.setState({ duration });
     },
-    syncMediaSession: () => {
+    syncMediaSession: (options?: MediaSessionSyncOptions) => {
       const player = usePlayerStore.getState();
       const track = player.currentId
         ? useCatalogStore.getState().snapshot.trackById.get(player.currentId)
         : undefined;
-      syncMediaSession(track, player);
+      syncMediaSession(track, player, options);
     },
     schedulePrefetch,
+    onDocumentVisibility: () => {
+      backgroundPrefetch.onVisibilityChange();
+    },
     resolvePlayableUrl,
+    retainAudioBlobUrl: (url) => {
+      releaseAudioBlobUrlsExcept(url);
+    },
     appendAppLog: (message) => {
       void TdLog.error(message);
     },

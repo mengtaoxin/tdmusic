@@ -15,6 +15,9 @@ type Job = {
   seq: number;
   controller: AbortController | null;
   preempted: boolean;
+  /** Set when the job is cancelled outright and must not be re-queued. */
+  dropped: boolean;
+  reject: ((reason: unknown) => void) | null;
   run: () => void;
 };
 
@@ -75,6 +78,8 @@ export function startAudioDownloadJob<T>(
     seq: nextSeq++,
     controller: null,
     preempted: false,
+    dropped: false,
+    reject: null,
     run: () => {
       const controller = new AbortController();
       job.controller = controller;
@@ -90,7 +95,7 @@ export function startAudioDownloadJob<T>(
           },
           (error: unknown) => {
             running.delete(job);
-            if (job.preempted) {
+            if (job.preempted && !job.dropped) {
               enqueue(job);
             } else {
               rejectDone(error);
@@ -101,6 +106,7 @@ export function startAudioDownloadJob<T>(
     },
   };
 
+  job.reject = rejectDone;
   preemptBelow(job.rank);
   enqueue(job);
   pump();
@@ -123,6 +129,31 @@ export function withAudioDownloadSlot<T>(
   priority: DownloadPriority = 'normal',
 ): Promise<T> {
   return startAudioDownloadJob(fn, priority).done;
+}
+
+function abortError(): DOMException {
+  return new DOMException('The operation was aborted.', 'AbortError');
+}
+
+/** Stop queued and running jobs of one priority. They are not restarted. */
+export function abortAudioDownloads(priority: DownloadPriority): void {
+  const rank = RANK[priority];
+  const droppedPending: Job[] = [];
+  pending = pending.filter((job) => {
+    if (job.rank !== rank) return true;
+    droppedPending.push(job);
+    return false;
+  });
+  for (const job of droppedPending) {
+    job.dropped = true;
+    job.reject?.(abortError());
+  }
+  for (const job of running) {
+    if (job.rank !== rank || job.dropped) continue;
+    job.dropped = true;
+    job.controller?.abort();
+  }
+  pump();
 }
 
 export function resetDownloadLimiterForTests(): void {

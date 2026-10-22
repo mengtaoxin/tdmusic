@@ -25,9 +25,13 @@ export type PlaybackTransportDeps = {
   flushPersist: () => void;
   setCurrentTime: (time: number) => void;
   setDuration: (duration: number) => void;
-  syncMediaSession: () => void;
+  syncMediaSession: (options?: { metadata?: boolean }) => void;
   schedulePrefetch: () => void;
+  /** Page visibility changed; pause or resume prefetch. */
+  onDocumentVisibility?: () => void;
   resolvePlayableUrl: (path: string, id: string) => Promise<string>;
+  /** Revoke audio blob URLs other than the one just assigned to the element. */
+  retainAudioBlobUrl?: (url: string) => void;
   appendAppLog: (message: string) => void;
   scheduleEnrichTrack: (id: string) => void;
   setVolumeRatio: (percent: number) => void;
@@ -45,6 +49,7 @@ export type PlaybackTransportDeps = {
 };
 
 const MEDIA_SESSION_SYNC_MS = 1000;
+const UI_TIME_MS = 250;
 
 /**
  * Transport layer: binds queue/player signals to a single `<audio>` element.
@@ -56,6 +61,8 @@ export function createPlaybackTransport(deps: PlaybackTransportDeps) {
   let boundTrackId: string | null = null;
   let lastTimePersist = 0;
   let lastMediaSessionSync = 0;
+  let lastUiTime = 0;
+  let lastUiValue = Number.NaN;
 
   const playerAdapter: PlaybackSessionPlayer = {
     getCurrentId: deps.getCurrentId,
@@ -71,6 +78,7 @@ export function createPlaybackTransport(deps: PlaybackTransportDeps) {
   const createSession = deps.createSession ?? createPlaybackSession;
   const session = createSession(deps.getAudio, playerAdapter, {
     resolvePlayableUrl: deps.resolvePlayableUrl,
+    retainAudioBlobUrl: deps.retainAudioBlobUrl,
     appendAppLog: deps.appendAppLog,
     scheduleEnrichTrack: deps.scheduleEnrichTrack,
     schedulePrefetch: deps.schedulePrefetch,
@@ -129,12 +137,18 @@ export function createPlaybackTransport(deps: PlaybackTransportDeps) {
   function onTimeUpdate() {
     const audio = deps.getAudio();
     if (!audio || !isBoundToCurrent()) return;
-    deps.setCurrentTime(audio.currentTime);
-    deps.setDuration(audio.duration || 0);
     const now = Date.now();
+    const time = audio.currentTime;
+    const jumped = Number.isFinite(lastUiValue) && Math.abs(time - lastUiValue) > 1;
+    if (!Number.isFinite(lastUiValue) || jumped || now - lastUiTime >= UI_TIME_MS) {
+      lastUiTime = now;
+      lastUiValue = time;
+      deps.setCurrentTime(time);
+      deps.setDuration(audio.duration || 0);
+    }
     if (now - lastMediaSessionSync >= MEDIA_SESSION_SYNC_MS) {
       lastMediaSessionSync = now;
-      deps.syncMediaSession();
+      deps.syncMediaSession({ metadata: false });
     }
     if (now - lastTimePersist > 2000) {
       lastTimePersist = now;
@@ -207,6 +221,7 @@ export function createPlaybackTransport(deps: PlaybackTransportDeps) {
     syncLoopFromRepeatMode,
     syncMediaSession: () => deps.syncMediaSession(),
     schedulePrefetch: () => deps.schedulePrefetch(),
+    onDocumentVisibility: () => deps.onDocumentVisibility?.(),
     stopPlayHistory: () => deps.playHistory?.onStop(),
   };
 }

@@ -6,7 +6,7 @@ import {
   isTrackDownloading,
   resetCacheDownloadStateForTests,
 } from '../cacheDownloadState';
-import { resetDownloadLimiterForTests } from '../downloadLimiter';
+import { abortAudioDownloads, resetDownloadLimiterForTests } from '../downloadLimiter';
 import { ensureTrackCached } from '../cacheIngest';
 
 function stubFetchBlob(body: string) {
@@ -180,6 +180,33 @@ describe('ensureTrackCached', () => {
 
     expect(getTrackDownloadFailure(sourceUrl)).toMatchObject({ message: 'Failed to fetch' });
     expect(getTrackDownloadFailure(sourceUrl)?.httpStatus).toBeUndefined();
+  });
+
+  it('does not remember a failure when a prefetch download is aborted', async () => {
+    const sourceUrl = 'https://example.com/prefetch-abort.mp3';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation((_url: string, init?: RequestInit) => {
+        return new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () => {
+            reject(new DOMException('The operation was aborted.', 'AbortError'));
+          });
+        });
+      }),
+    );
+
+    const job = ensureTrackCached(sourceUrl, 'prefetch');
+    const settled = expect(job).rejects.toThrow(/abort/i);
+    await vi.waitFor(() => {
+      expect(isTrackDownloading({ id: 'prefetch', path: sourceUrl })).toBe(true);
+    });
+
+    abortAudioDownloads('normal');
+    await settled;
+
+    expect(getTrackDownloadFailure(sourceUrl)).toBeNull();
+    expect(await isTrackCached(sourceUrl)).toBe(false);
+    expect(isTrackDownloading({ id: 'prefetch', path: sourceUrl })).toBe(false);
   });
 
   it('forgets the failure once a retry succeeds', async () => {

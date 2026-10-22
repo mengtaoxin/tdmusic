@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  abortAudioDownloads,
   getDownloadLimiterStatsForTests,
   resetDownloadLimiterForTests,
   startAudioDownloadJob,
@@ -244,6 +245,47 @@ describe('downloadLimiter', () => {
     fail(1, new Error('boom'));
 
     await expect(p).rejects.toThrow('boom');
+    expect(getDownloadLimiterStatsForTests()).toEqual({ active: 0, pending: 0 });
+  });
+
+  it('aborts only normal downloads and does not restart them', async () => {
+    const { started, aborted, makeTask, release } = createHarness();
+
+    const high = withAudioDownloadSlot(makeTask(1), 'high');
+    const normalWaiting = withAudioDownloadSlot(makeTask(2), 'normal');
+    await flush();
+    expect(started).toEqual([1]);
+
+    const waitingResult = expect(normalWaiting).rejects.toThrow(/abort/i);
+    abortAudioDownloads('normal');
+    await waitingResult;
+    expect(aborted).toEqual([]);
+    expect(started).toEqual([1]);
+
+    release(1);
+    await high;
+
+    const running = [3, 4, 5].map((id) => withAudioDownloadSlot(makeTask(id), 'normal'));
+    await flush();
+    const pending = withAudioDownloadSlot(makeTask(6), 'normal');
+    const low = withAudioDownloadSlot(makeTask(7), 'low');
+    await flush();
+    expect(started).toEqual([1, 3, 4, 5]);
+
+    const dropped = [
+      expect(pending).rejects.toThrow(/abort/i),
+      ...running.map((job) => expect(job).rejects.toThrow('aborted')),
+    ];
+    abortAudioDownloads('normal');
+    await flush();
+    await Promise.all(dropped);
+
+    expect(aborted).toEqual([3, 4, 5]);
+    expect(started).toEqual([1, 3, 4, 5, 7]);
+
+    release(7);
+    await low;
+    expect(started).toEqual([1, 3, 4, 5, 7]);
     expect(getDownloadLimiterStatsForTests()).toEqual({ active: 0, pending: 0 });
   });
 
