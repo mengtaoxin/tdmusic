@@ -20,7 +20,7 @@ export function ArtistTracksPage({ artistName }: { artistName: string }) {
   const artist = findArtistGroup(artists, artistName);
   const tracks = artist?.tracks ?? ([] as DisplayTrack[]);
 
-  const { currentId, playAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(
+  const { currentId, playAt, playTrackAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(
     tracks.map((track) => track.id),
   );
 
@@ -64,7 +64,7 @@ export function ArtistTracksPage({ artistName }: { artistName: string }) {
         <TrackList
           tracks={tracks}
           currentId={currentId}
-          onSelect={playAt}
+          onSelect={playTrackAt}
           onPlayNext={playNextTrack}
           onAddToQueue={addTrackToQueue}
         />

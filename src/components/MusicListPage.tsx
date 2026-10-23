@@ -14,7 +14,7 @@ export function MusicListPage() {
   const loading = useCatalogStore((s) => s.loading);
   const loadError = useCatalogStore((s) => s.loadError);
   const errors = useCatalogStore((s) => s.errors);
-  const { currentId, playAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(
+  const { currentId, playAt, playTrackAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(
     tracks.map((track) => track.id),
   );
 
@@ -68,7 +68,7 @@ export function MusicListPage() {
           <TrackListItem
             track={track}
             active={currentId === track.id}
-            onSelect={() => playAt(index)}
+            onSelect={() => playTrackAt(index)}
             onPlayNext={() => playNextTrack(track.id)}
             onAddToQueue={() => addTrackToQueue(track.id)}
           />

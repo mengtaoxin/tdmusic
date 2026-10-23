@@ -34,7 +34,7 @@ function ArtistAlbumDetailPage() {
       : ([] as DisplayTrack[]);
   const albumFound = Boolean(artist) && tracks.length > 0;
 
-  const { currentId, playAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(
+  const { currentId, playTrackAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(
     tracks.map((track) => track.id),
   );
 
@@ -68,7 +68,7 @@ function ArtistAlbumDetailPage() {
         <TrackList
           tracks={tracks}
           currentId={currentId}
-          onSelect={playAt}
+          onSelect={playTrackAt}
           onPlayNext={playNextTrack}
           onAddToQueue={addTrackToQueue}
         />

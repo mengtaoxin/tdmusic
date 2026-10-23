@@ -20,7 +20,7 @@ export function AlbumDetailPage({ albumName }: { albumName: string }) {
   const album = findAlbumGroup(albums, albumName);
   const tracks = album?.tracks ?? ([] as DisplayTrack[]);
 
-  const { currentId, playAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(
+  const { currentId, playAt, playTrackAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(
     tracks.map((track) => track.id),
   );
 
@@ -61,7 +61,7 @@ export function AlbumDetailPage({ albumName }: { albumName: string }) {
         <TrackList
           tracks={tracks}
           currentId={currentId}
-          onSelect={playAt}
+          onSelect={playTrackAt}
           onPlayNext={playNextTrack}
           onAddToQueue={addTrackToQueue}
         />

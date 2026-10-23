@@ -30,7 +30,7 @@ function PlaylistDetailPage() {
         .filter((track): track is DisplayTrack => Boolean(track))
     : ([] as DisplayTrack[]);
 
-  const { currentId, playAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(
+  const { currentId, playAt, playTrackAt, playNextTrack, addTrackToQueue } = useTrackListPlayback(
     tracks.map((track) => track.id),
   );
 
@@ -71,7 +71,7 @@ function PlaylistDetailPage() {
         <TrackList
           tracks={tracks}
           currentId={currentId}
-          onSelect={playAt}
+          onSelect={playTrackAt}
           onPlayNext={playNextTrack}
           onAddToQueue={addTrackToQueue}
         />

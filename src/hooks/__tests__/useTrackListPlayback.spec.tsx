@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import { useEffect } from 'react';
 
@@ -16,6 +16,10 @@ function Harness({ ids, onReady }: { ids: string[]; onReady: (api: Api) => void 
 }
 
 describe('useTrackListPlayback', () => {
+  afterEach(() => {
+    usePlayerStore.getState().clearNowPlaying();
+  });
+
   it('wires playAt / playNext / addToQueue to the player store', async () => {
     let api!: Api;
 
@@ -32,7 +36,7 @@ describe('useTrackListPlayback', () => {
       expect(api).toBeDefined();
     });
 
-    const playFrom = vi.spyOn(usePlayerStore.getState(), 'playFrom');
+    const playFrom = vi.spyOn(usePlayerStore.getState(), 'playFrom').mockImplementation(() => {});
     const playNext = vi.spyOn(usePlayerStore.getState(), 'playNext');
     const addToQueue = vi.spyOn(usePlayerStore.getState(), 'addToQueue');
 
@@ -49,6 +53,91 @@ describe('useTrackListPlayback', () => {
     expect(addToQueue).toHaveBeenCalledWith('c');
 
     api.playById('b');
-    expect(playFrom).toHaveBeenCalledWith(1, ['a', 'b', 'c'], undefined);
+    expect(playFrom).toHaveBeenCalledWith(1, ['a', 'b', 'c']);
+
+    api.playTrackAt(2);
+    expect(playFrom).toHaveBeenCalledWith(2, ['a', 'b', 'c']);
+  });
+
+  it('inserts a clicked track after the current one when a queue already exists', async () => {
+    usePlayerStore.setState({
+      queue: ['a', 'c'],
+      originalQueue: ['a', 'c'],
+      currentId: 'a',
+      currentIndex: 0,
+      playing: true,
+      pendingPlay: true,
+    });
+
+    let api!: Api;
+
+    render(
+      <Harness
+        ids={['a', 'b', 'c']}
+        onReady={(value) => {
+          api = value;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(api).toBeDefined();
+    });
+
+    api.playById('b');
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      queue: ['a', 'b', 'c'],
+      originalQueue: ['a', 'b', 'c'],
+      currentId: 'a',
+      currentIndex: 0,
+      playing: true,
+      pendingPlay: true,
+    });
+
+    usePlayerStore.setState({ playing: false, pendingPlay: false });
+    api.playTrackAt(2);
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      queue: ['a', 'c', 'b', 'c'],
+      originalQueue: ['a', 'c', 'b', 'c'],
+      currentId: 'a',
+      currentIndex: 0,
+      playing: false,
+      pendingPlay: false,
+    });
+  });
+
+  it('playAt still replaces the queue when one already exists', async () => {
+    usePlayerStore.setState({
+      queue: ['a', 'c'],
+      originalQueue: ['a', 'c'],
+      currentId: 'a',
+      currentIndex: 0,
+      playing: true,
+    });
+
+    let api!: Api;
+
+    render(
+      <Harness
+        ids={['a', 'b', 'c']}
+        onReady={(value) => {
+          api = value;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(api).toBeDefined();
+    });
+
+    const playFrom = vi.spyOn(usePlayerStore.getState(), 'playFrom').mockImplementation(() => {});
+    const playNext = vi.spyOn(usePlayerStore.getState(), 'playNext');
+
+    api.playAt(0, { shuffle: false });
+
+    expect(playFrom).toHaveBeenCalledWith(0, ['a', 'b', 'c'], { shuffle: false });
+    expect(playNext).not.toHaveBeenCalled();
   });
 });
