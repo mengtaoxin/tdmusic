@@ -1,6 +1,7 @@
 import { Outlet } from '@tanstack/react-router';
 
 import { AppHeader } from '@/components/AppHeader';
+import { AppNotice } from '@/components/AppNotice';
 import { AudioHost } from '@/components/AudioHost';
 import { NowPlayingFooter } from '@/components/NowPlayingFooter';
 import '@/styles/app.css';
@@ -13,6 +14,7 @@ export function AppShell() {
         <Outlet />
       </main>
       <NowPlayingFooter />
+      <AppNotice />
       <AudioHost />
     </div>
   );

@@ -91,6 +91,7 @@ export default {
     empty: 'Nothing playing yet. Pick a track from Music List.',
     queue: 'Now playing queue',
     playNext: 'Play next',
+    addedToPlayNext: 'Added to play next',
     addToQueue: 'Add to queue',
     removeFromQueue: 'Remove from queue',
     clearUpcoming: 'Clear upcoming',

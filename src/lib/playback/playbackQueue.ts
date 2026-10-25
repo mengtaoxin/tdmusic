@@ -135,6 +135,36 @@ export type EnqueueResult =
   | { kind: 'playFrom'; sourceIds: string[] }
   | { kind: 'session'; session: QueueSession };
 
+export type TrackClickResult =
+  | { kind: 'noop' }
+  | { kind: 'playFrom' }
+  | { kind: 'resume' }
+  | { kind: 'playIndex'; index: number }
+  | { kind: 'insertAndPlay'; index: number }
+  | { kind: 'queueNext' }
+  | { kind: 'alreadyNext' };
+
+/** Row click: queue next while audio is active; start the clicked track when paused. */
+export function clickTrack(
+  session: QueueSession,
+  sourceIds: readonly string[],
+  index: number,
+  playbackActive: boolean,
+): TrackClickResult {
+  const id = sourceIds[index];
+  if (!id) return { kind: 'noop' };
+  if (session.queue.length === 0 || !session.currentId) return { kind: 'playFrom' };
+  if (id === session.currentId) {
+    return playbackActive ? { kind: 'noop' } : { kind: 'resume' };
+  }
+  const upcomingIndex = session.currentIndex + 1;
+  if (session.queue[upcomingIndex] === id) {
+    return playbackActive ? { kind: 'alreadyNext' } : { kind: 'playIndex', index: upcomingIndex };
+  }
+  if (playbackActive) return { kind: 'queueNext' };
+  return { kind: 'insertAndPlay', index: upcomingIndex };
+}
+
 export function playNext(session: QueueSession, id: string): EnqueueResult {
   if (!id) return { kind: 'session', session };
   if (session.queue.length === 0 || !session.currentId) {

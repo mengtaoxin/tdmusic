@@ -2,22 +2,23 @@
 name: cursor-local-best-practices
 description: >-
   Use for local Cursor port and session hygiene: free occupied ports on
-  EADDRINUSE, close ports this chat opened before ending, and only check
-  concurrent chats when starting or stopping servers. Use when hitting
-  EADDRINUSE / port-in-use, starting or stopping a local server, finishing a
-  conversation that opened ports, or when the user asks for local session /
-  port hygiene — not for ordinary edits, Q&A, or docs-only work.
+  EADDRINUSE, close ports this chat opened before ending, only check
+  concurrent chats when starting or stopping servers, and leave commits and
+  other chats' working-tree changes alone. Use when hitting EADDRINUSE /
+  port-in-use, starting or stopping a local server, finishing a conversation
+  that opened ports or changed files, or when the user asks for local session /
+  port hygiene.
 license: MIT
 metadata:
   author: mengtaoxin
-  version: '1.2.0'
+  version: '1.4.0'
 ---
 
 # Cursor local best practices
 
 Apply when the agent runs in a **local** Cursor environment (same machine and
 workspace as the user). Goal: leave ports free for the next chat or the user’s
-own debugging, without blocking ordinary parallel chats.
+own debugging.
 
 ## When to apply
 
@@ -26,11 +27,12 @@ Apply this skill only when one of these is true:
 - Binding or freeing a **port** (dev server, preview, proxy, tunnel)
 - Hitting **`EADDRINUSE`** / “port already in use”
 - **Ending** a conversation that opened ports in this chat
+- **Finishing** a conversation that changed files (only the
+  **Finishing — commits and other chats' changes** section below)
 - The user **explicitly** asks for local session / port hygiene
 
-Do **not** apply for ordinary code edits, reviews, Q&A, docs, or tests that do
-not start a long-lived listener. Parallel chats in the same repo are allowed
-for that work.
+The port rules do **not** apply to ordinary code edits, reviews, Q&A, docs, or
+tests that do not start a long-lived listener.
 
 ## Rules
 
@@ -48,6 +50,12 @@ for that work.
 Do this only when about to start a **dev server, preview, proxy, or other
 long-lived port binder** — not before every edit.
 
+0. If the server is only for **verifying a change** in the browser, first
+   prefer an automated test through the project's scripts (unit / component /
+   e2e; e2e runners usually start their own servers on free ports). Start a dev
+   server for browser checks only for what a test cannot express (visual layout,
+   look and feel), and prefer an accessibility snapshot over screenshots, which
+   cost far more context.
 1. Identify the current workspace / repo root.
 2. Check project `terminals` metadata (and similar) for an **active** command
    in this repo that already holds the target port or the same kind of server.
@@ -58,16 +66,17 @@ long-lived port binder** — not before every edit.
    - Prefer reusing that server, or ask whether to stop it — do **not** enter a
      multi-minute wait loop, and do **not** abort the whole conversation for
      unrelated edits.
-5. Never block ordinary (non-server) work because another chat is active.
 
 ## During the conversation — occupied ports
 
 When binding a port fails (e.g. `EADDRINUSE`, “port already in use”) or a needed
 port is already taken:
 
-1. Find the process listening on that port (`lsof`, `ss`, `netstat`, or OS
-   equivalent).
-2. If the holder was **started by this chat** → stop it, then retry.
+1. Identify what is holding the port from what this chat and the environment
+   already show (the session that started it, project tooling, or another
+   method that works here). Do not require a particular command.
+2. If the holder was **started by this chat** → stop it in a way that fits how
+   it was started, then retry.
 3. If the holder looks like the **user’s** or **another chat’s** intentional
    server → tell the user; stop it only if they confirm, or if they already
    asked you to free that port. Prefer a graceful stop when practical.
@@ -82,11 +91,24 @@ preview, proxies, one-off listeners).
 Before the final reply / handoff for this conversation (when this chat opened
 ports, or the user asked for cleanup):
 
-1. Stop processes this chat started that still hold ports (dev servers,
-   watchers, tunnels, etc.).
-2. Confirm those ports are free.
-3. Do **not** kill unrelated user processes or servers started outside this
+1. Shut down each server this chat started that still holds a port (dev
+   servers, watchers, tunnels, etc.). Pick a stop method that fits how that
+   process was started and what this environment actually provides — the same
+   session, the project's own stop path, or another method that works. Do not
+   require one specific command; projects and machines vary, and a named tool
+   may not exist.
+2. Confirm those ports are free, without assuming a particular command.
+3. Do **not** stop unrelated user processes or servers started outside this
    chat, unless the user confirmed freeing that port.
 
 If the user asked to leave a server running, say so and leave it; otherwise
 default to closing ports opened here.
+
+## Finishing — commits and other chats' changes
+
+Other chats and the user often edit the same working tree in parallel, and the
+user commits. Unless the user or the host project's workflow asks otherwise:
+
+- Do not commit, offer to commit, or report commit state.
+- Do not run `git status` / `git diff` to review the tree at the end, and do not
+  inspect or comment on changes this chat did not make.

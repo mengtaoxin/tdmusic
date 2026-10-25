@@ -1,15 +1,63 @@
+import i18n from '@/i18n';
+import { clickTrack, type QueueSession } from '@/lib/playback/playbackQueue';
+import { useNoticeStore } from '@/stores/notice';
 import { usePlayerStore } from '@/stores/player';
 
-/** Row click: keep an existing queue and insert this track next; otherwise start that source list. */
+function readQueueSession(player: ReturnType<typeof usePlayerStore.getState>): QueueSession {
+  return {
+    queue: player.queue,
+    originalQueue: player.originalQueue,
+    currentId: player.currentId,
+    currentIndex: player.currentIndex,
+    shuffle: player.shuffle,
+    repeatMode: player.repeatMode,
+  };
+}
+
+function notifyAddedToPlayNext() {
+  useNoticeStore.getState().show(i18n.t('player.addedToPlayNext'));
+}
+
+/** Row click: queue next while audio is active; start the clicked track when paused. */
 function playClickedTrack(ids: string[], index: number) {
-  const id = ids[index];
-  if (id === undefined) return;
   const player = usePlayerStore.getState();
-  if (player.queue.length > 0 && player.currentId) {
-    player.playNext(id);
-    return;
+  const result = clickTrack(
+    readQueueSession(player),
+    ids,
+    index,
+    player.playing || player.pendingPlay,
+  );
+  const id = ids[index];
+  switch (result.kind) {
+    case 'noop':
+      return;
+    case 'playFrom':
+      player.playFrom(index, ids);
+      return;
+    case 'resume':
+      player.play();
+      return;
+    case 'playIndex':
+      player.goToIndex(result.index, true);
+      return;
+    case 'insertAndPlay':
+      if (!id) return;
+      player.playNext(id);
+      player.goToIndex(result.index, true);
+      return;
+    case 'queueNext':
+      if (!id) return;
+      player.playNext(id);
+      notifyAddedToPlayNext();
+      return;
+    case 'alreadyNext':
+      notifyAddedToPlayNext();
+      return;
+    default: {
+      const unreachable: never = result;
+      return unreachable;
+    }
   }
-  player.playFrom(index, ids);
 }
 
 /** Play helpers bound to a source id list. Catalog load lives on the root route. */

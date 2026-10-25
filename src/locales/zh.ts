@@ -90,6 +90,7 @@ export default {
     empty: '暂无播放。请从音乐列表选择一首歌。',
     queue: '正在播放列表',
     playNext: '下一首播放',
+    addedToPlayNext: '已添加到下一首播放',
     addToQueue: '添加到队列',
     removeFromQueue: '从队列移除',
     clearUpcoming: '清除后续',

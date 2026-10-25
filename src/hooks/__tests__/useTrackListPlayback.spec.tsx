@@ -2,7 +2,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
 import { useEffect } from 'react';
 
+import i18n from '@/i18n';
 import { useTrackListPlayback } from '@/hooks/useTrackListPlayback';
+import { useNoticeStore } from '@/stores/notice';
 import { usePlayerStore } from '@/stores/player';
 
 type Api = ReturnType<typeof useTrackListPlayback>;
@@ -18,6 +20,7 @@ function Harness({ ids, onReady }: { ids: string[]; onReady: (api: Api) => void 
 describe('useTrackListPlayback', () => {
   afterEach(() => {
     usePlayerStore.getState().clearNowPlaying();
+    useNoticeStore.setState({ message: '', open: false, nonce: 0 });
   });
 
   it('wires playAt / playNext / addToQueue to the player store', async () => {
@@ -94,18 +97,176 @@ describe('useTrackListPlayback', () => {
       playing: true,
       pendingPlay: true,
     });
+    expect(useNoticeStore.getState()).toMatchObject({
+      open: true,
+      message: i18n.t('player.addedToPlayNext'),
+    });
 
     usePlayerStore.setState({ playing: false, pendingPlay: false });
+    useNoticeStore.setState({ message: '', open: false, nonce: 0 });
     api.playTrackAt(2);
 
     expect(usePlayerStore.getState()).toMatchObject({
       queue: ['a', 'c', 'b', 'c'],
       originalQueue: ['a', 'c', 'b', 'c'],
+      currentId: 'c',
+      currentIndex: 1,
+      playing: true,
+      pendingPlay: true,
+    });
+    expect(useNoticeStore.getState().open).toBe(false);
+  });
+
+  it('does not stack another copy when the clicked track is already next', async () => {
+    usePlayerStore.setState({
+      queue: ['a', 'c'],
+      originalQueue: ['a', 'c'],
+      currentId: 'a',
+      currentIndex: 0,
+      playing: true,
+      pendingPlay: true,
+    });
+
+    let api!: Api;
+
+    render(
+      <Harness
+        ids={['a', 'b', 'c']}
+        onReady={(value) => {
+          api = value;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(api).toBeDefined();
+    });
+
+    api.playById('b');
+    api.playById('b');
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      queue: ['a', 'b', 'c'],
+      originalQueue: ['a', 'b', 'c'],
+      currentId: 'a',
+      currentIndex: 0,
+    });
+    expect(useNoticeStore.getState().open).toBe(true);
+    expect(useNoticeStore.getState().message).toBe(i18n.t('player.addedToPlayNext'));
+  });
+
+  it('resumes the paused current track without queueing a copy', async () => {
+    usePlayerStore.setState({
+      queue: ['a', 'c'],
+      originalQueue: ['a', 'c'],
       currentId: 'a',
       currentIndex: 0,
       playing: false,
       pendingPlay: false,
     });
+
+    let api!: Api;
+
+    render(
+      <Harness
+        ids={['a', 'b', 'c']}
+        onReady={(value) => {
+          api = value;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(api).toBeDefined();
+    });
+
+    api.playById('a');
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      queue: ['a', 'c'],
+      originalQueue: ['a', 'c'],
+      currentId: 'a',
+      currentIndex: 0,
+      playing: true,
+      pendingPlay: true,
+    });
+    expect(useNoticeStore.getState().open).toBe(false);
+  });
+
+  it('starts an already-next track when playback is paused', async () => {
+    usePlayerStore.setState({
+      queue: ['a', 'b', 'c'],
+      originalQueue: ['a', 'b', 'c'],
+      currentId: 'a',
+      currentIndex: 0,
+      playing: false,
+      pendingPlay: false,
+    });
+
+    let api!: Api;
+
+    render(
+      <Harness
+        ids={['a', 'b', 'c']}
+        onReady={(value) => {
+          api = value;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(api).toBeDefined();
+    });
+
+    api.playById('b');
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      queue: ['a', 'b', 'c'],
+      originalQueue: ['a', 'b', 'c'],
+      currentId: 'b',
+      currentIndex: 1,
+      playing: true,
+      pendingPlay: true,
+    });
+    expect(useNoticeStore.getState().open).toBe(false);
+  });
+
+  it('queues next while a track is still loading instead of stealing playback', async () => {
+    usePlayerStore.setState({
+      queue: ['a', 'c'],
+      originalQueue: ['a', 'c'],
+      currentId: 'a',
+      currentIndex: 0,
+      playing: false,
+      pendingPlay: true,
+    });
+
+    let api!: Api;
+
+    render(
+      <Harness
+        ids={['a', 'b', 'c']}
+        onReady={(value) => {
+          api = value;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(api).toBeDefined();
+    });
+
+    api.playById('b');
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      queue: ['a', 'b', 'c'],
+      originalQueue: ['a', 'b', 'c'],
+      currentId: 'a',
+      currentIndex: 0,
+      playing: false,
+      pendingPlay: true,
+    });
+    expect(useNoticeStore.getState().open).toBe(true);
   });
 
   it('playAt still replaces the queue when one already exists', async () => {

@@ -11,6 +11,7 @@ import {
   clearUpcomingTracks,
   emptyQueueSession,
   goToIndex,
+  clickTrack,
   playNext,
   removeAt,
   toggleShuffle,
@@ -117,6 +118,78 @@ describe('queue mutations', () => {
         currentIndex: 2,
       }),
     });
+  });
+
+  it('clickTrack starts the source list when nothing is queued', () => {
+    expect(clickTrack(emptyQueueSession(), ['a', 'b'], 1, false)).toEqual({ kind: 'playFrom' });
+    expect(
+      clickTrack(
+        session({ queue: [], originalQueue: [], currentId: null, currentIndex: -1 }),
+        ['a'],
+        0,
+        true,
+      ),
+    ).toEqual({
+      kind: 'playFrom',
+    });
+  });
+
+  it('clickTrack ignores a missing row', () => {
+    expect(clickTrack(session(), ['a', 'b'], 5, true)).toEqual({ kind: 'noop' });
+    expect(clickTrack(session(), ['a', ''], 1, true)).toEqual({ kind: 'noop' });
+  });
+
+  it('clickTrack queues a different track next while playback is active', () => {
+    const queued = session({
+      queue: ['a', 'b', 'c'],
+      originalQueue: ['a', 'b', 'c'],
+      currentId: 'a',
+      currentIndex: 0,
+    });
+    expect(clickTrack(queued, ['a', 'b', 'c'], 2, true)).toEqual({ kind: 'queueNext' });
+  });
+
+  it('clickTrack does not queue another copy when that track is already next', () => {
+    const queued = session({
+      queue: ['a', 'b', 'c'],
+      originalQueue: ['a', 'b', 'c'],
+      currentId: 'a',
+      currentIndex: 0,
+    });
+    expect(clickTrack(queued, ['a', 'b', 'c'], 1, true)).toEqual({ kind: 'alreadyNext' });
+  });
+
+  it('clickTrack leaves the current track alone while it is playing', () => {
+    const queued = session({ currentId: 'a', currentIndex: 0 });
+    expect(clickTrack(queued, ['a', 'b', 'c', 'd'], 0, true)).toEqual({ kind: 'noop' });
+  });
+
+  it('clickTrack inserts a paused click and plays that new index', () => {
+    const paused = session({
+      queue: ['a', 'b', 'c'],
+      originalQueue: ['a', 'b', 'c'],
+      currentId: 'a',
+      currentIndex: 0,
+    });
+    expect(clickTrack(paused, ['a', 'b', 'c'], 2, false)).toEqual({
+      kind: 'insertAndPlay',
+      index: 1,
+    });
+  });
+
+  it('clickTrack plays an already-queued next track when playback is paused', () => {
+    const paused = session({
+      queue: ['a', 'b', 'c'],
+      originalQueue: ['a', 'b', 'c'],
+      currentId: 'a',
+      currentIndex: 0,
+    });
+    expect(clickTrack(paused, ['a', 'b', 'c'], 1, false)).toEqual({ kind: 'playIndex', index: 1 });
+  });
+
+  it('clickTrack resumes the paused current track', () => {
+    const paused = session({ currentId: 'a', currentIndex: 0 });
+    expect(clickTrack(paused, ['a', 'b', 'c', 'd'], 0, false)).toEqual({ kind: 'resume' });
   });
 
   it('playNext on an empty queue requests playFrom', () => {
