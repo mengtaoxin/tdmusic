@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test:unit": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test",
+    "test:e2e": "env -u PLAYWRIGHT_BROWSERS_PATH playwright test",
     "build-only": "vite build",
     "type-check": "tsc -b",
     "lint": "oxlint .",

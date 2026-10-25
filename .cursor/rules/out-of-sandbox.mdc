@@ -1,0 +1,10 @@
+---
+description: Run package.json scripts outside the sandbox
+alwaysApply: true
+---
+
+# Shell / sandbox
+
+Run every `package.json` script (`npm run <script>`) with Shell `required_permissions: ["all"]` from the start; do not try the sandbox first.
+
+Run them as-is: no `2>&1` and no pipe (`|`). Their output is already compact, and a pipe hides the exit code.

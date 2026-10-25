@@ -22,8 +22,6 @@ npm install
 npx playwright install chromium firefox webkit
 ```
 
-Unset `PLAYWRIGHT_BROWSERS_PATH` if a sandbox injected it, so browsers land in the default Playwright cache.
-
 ## Format / lint / type-check
 
 ```sh
@@ -59,4 +57,4 @@ Type-check + Vite production build → `dist/`.
 | `npm run test:e2e -- --project chromium`                    | Playwright; pick projects explicitly                |
 | `npm run test:e2e -- --project chromium -- path/to/spec.ts` | One e2e file                                        |
 
-E2E defaults in config include chromium, firefox, and webkit; always pass `--project` when you want a subset. Agents should run e2e / Playwright install outside the sandbox (`required_permissions: ["all"]`).
+E2E defaults in config include chromium, firefox, and webkit; always pass `--project` when you want a subset.
