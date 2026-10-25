@@ -36,7 +36,11 @@ describe('NowPlayingPage', () => {
     seedPlaying();
     await renderWithTestRouter({ component: () => <NowPlayingPage /> });
 
-    await user.click(screen.getByRole('button', { name: 'Track info' }));
+    const cover = document.querySelector('.cover-wrap');
+    expect(cover).not.toBeNull();
+    const button = within(cover as HTMLElement).getByRole('button', { name: 'Track info' });
+    expect(button).not.toHaveTextContent('Track info');
+    await user.click(button);
 
     const dialog = await screen.findByRole('dialog', { name: 'Track info' });
     expect(within(dialog).getByText('Song One')).toBeInTheDocument();

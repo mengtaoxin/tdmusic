@@ -2,7 +2,6 @@ import { useMemo, useRef, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import Slider from '@mui/material/Slider';
@@ -103,12 +102,10 @@ export function NowPlayingPage() {
           <Box
             className="cover-wrap"
             sx={{
+              position: 'relative',
               mx: 'auto',
               mb: 2,
-              maxWidth: (theme) => ({
-                xs: `calc(${theme.layout.coverMaxWidth} - ${theme.spacing(5)})`,
-                sm: theme.layout.coverMaxWidth,
-              }),
+              maxWidth: (theme) => theme.layout.coverMaxWidth,
               borderRadius: 'var(--td-radius-lg)',
               overflow: 'hidden',
               boxShadow: 'var(--td-cover-shadow)',
@@ -137,12 +134,27 @@ export function NowPlayingPage() {
                 <AlbumIcon sx={{ fontSize: 72 }} />
               </Box>
             )}
+            <IconButton
+              data-testid="now-playing-track-info"
+              aria-label={t('trackInfo.open')}
+              onClick={() => setInfoTrackId(current.id)}
+              sx={{
+                position: 'absolute',
+                top: (theme) => theme.spacing(1),
+                right: (theme) => theme.spacing(1),
+                color: 'common.white',
+                bgcolor: 'rgba(0, 0, 0, 0.45)',
+                '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.62)' },
+              }}
+            >
+              <InfoOutlinedIcon />
+            </IconButton>
           </Box>
 
           <Typography variant="h5" sx={{ mb: 0.5 }}>
             {current.displayTitle}
           </Typography>
-          <Typography color="text.secondary" sx={{ mb: 0.5 }}>
+          <Typography color="text.secondary" sx={{ mb: 2 }}>
             <Box
               component={Link}
               to={artistAlbumsPath(current.displayArtist)}
@@ -173,18 +185,6 @@ export function NowPlayingPage() {
               </>
             ) : null}
           </Typography>
-
-          <Button
-            data-testid="now-playing-track-info"
-            variant="text"
-            color="secondary"
-            size="small"
-            startIcon={<InfoOutlinedIcon />}
-            onClick={() => setInfoTrackId(current.id)}
-            sx={{ mb: { xs: 0.5, sm: 1 }, minHeight: { xs: 40, sm: 48 } }}
-          >
-            {t('trackInfo.open')}
-          </Button>
 
           <Slider
             value={progress}
