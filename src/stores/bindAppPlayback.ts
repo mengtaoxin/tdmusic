@@ -1,6 +1,6 @@
 import { TdLog } from 'tdkit';
 
-import { abortPrefetchDownloads, releaseAudioBlobUrlsExcept } from '@/lib/cache/musicCache';
+import { releaseAudioBlobUrlsExcept } from '@/lib/cache/musicCache';
 import { createBackgroundPrefetch } from '@/lib/playback/backgroundPrefetch';
 import { createPlaybackRuntime } from '@/lib/playback/createPlaybackRuntime';
 import { createPlayHistoryRecorder } from '@/lib/playback/playHistoryRecorder';
@@ -34,8 +34,6 @@ function prefetchUpcomingFromPlayer() {
 }
 
 const backgroundPrefetch = createBackgroundPrefetch({
-  isDocumentHidden: () => typeof document !== 'undefined' && document.hidden,
-  abortPrefetchDownloads,
   prefetch: prefetchUpcomingFromPlayer,
   isPlaying: () => usePlayerStore.getState().playing,
   hasCurrentTrack: () => usePlayerStore.getState().currentId != null,

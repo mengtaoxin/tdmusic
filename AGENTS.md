@@ -4,7 +4,6 @@
 
 - Changing code (structure, TDD, tests, format/check, i18n): [docs/change-code-steps.md](docs/change-code-steps.md).
 - Views that need the catalog rely on root `beforeLoad` / `ensureCatalogLoaded` — do not fetch `configs.json` from views.
-- Skills: [`.cursor/rules/skills-intro.mdc`](.cursor/rules/skills-intro.mdc).
 
 ## Read when
 

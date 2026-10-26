@@ -1,5 +1,4 @@
 import { ensureQuota } from './cacheEviction';
-import { abortAudioDownloads } from './downloadLimiter';
 import {
   cancelEnsureInFlight,
   clearEnsureInFlight,
@@ -75,11 +74,6 @@ export {
   subscribeManualDownloads,
   trackDownloadPercent,
 };
-
-/** Stop in-flight and queued prefetch downloads. Play and manual downloads keep running. */
-export function abortPrefetchDownloads(): void {
-  abortAudioDownloads('normal');
-}
 
 /** Quota-check then store a cover blob under the standard cover key. */
 export async function putCoverFile(sourceUrl: string, blob: Blob): Promise<void> {

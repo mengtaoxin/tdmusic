@@ -27,7 +27,7 @@ export type PlaybackTransportDeps = {
   setDuration: (duration: number) => void;
   syncMediaSession: (options?: { metadata?: boolean }) => void;
   schedulePrefetch: () => void;
-  /** Page visibility changed; pause or resume prefetch. */
+  /** Page visibility changed; prefetch again when playback is still running. */
   onDocumentVisibility?: () => void;
   resolvePlayableUrl: (path: string, id: string) => Promise<string>;
   /** Revoke audio blob URLs other than the one just assigned to the element. */

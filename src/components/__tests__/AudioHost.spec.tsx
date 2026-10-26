@@ -133,19 +133,14 @@ describe('AudioHost', () => {
     ).toBe(true);
   });
 
-  it('skips prefetch while hidden and prefetches again when playback is still running', async () => {
-    useCatalogStore.getState().setTracks([makeTrack('t1', 'One')]);
+  it('prefetches upcoming tracks while the document is hidden', async () => {
+    vi.mocked(prefetchUpcoming).mockClear();
+    useCatalogStore.getState().setTracks([makeTrack('t1', 'One'), makeTrack('t2', 'Two')]);
     const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
     try {
       renderWithProviders(<AudioHost />);
 
-      await bumpLoad(['t1'], 't1');
-      await act(async () => {
-        document.dispatchEvent(new Event('visibilitychange'));
-      });
-      expect(prefetchUpcoming).not.toHaveBeenCalled();
-
-      hidden.mockReturnValue(false);
+      await bumpLoad(['t1', 't2'], 't1');
       await act(async () => {
         document.dispatchEvent(new Event('visibilitychange'));
       });
