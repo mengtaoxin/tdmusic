@@ -142,9 +142,12 @@ export function NowPlayingPage() {
                 position: 'absolute',
                 top: (theme) => theme.spacing(1),
                 right: (theme) => theme.spacing(1),
-                color: 'common.white',
-                bgcolor: 'rgba(0, 0, 0, 0.45)',
-                '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.62)' },
+                color: 'rgba(255, 255, 255, 0.72)',
+                bgcolor: 'rgba(0, 0, 0, 0.28)',
+                '&:hover': {
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  bgcolor: 'rgba(0, 0, 0, 0.42)',
+                },
               }}
             >
               <InfoOutlinedIcon />
