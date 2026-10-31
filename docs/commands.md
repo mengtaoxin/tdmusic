@@ -7,8 +7,7 @@ npm install
 npx playwright install chromium firefox webkit
 npm run dev
 npm run build
-npm run fmt && npm run lint && npm run type-check
-npm run test:unit
+npm run verify
 npm run test:coverage
 npm run test:e2e -- --project chromium
 ```
@@ -25,11 +24,12 @@ npx playwright install chromium firefox webkit
 ## Format / lint / type-check
 
 ```sh
-npm run fmt && npm run lint:fix && npm run type-check   # write
-npm run fmt:check && npm run lint && npm run type-check   # check only
+npm run format && npm run lint:fix && npm run type-check   # write
+npm run check                                              # read-only: format:check + lint + type-check
+npm run verify                                             # read-only: check + full unit suite
 ```
 
-`npm run fmt` and `npm run lint:fix` write files; `fmt:check` / `lint` do not.
+`npm run format` and `npm run lint:fix` write files; `format:check` / `lint` / `check` / `verify` do not.
 
 ## Dev server
 
@@ -51,8 +51,10 @@ Type-check + Vite production build → `dist/`.
 
 | Command                                                     | Notes                                               |
 | ----------------------------------------------------------- | --------------------------------------------------- |
-| `npm run test:unit`                                         | Vitest (all unit specs)                             |
-| `npm run test:unit -- path/to/spec.ts`                      | One unit file                                       |
+| `npm run test`                                              | Vitest, full unit suite once                        |
+| `npm run test:watch`                                        | Vitest watch mode (TTY)                             |
+| `npm run test:unit`                                         | Alias for `test:watch`                              |
+| `npm run test -- path/to/spec.ts`                           | One unit file                                       |
 | `npm run test:coverage`                                     | Vitest with V8 coverage (`text` + `coverage/` HTML) |
 | `npm run test:e2e -- --project chromium`                    | Playwright; pick projects explicitly                |
 | `npm run test:e2e -- --project chromium -- path/to/spec.ts` | One e2e file                                        |

@@ -39,23 +39,20 @@ No new test required: docs, comments, or formatting with no behavior change. Mec
 
 ## 4. Tests
 
-During Red/Green, run the focused spec. Before finishing a behavior change, run the full unit suite (`npm run test:unit`). Add or run e2e only for a user-visible integration smoke — do not duplicate unit assertions in e2e.
+During Red/Green, run the focused spec (`npm run test -- path/to/spec.ts` or `npm run test:watch`). Before finishing a behavior change, run the full unit suite (`npm run test`). Add or run e2e only for a user-visible integration smoke — do not duplicate unit assertions in e2e.
 
 Commands and `--project` for Playwright: [commands.md](commands.md).
 
-## 5. Format and check
+## 5. Format and verify
 
-After the tests you owe for this change:
+After the tests you owe for this change, run `npm run format` (and `npm run lint:fix` when lint autofix is needed) when the tree needs it, then `npm run verify` once at the end. Commands: [commands.md](commands.md).
 
-1. Write: `npm run fmt && npm run lint && npm run type-check` (these write files).
-2. Confirm check-only is clean (exact commands in [commands.md](commands.md)).
-
-Do not mark the change done while check-only format, lint, or type-check fails.
+Do not mark the change done while `npm run verify` fails.
 
 ## Done when
 
 - Structure matches [file-structure.md](file-structure.md).
 - Behavior changes went through observed Red → Green (and refactor if needed).
-- Full unit suite is green for behavior changes; e2e only when that layer is required.
-- Format / lint / type-check check-only is clean.
+- E2e only when that layer is required.
+- `npm run verify` passes.
 - i18n and docs from step 3 are updated when they apply.

@@ -36,12 +36,12 @@ npm run dev
 | `npm install` + Playwright install                  | 安装依赖与浏览器                         |
 | `npm run dev`                                       | 启动 Vite 开发服务器                     |
 | `npm run build`                                     | 生产构建                                 |
-| `npm run fmt && npm run lint && npm run type-check` | 格式化 + lint + 类型检查（**会改文件**） |
-| `npm run test:unit` / `test:e2e`                    | 单元（Vitest）/ e2e（Playwright）        |
+| `npm run format` 然后 `npm run verify`              | 格式化（会改文件）再跑只读收尾门            |
+| `npm run test` / `test:e2e`                         | 单元（Vitest）/ e2e（Playwright）        |
 
 ```sh
-npm run test:unit
-npm run test:unit -- src/__tests__/App.spec.tsx
+npm run test
+npm run test -- src/__tests__/App.spec.tsx
 npm run test:e2e -- --project chromium
 npm run test:e2e -- --project chromium -- e2e/app.spec.ts
 ```

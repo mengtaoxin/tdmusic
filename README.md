@@ -36,12 +36,12 @@ Commands and options: [docs/commands.md](docs/commands.md).
 | `npm install` + Playwright install                  | Install dependencies and browsers             |
 | `npm run dev`                                       | Start the Vite dev server                     |
 | `npm run build`                                     | Production build                              |
-| `npm run fmt && npm run lint && npm run type-check` | Format + lint + type-check (**writes files**) |
-| `npm run test:unit` / `test:e2e`                    | Unit (Vitest) / e2e (Playwright)              |
+| `npm run format` then `npm run verify`              | Format (writes) then read-only finish gate    |
+| `npm run test` / `test:e2e`                         | Unit (Vitest) / e2e (Playwright)              |
 
 ```sh
-npm run test:unit
-npm run test:unit -- src/__tests__/App.spec.tsx
+npm run test
+npm run test -- src/__tests__/App.spec.tsx
 npm run test:e2e -- --project chromium
 npm run test:e2e -- --project chromium -- e2e/app.spec.ts
 ```
