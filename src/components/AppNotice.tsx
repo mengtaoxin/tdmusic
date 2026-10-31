@@ -1,5 +1,5 @@
 import Snackbar from '@mui/material/Snackbar';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 
 import { useNoticeStore } from '@/stores/notice';
 
@@ -26,6 +26,15 @@ export function AppNotice() {
         content: {
           role: 'status',
           'aria-live': 'polite',
+          sx: {
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
+            fontWeight: 600,
+            letterSpacing: '0.01em',
+            px: 2.5,
+            py: 1.25,
+            boxShadow: `0 10px 28px ${alpha(theme.palette.primary.main, 0.5)}`,
+          },
         },
       }}
       style={{ bottom }}
