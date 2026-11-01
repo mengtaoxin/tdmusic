@@ -1,10 +1,10 @@
 export default {
   nav: {
     home: '首页',
-    musicList: '音乐列表',
+    songs: '歌曲',
     playlist: '播放列表',
-    artistList: '歌手列表',
-    albumList: '专辑列表',
+    artists: '歌手',
+    albums: '专辑',
     nowPlaying: '正在播放',
     search: '搜索',
     more: '更多',
@@ -30,7 +30,7 @@ export default {
       required: '必填',
       optional: '可选',
       notes: {
-        musicList: '曲目数组，唯一必填的顶层字段',
+        songs: '曲目数组，唯一必填的顶层字段',
         id: '唯一标识，歌单通过它引用曲目',
         path: '音频地址（完整 URL 或站内路径），播放后缓存到本机',
         title: '不填则读取 ID3 标签，再退回文件名',
@@ -87,7 +87,7 @@ export default {
   player: {
     unknownArtist: '未知歌手',
     unknownAlbum: '未知专辑',
-    empty: '暂无播放。请从音乐列表选择一首歌。',
+    empty: '暂无播放。请从歌曲中选择一首。',
     queue: '正在播放列表',
     playNext: '下一首播放',
     addedToPlayNext: '已添加到下一首播放',

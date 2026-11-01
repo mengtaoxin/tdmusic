@@ -38,7 +38,7 @@ export function AlbumDetailPage({ albumName }: { albumName: string }) {
   return (
     <Container maxWidth={false} className="page">
       <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-        {localizeAlbumName(album?.name || albumName || '', t) || t('nav.albumList')}
+        {localizeAlbumName(album?.name || albumName || '', t) || t('nav.albums')}
       </Typography>
 
       {!loading && !album ? (

@@ -39,7 +39,7 @@ test('language menu opens on the first click after navigating', async ({ page })
   await page.keyboard.press('Escape');
   await expect(page.getByTestId('nav-locale-menu')).toHaveCount(0);
 
-  await page.getByTestId('desktop-nav').getByRole('link', { name: 'Music List' }).click();
+  await page.getByTestId('desktop-nav').getByRole('link', { name: 'Songs' }).click();
   await expect(page).toHaveURL(/\/music/);
 
   await page.getByTestId('nav-locale-toggle').click();
@@ -73,15 +73,15 @@ test('settings links to config guides', async ({ page }) => {
   await page.getByRole('main').getByRole('link', { name: 'Guidelines for configs.json' }).click();
   await expect(page).toHaveURL(/\/config-guides/);
   await expect(page.getByRole('heading', { name: 'Guidelines for configs.json' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'music-list' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'songs' })).toBeVisible();
   await expect(
     page.getByRole('heading', { name: 'Ask an AI to generate configs.json' }),
   ).toBeVisible();
 });
 
-test('music list shows catalog tracks', async ({ page }) => {
+test('songs page shows catalog tracks', async ({ page }) => {
   await page.goto('/music');
-  await expect(page.getByRole('heading', { name: 'Music List' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Songs' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Play all' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Shuffle all' })).toBeVisible();
   await expect(page.getByText('Smile in the Wind')).toBeVisible();
@@ -89,7 +89,7 @@ test('music list shows catalog tracks', async ({ page }) => {
 
 test('playlist list navigates to playlist detail by name', async ({ page }) => {
   await page.goto('/playlists');
-  await expect(page.getByRole('heading', { name: 'Playlist' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Playlists' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'My Playlist1' })).toBeVisible();
   await expect(page.getByText('Smile in the Wind')).toHaveCount(0);
 
@@ -99,9 +99,9 @@ test('playlist list navigates to playlist detail by name', async ({ page }) => {
   await expect(page.getByText('Smile in the Wind')).toBeVisible();
 });
 
-test('artist list navigates to albums, album tracks, and all music', async ({ page }) => {
+test('artists page navigates to albums, album tracks, and all music', async ({ page }) => {
   await page.goto('/artists');
-  await expect(page.getByRole('heading', { name: 'Artist List' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Artists' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Doubao' })).toBeVisible();
   await expect(page.getByText('Smile in the Wind')).toHaveCount(0);
 

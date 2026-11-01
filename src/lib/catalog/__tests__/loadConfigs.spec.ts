@@ -28,7 +28,7 @@ describe('loadConfigsJson', () => {
   });
 
   it('fetches from resolved url', async () => {
-    const payload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
+    const payload = { songs: [{ id: 'a', path: '/a.mp3' }] };
     stubFetchOk(payload);
     const data = await loadConfigsJson();
     expect(fetch).toHaveBeenCalledWith(DEFAULT_CONFIG_URL, { cache: 'reload' });
@@ -36,7 +36,7 @@ describe('loadConfigsJson', () => {
   });
 
   it('saves default configs.json to localStorage after fetch', async () => {
-    const payload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
+    const payload = { songs: [{ id: 'a', path: '/a.mp3' }] };
     stubFetchOk(payload);
     await loadConfigsJson();
     expect(CONFIGS_CACHE_KEY).toBe('tdmusic.configs');
@@ -48,7 +48,7 @@ describe('loadConfigsJson', () => {
 
   it('saves a user config URL payload to localStorage after fetch', async () => {
     const url = 'https://cdn.example.com/configs.json';
-    const payload = { 'music-list': [{ id: 'b', path: '/b.mp3' }] };
+    const payload = { songs: [{ id: 'b', path: '/b.mp3' }] };
     localStorage.setItem(CONFIG_URL_KEY, url);
     stubFetchOk(payload);
     await loadConfigsJson();
@@ -60,7 +60,7 @@ describe('loadConfigsJson', () => {
   });
 
   it('returns cached configs on later loads and refreshes them in the background', async () => {
-    const payload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
+    const payload = { songs: [{ id: 'a', path: '/a.mp3' }] };
     const fetchMock = stubFetchOk(payload);
     await loadConfigsJson();
     const again = await loadConfigsJson();
@@ -70,7 +70,7 @@ describe('loadConfigsJson', () => {
   });
 
   it('returns cached configs while the background refresh is still pending', async () => {
-    const cachedPayload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
+    const cachedPayload = { songs: [{ id: 'a', path: '/a.mp3' }] };
     seedCache(DEFAULT_CONFIG_URL, cachedPayload);
     const fetchMock = vi.fn<typeof fetch>().mockReturnValue(new Promise<Response>(() => {}));
     vi.stubGlobal('fetch', fetchMock);
@@ -80,8 +80,8 @@ describe('loadConfigsJson', () => {
   });
 
   it('stores the refreshed remote configs for the next load', async () => {
-    const cachedPayload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
-    const remotePayload = { 'music-list': [{ id: 'b', path: '/b.mp3' }] };
+    const cachedPayload = { songs: [{ id: 'a', path: '/a.mp3' }] };
+    const remotePayload = { songs: [{ id: 'b', path: '/b.mp3' }] };
     seedCache(DEFAULT_CONFIG_URL, cachedPayload);
     stubFetchOk(remotePayload);
     const data = await loadConfigsJson();
@@ -92,7 +92,7 @@ describe('loadConfigsJson', () => {
   });
 
   it('keeps the cache when the background refresh fails (offline)', async () => {
-    const cachedPayload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
+    const cachedPayload = { songs: [{ id: 'a', path: '/a.mp3' }] };
     seedCache(DEFAULT_CONFIG_URL, cachedPayload);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const fetchMock = vi.fn<typeof fetch>().mockRejectedValue(new TypeError('Failed to fetch'));
@@ -104,7 +104,7 @@ describe('loadConfigsJson', () => {
   });
 
   it('keeps the cache when the background refresh gets a non-ok response', async () => {
-    const cachedPayload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
+    const cachedPayload = { songs: [{ id: 'a', path: '/a.mp3' }] };
     seedCache(DEFAULT_CONFIG_URL, cachedPayload);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const json = vi.fn();
@@ -121,8 +121,8 @@ describe('loadConfigsJson', () => {
   });
 
   it('does not overwrite the cache when the config URL changes during the background refresh', async () => {
-    const cachedPayload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
-    const stalePayload = { 'music-list': [{ id: 'stale', path: '/stale.mp3' }] };
+    const cachedPayload = { songs: [{ id: 'a', path: '/a.mp3' }] };
+    const stalePayload = { songs: [{ id: 'stale', path: '/stale.mp3' }] };
     seedCache(DEFAULT_CONFIG_URL, cachedPayload);
     let resolveFetch!: (response: Response) => void;
     const fetchMock = vi.fn<typeof fetch>().mockReturnValue(
@@ -134,7 +134,7 @@ describe('loadConfigsJson', () => {
     await loadConfigsJson();
 
     const customUrl = 'https://cdn.example.com/configs.json';
-    const customPayload = { 'music-list': [{ id: 'b', path: '/b.mp3' }] };
+    const customPayload = { songs: [{ id: 'b', path: '/b.mp3' }] };
     localStorage.setItem(CONFIG_URL_KEY, customUrl);
     seedCache(customUrl, customPayload);
     const json = vi.fn(async () => stalePayload);
@@ -155,12 +155,12 @@ describe('loadConfigsJson', () => {
   });
 
   it('fetches again when the resolved config URL no longer matches the cache', async () => {
-    const defaultPayload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
+    const defaultPayload = { songs: [{ id: 'a', path: '/a.mp3' }] };
     stubFetchOk(defaultPayload);
     await loadConfigsJson();
 
     const customUrl = 'https://cdn.example.com/configs.json';
-    const customPayload = { 'music-list': [{ id: 'b', path: '/b.mp3' }] };
+    const customPayload = { songs: [{ id: 'b', path: '/b.mp3' }] };
     localStorage.setItem(CONFIG_URL_KEY, customUrl);
     const secondFetch = stubFetchOk(customPayload);
     const data = await loadConfigsJson();
@@ -173,7 +173,7 @@ describe('loadConfigsJson', () => {
   });
 
   it('fetches again after the local configs cache is cleared', async () => {
-    const payload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
+    const payload = { songs: [{ id: 'a', path: '/a.mp3' }] };
     const fetchMock = stubFetchOk(payload);
     await loadConfigsJson();
     clearCachedConfigs();
@@ -186,7 +186,7 @@ describe('loadConfigsJson', () => {
 
   it('ignores invalid cached JSON and fetches', async () => {
     localStorage.setItem(CONFIGS_CACHE_KEY, 'not-json');
-    const payload = { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
+    const payload = { songs: [{ id: 'a', path: '/a.mp3' }] };
     stubFetchOk(payload);
     const data = await loadConfigsJson();
     expect(fetch).toHaveBeenCalledOnce();

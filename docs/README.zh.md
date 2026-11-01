@@ -4,7 +4,7 @@
 
 由**你自己的** `configs.json` 驱动的浏览器端音乐播放器：在文件里列出曲目（及可选播放列表），在设置中填写其 URL 即可播放。无需后端——音轨在播放时拉取，缓存到 IndexedDB，并按播放列表、歌手、专辑或搜索浏览。界面支持中文 / English。
 
-**用法：** 托管或编写一份 `configs.json`，在 `music-list` 中提供 `{ id, path }`，可选再写用 `id` 引用曲目的 `playlists`，然后在设置里填写曲库 URL。仓库自带的 `/sample/configs.json` 仅作本地试用示例。字段说明见应用内 **更多 → configs.json 指南**。
+**用法：** 托管或编写一份 `configs.json`，在 `songs` 中提供 `{ id, path }`，可选再写用 `id` 引用曲目的 `playlists`，然后在设置里填写曲库 URL。仓库自带的 `/sample/configs.json` 仅作本地试用示例。字段说明见应用内 **更多 → configs.json 指南**。
 
 ## 功能
 
@@ -12,7 +12,7 @@
 - 播放队列、随机播放、循环；状态在刷新后保留
 - 音轨与封面写入 IndexedDB，并预取即将播放的曲目
 - 配置元数据不全时，从已缓存音频补充 ID3 信息
-- 浏览：音乐列表、播放列表、歌手、专辑、搜索
+- 浏览：歌曲、播放列表、歌手、专辑、搜索
 - 应用内 configs.json 指南与日志
 
 ## 环境要求
@@ -31,13 +31,13 @@ npm run dev
 
 命令说明见 [commands.md](commands.md)。
 
-| 命令                                                | 用途                                     |
-| --------------------------------------------------- | ---------------------------------------- |
-| `npm install` + Playwright install                  | 安装依赖与浏览器                         |
-| `npm run dev`                                       | 启动 Vite 开发服务器                     |
-| `npm run build`                                     | 生产构建                                 |
-| `npm run format` 然后 `npm run verify`              | 格式化（会改文件）再跑只读收尾门            |
-| `npm run test` / `test:e2e`                         | 单元（Vitest）/ e2e（Playwright）        |
+| 命令                                   | 用途                              |
+| -------------------------------------- | --------------------------------- |
+| `npm install` + Playwright install     | 安装依赖与浏览器                  |
+| `npm run dev`                          | 启动 Vite 开发服务器              |
+| `npm run build`                        | 生产构建                          |
+| `npm run format` 然后 `npm run verify` | 格式化（会改文件）再跑只读收尾门  |
+| `npm run test` / `test:e2e`            | 单元（Vitest）/ e2e（Playwright） |
 
 ```sh
 npm run test
@@ -54,15 +54,15 @@ npm run test:e2e -- --project chromium -- e2e/app.spec.ts
 | ------------ | -------------------------------------------------------------------------------------- |
 | 示例（开发） | [`public/sample/configs.json`](../public/sample/configs.json) → `/sample/configs.json` |
 | 你的曲库     | 设置 → 曲库 URL（`tdmusic.configUrl`）                                                 |
-| `music-list` | 必填：每首需唯一 `id` + `path`（音频地址）                                             |
+| `songs`      | 必填：每首需唯一 `id` + `path`（音频地址）                                             |
 | 可选字段     | `title`、`artist`、`album`、`cover`（优先于解析出的 ID3）                              |
-| `playlists`  | `{ title, music-list: [{ id }] }`，用曲目 `id` 引用                                    |
+| `playlists`  | `{ title, songs: [{ id }] }`，用曲目 `id` 引用                                         |
 
 示例结构：
 
 ```json
 {
-  "music-list": [
+  "songs": [
     {
       "id": "track-1",
       "title": "Track 1",
@@ -74,7 +74,7 @@ npm run test:e2e -- --project chromium -- e2e/app.spec.ts
   "playlists": [
     {
       "title": "My Playlist1",
-      "music-list": [{ "id": "track-1" }]
+      "songs": [{ "id": "track-1" }]
     }
   ]
 }

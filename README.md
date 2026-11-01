@@ -4,7 +4,7 @@
 
 A browser music player driven by **your** `configs.json`: list tracks (and optional playlists) in that file, point the app at its URL in Settings, and play. No backend — audio is fetched on play, cached in IndexedDB, and browsable by playlist, artist, album, or search. UI is English / 中文.
 
-**How you use it:** host or edit a `configs.json` with a `music-list` of `{ id, path }` entries and optional `playlists` that reference tracks by `id`, then set the catalog URL in Settings. The repo’s `/sample/configs.json` is only a sample for local demos. Field-by-field help lives in the app under **More → Guidelines for configs.json**.
+**How you use it:** host or edit a `configs.json` with a `songs` array of `{ id, path }` entries and optional `playlists` that reference tracks by `id`, then set the catalog URL in Settings. The repo’s `/sample/configs.json` is only a sample for local demos. Field-by-field help lives in the app under **More → Guidelines for configs.json**.
 
 ## Features
 
@@ -12,7 +12,7 @@ A browser music player driven by **your** `configs.json`: list tracks (and optio
 - Playback with queue, shuffle, and repeat; state survives reloads
 - Offline-friendly audio + cover cache in IndexedDB (prefetch upcoming tracks)
 - ID3 enrichment from cached audio when config metadata is incomplete
-- Browse: Music List, Playlists, Artists, Albums, Search
+- Browse: Songs, Playlists, Artists, Albums, Search
 - In-app Guidelines for configs.json and Logs
 
 ## Requirements
@@ -31,13 +31,13 @@ Open [http://localhost:3000](http://localhost:3000). Stop with Ctrl+C.
 
 Commands and options: [docs/commands.md](docs/commands.md).
 
-| Command                                             | Purpose                                       |
-| --------------------------------------------------- | --------------------------------------------- |
-| `npm install` + Playwright install                  | Install dependencies and browsers             |
-| `npm run dev`                                       | Start the Vite dev server                     |
-| `npm run build`                                     | Production build                              |
-| `npm run format` then `npm run verify`              | Format (writes) then read-only finish gate    |
-| `npm run test` / `test:e2e`                         | Unit (Vitest) / e2e (Playwright)              |
+| Command                                | Purpose                                    |
+| -------------------------------------- | ------------------------------------------ |
+| `npm install` + Playwright install     | Install dependencies and browsers          |
+| `npm run dev`                          | Start the Vite dev server                  |
+| `npm run build`                        | Production build                           |
+| `npm run format` then `npm run verify` | Format (writes) then read-only finish gate |
+| `npm run test` / `test:e2e`            | Unit (Vitest) / e2e (Playwright)           |
 
 ```sh
 npm run test
@@ -54,15 +54,15 @@ Your library is whatever **your** `configs.json` describes — host it anywhere 
 | --------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Sample (dev)    | [`public/sample/configs.json`](public/sample/configs.json) → `/sample/configs.json`                                       |
 | Your catalog    | Settings → catalog URL (`tdmusic.configUrl`)                                                                              |
-| `music-list`    | Required: each track needs unique `id` + `path` (URL to the audio)                                                        |
+| `songs`         | Required: each track needs unique `id` + `path` (URL to the audio)                                                        |
 | Optional fields | `title`, `artist`, `album`, `cover`, `volume-ratio` (win over extracted ID3; `volume-ratio` defaults to `100`, max `100`) |
-| `playlists`     | Arrays of `{ title, music-list: [{ id }] }` referencing track ids                                                         |
+| `playlists`     | Arrays of `{ title, songs: [{ id }] }` referencing track ids                                                              |
 
 Example shape:
 
 ```json
 {
-  "music-list": [
+  "songs": [
     {
       "id": "track-1",
       "title": "Track 1",
@@ -74,7 +74,7 @@ Example shape:
   "playlists": [
     {
       "title": "My Playlist1",
-      "music-list": [{ "id": "track-1" }]
+      "songs": [{ "id": "track-1" }]
     }
   ]
 }

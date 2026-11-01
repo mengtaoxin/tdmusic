@@ -21,7 +21,7 @@ describe('renderMarkdown', () => {
 - item one
 
 \`\`\`
-{ "music-list": [] }
+{ "songs": [] }
 \`\`\`
 `);
 
@@ -30,6 +30,6 @@ describe('renderMarkdown', () => {
     expect(html).toContain('<li');
     expect(html).toContain('item one');
     expect(html).toContain('<pre');
-    expect(html).toContain('music-list');
+    expect(html).toContain('songs');
   });
 });

@@ -2,9 +2,9 @@
 
 This page explains how to write a configs.json catalog file for tdmusic.
 
-## music-list
+## songs
 
-An array of tracks. Each entry needs `id` and `path`. Missing either, or a duplicate `id`, drops that entry and shows an error in Music List. Optional fields override extracted ID3 tags when set.
+An array of tracks. Each entry needs `id` and `path`. Missing either, or a duplicate `id`, drops that entry and shows an error in Songs. Optional fields override extracted ID3 tags when set.
 
 - `id` — unique track id (required); prefer letters and hyphens, e.g. `sample-1`
 - `path` — audio URL or site path (required)
@@ -16,13 +16,13 @@ An array of tracks. Each entry needs `id` and `path`. Missing either, or a dupli
 
 ## playlists
 
-An array of playlists. Each has a `title` and a `music-list` of `{ "id": "…" }` refs that must match accepted tracks.
+An array of playlists. Each has a `title` and a `songs` of `{ "id": "…" }` refs that must match accepted tracks.
 
 ## Example
 
 ```json
 {
-  "music-list": [
+  "songs": [
     {
       "id": "sample-1",
       "title": "Sample 1",
@@ -35,7 +35,7 @@ An array of playlists. Each has a `title` and a `music-list` of `{ "id": "…" }
   "playlists": [
     {
       "title": "My Playlist1",
-      "music-list": [{ "id": "sample-1" }]
+      "songs": [{ "id": "sample-1" }]
     }
   ]
 }

@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 
 import {
   normalizeConfigs,
-  normalizeMusicList,
   normalizePlaylist,
   normalizePlaylists,
+  normalizeSongs,
 } from '../normalizeCatalog';
 
-describe('normalizeMusicList', () => {
+describe('normalizeSongs', () => {
   it('keeps entries with id and path', () => {
-    const { tracks, errors } = normalizeMusicList([
+    const { tracks, errors } = normalizeSongs([
       { id: 'a', path: '/a.mp3', title: 'A' },
       { id: 'b', path: 'https://ex.com/b.mp3' },
     ]);
@@ -19,7 +19,7 @@ describe('normalizeMusicList', () => {
   });
 
   it('drops entries missing id or path and records errors', () => {
-    const { tracks, errors } = normalizeMusicList([
+    const { tracks, errors } = normalizeSongs([
       { path: '/a.mp3' },
       { id: 'b' },
       { id: 'c', path: '/c.mp3' },
@@ -31,7 +31,7 @@ describe('normalizeMusicList', () => {
   });
 
   it('drops duplicate ids and records errors', () => {
-    const { tracks, errors } = normalizeMusicList([
+    const { tracks, errors } = normalizeSongs([
       { id: 'dup', path: '/1.mp3' },
       { id: 'dup', path: '/2.mp3' },
     ]);
@@ -41,12 +41,12 @@ describe('normalizeMusicList', () => {
   });
 
   it('defaults volumeRatio to 100 when volume-ratio is missing', () => {
-    const { tracks } = normalizeMusicList([{ id: 'a', path: '/a.mp3' }]);
+    const { tracks } = normalizeSongs([{ id: 'a', path: '/a.mp3' }]);
     expect(tracks[0]!.volumeRatio).toBe(100);
   });
 
   it('keeps valid volume-ratio percentages in [0, 100]', () => {
-    const { tracks } = normalizeMusicList([
+    const { tracks } = normalizeSongs([
       { id: 'quiet', path: '/q.mp3', 'volume-ratio': 50 },
       { id: 'unity', path: '/u.mp3', 'volume-ratio': 100 },
       { id: 'zero', path: '/z.mp3', 'volume-ratio': 0 },
@@ -55,7 +55,7 @@ describe('normalizeMusicList', () => {
   });
 
   it('clamps volume-ratio above 100 down to 100', () => {
-    const { tracks } = normalizeMusicList([
+    const { tracks } = normalizeSongs([
       { id: 'a', path: '/a.mp3', 'volume-ratio': 101 },
       { id: 'b', path: '/b.mp3', 'volume-ratio': 150 },
       { id: 'c', path: '/c.mp3', 'volume-ratio': 500 },
@@ -64,7 +64,7 @@ describe('normalizeMusicList', () => {
   });
 
   it('defaults volumeRatio to 100 for invalid volume-ratio values', () => {
-    const { tracks } = normalizeMusicList([
+    const { tracks } = normalizeSongs([
       { id: 'a', path: '/a.mp3', 'volume-ratio': -1 },
       { id: 'b', path: '/b.mp3', 'volume-ratio': Number.NaN },
       { id: 'c', path: '/c.mp3', 'volume-ratio': Number.POSITIVE_INFINITY },
@@ -82,7 +82,7 @@ describe('normalizePlaylist', () => {
       { id: 'b', path: '/b.mp3', volumeRatio: 100 },
     ];
     const playlist = normalizePlaylist(
-      { title: 'Mine', 'music-list': [{ id: 'a' }, { id: 'missing' }, { id: 'b' }] },
+      { title: 'Mine', songs: [{ id: 'a' }, { id: 'missing' }, { id: 'b' }] },
       tracks,
     );
     expect(playlist).toEqual({ title: 'Mine', trackIds: ['a', 'b'] });
@@ -98,8 +98,8 @@ describe('normalizePlaylists', () => {
     ];
     const playlists = normalizePlaylists(
       [
-        { title: 'My Playlist1', 'music-list': [{ id: 'a' }, { id: 'b' }] },
-        { title: 'My Playlist2', 'music-list': [{ id: 'c' }, { id: 'missing' }] },
+        { title: 'My Playlist1', songs: [{ id: 'a' }, { id: 'b' }] },
+        { title: 'My Playlist2', songs: [{ id: 'c' }, { id: 'missing' }] },
       ],
       tracks,
     );
@@ -113,14 +113,14 @@ describe('normalizePlaylists', () => {
 describe('normalizeConfigs', () => {
   it('reads playlists array from configs', () => {
     const { playlists } = normalizeConfigs({
-      'music-list': [
+      songs: [
         { id: 'sample-1', path: '/sample-1.mp3' },
         { id: '9277', path: '/9277.mp3' },
       ],
       playlists: [
         {
           title: 'My Playlist1',
-          'music-list': [{ id: 'sample-1' }, { id: '9277' }],
+          songs: [{ id: 'sample-1' }, { id: '9277' }],
         },
       ],
     });
@@ -129,10 +129,10 @@ describe('normalizeConfigs', () => {
 
   it('ignores legacy singular playlist', () => {
     const { playlists } = normalizeConfigs({
-      'music-list': [{ id: 'sample-1', path: '/sample-1.mp3' }],
+      songs: [{ id: 'sample-1', path: '/sample-1.mp3' }],
       playlist: {
         title: 'Legacy',
-        'music-list': [{ id: 'sample-1' }],
+        songs: [{ id: 'sample-1' }],
       },
     });
     expect(playlists).toEqual([]);

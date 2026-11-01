@@ -9,10 +9,10 @@ import { albumPath, firstAlbumCoverSrc } from '@/lib/routes/albumRoutes';
 import { selectAlbums, useCatalogStore } from '@/stores/catalog';
 
 export const Route = createFileRoute('/albums/')({
-  component: AlbumListPage,
+  component: AlbumsPage,
 });
 
-function AlbumListPage() {
+function AlbumsPage() {
   const { t } = useTranslation();
   const albums = useCatalogStore(selectAlbums);
   const loading = useCatalogStore((s) => s.loading);
@@ -26,7 +26,7 @@ function AlbumListPage() {
   return (
     <Container
       maxWidth={false}
-      className="page album-list-page"
+      className="page albums-page"
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -37,7 +37,7 @@ function AlbumListPage() {
       }}
     >
       <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-        {t('nav.albumList')}
+        {t('nav.albums')}
       </Typography>
 
       {loading ? (

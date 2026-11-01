@@ -8,7 +8,7 @@ import { VirtualRowList } from '@/components/VirtualRowList';
 import { useTrackListPlayback } from '@/hooks/useTrackListPlayback';
 import { selectTracks, useCatalogStore } from '@/stores/catalog';
 
-export function MusicListPage() {
+export function SongsPage() {
   const { t } = useTranslation();
   const tracks = useCatalogStore(selectTracks);
   const loading = useCatalogStore((s) => s.loading);
@@ -31,8 +31,8 @@ export function MusicListPage() {
 
   return (
     <CatalogPageShell
-      className="music-list-page"
-      title={t('nav.musicList')}
+      className="songs-page"
+      title={t('nav.songs')}
       loading={loading}
       headerExtra={
         <>

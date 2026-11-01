@@ -23,7 +23,7 @@ export type CatalogError = string;
 
 export type RawPlaylist = {
   title?: unknown;
-  'music-list'?: unknown;
+  songs?: unknown;
 };
 
 export type NormalizedPlaylist = {
@@ -48,7 +48,7 @@ export function parseVolumeRatio(value: unknown): number {
   return Math.min(value, MAX_VOLUME_RATIO);
 }
 
-export function normalizeMusicList(rawList: unknown): {
+export function normalizeSongs(rawList: unknown): {
   tracks: MusicTrack[];
   errors: CatalogError[];
 } {
@@ -57,7 +57,7 @@ export function normalizeMusicList(rawList: unknown): {
   const seen = new Set<string>();
 
   if (!Array.isArray(rawList)) {
-    return { tracks, errors: ['music-list must be an array'] };
+    return { tracks, errors: ['songs must be an array'] };
   }
 
   for (const raw of rawList) {
@@ -104,7 +104,7 @@ export function normalizePlaylist(raw: unknown, tracks: MusicTrack[]): Normalize
   const playlist = raw as RawPlaylist;
   const known = new Set(tracks.map((t) => t.id));
   const title = asOptionalString(playlist.title) ?? 'Playlist';
-  const refs = Array.isArray(playlist['music-list']) ? playlist['music-list'] : [];
+  const refs = Array.isArray(playlist.songs) ? playlist.songs : [];
   const trackIds: string[] = [];
   for (const ref of refs) {
     const id = asOptionalString((ref as { id?: unknown })?.id);
@@ -124,7 +124,7 @@ export function normalizePlaylists(raw: unknown, tracks: MusicTrack[]): Normaliz
 }
 
 export type MusicConfigs = {
-  'music-list'?: unknown;
+  songs?: unknown;
   playlists?: unknown;
 };
 
@@ -134,7 +134,7 @@ export function normalizeConfigs(raw: unknown): {
   errors: CatalogError[];
 } {
   const data = (raw ?? {}) as MusicConfigs;
-  const { tracks, errors } = normalizeMusicList(data['music-list']);
+  const { tracks, errors } = normalizeSongs(data.songs);
   const playlists = normalizePlaylists(data.playlists, tracks);
   return { tracks, playlists, errors };
 }

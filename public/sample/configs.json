@@ -1,5 +1,5 @@
 {
-  "music-list": [
+  "songs": [
     {
       "id": "smile-in-the-wind",
       "title": "Smile in the Wind",
@@ -25,7 +25,7 @@
   "playlists": [
     {
       "title": "My Playlist1",
-      "music-list": [
+      "songs": [
         {
           "id": "smile-in-the-wind"
         },
@@ -36,7 +36,7 @@
     },
     {
       "title": "My Playlist2",
-      "music-list": [
+      "songs": [
         {
           "id": "life-in-the-wind"
         }

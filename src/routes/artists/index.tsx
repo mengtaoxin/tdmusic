@@ -13,18 +13,18 @@ import { artistAlbumsPath } from '@/lib/routes/artistRoutes';
 import { selectArtists, useCatalogStore } from '@/stores/catalog';
 
 export const Route = createFileRoute('/artists/')({
-  component: ArtistListPage,
+  component: ArtistsPage,
 });
 
 const ARTIST_ROW_HEIGHT = 64;
 
-function ArtistListPage() {
+function ArtistsPage() {
   const { t } = useTranslation();
   const artists = useCatalogStore(selectArtists);
   const loading = useCatalogStore((s) => s.loading);
 
   return (
-    <CatalogPageShell className="artist-list-page" title={t('nav.artistList')} loading={loading}>
+    <CatalogPageShell className="artists-page" title={t('nav.artists')} loading={loading}>
       <VirtualRowList
         items={artists}
         itemHeight={ARTIST_ROW_HEIGHT}

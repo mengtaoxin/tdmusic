@@ -5,7 +5,7 @@ import { runCatalogLoad } from '../runCatalogLoad';
 function ports() {
   return {
     loadConfigsJson: vi.fn<() => Promise<unknown>>(async () => ({
-      'music-list': [{ id: 'a', path: '/a.mp3' }],
+      songs: [{ id: 'a', path: '/a.mp3' }],
     })),
     beginLoad: vi.fn<() => void>(),
     applyNormalized: vi.fn<(value: unknown) => void>(),

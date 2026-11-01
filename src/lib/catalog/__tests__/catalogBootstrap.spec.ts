@@ -37,7 +37,7 @@ function sampleTracks(): DisplayTrack[] {
 }
 
 function sampleConfigs() {
-  return { 'music-list': [{ id: 'a', path: '/a.mp3' }] };
+  return { songs: [{ id: 'a', path: '/a.mp3' }] };
 }
 
 describe('catalogBootstrap', () => {

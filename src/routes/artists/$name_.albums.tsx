@@ -69,7 +69,7 @@ function ArtistAlbumsPage() {
       }}
     >
       <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-        {localizeArtistName(artist?.name || artistName || '', t) || t('nav.artistList')}
+        {localizeArtistName(artist?.name || artistName || '', t) || t('nav.artists')}
       </Typography>
 
       {!loading && !artist ? (

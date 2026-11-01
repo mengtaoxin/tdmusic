@@ -38,7 +38,7 @@ export function ArtistTracksPage({ artistName }: { artistName: string }) {
   return (
     <Container maxWidth={false} className="page">
       <Typography variant="h5" component="h1" sx={{ mb: 1 }}>
-        {localizeArtistName(artist?.name || artistName || '', t) || t('nav.artistList')}
+        {localizeArtistName(artist?.name || artistName || '', t) || t('nav.artists')}
       </Typography>
       <Typography color="text.secondary" sx={{ mb: 2 }}>
         {t('artist.allMusic')}

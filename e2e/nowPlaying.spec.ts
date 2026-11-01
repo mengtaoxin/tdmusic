@@ -81,7 +81,7 @@ test('queue list aligns the playing track at the top after returning to the page
     .poll(async () => page.locator('.queue-list').evaluate((el) => (el as HTMLElement).scrollTop))
     .toBe(0);
 
-  await page.getByRole('link', { name: 'Music List' }).first().click();
+  await page.getByRole('link', { name: 'Songs' }).first().click();
   await expect(page).toHaveURL(/\/music/);
   await page.getByRole('link', { name: 'Now Playing' }).first().click();
   await expect(page).toHaveURL(/\/now-playing/);

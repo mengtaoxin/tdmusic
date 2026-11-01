@@ -4,7 +4,7 @@ Top-bar layout, menus, and related visual behavior. Domain contracts: [catalog.m
 
 ## Header navigation
 
-- Top-level order: Now Playing, Music List, Playlist, Artist List, Album List, Language, More. Item data lives in `src/components/nav/navConfig.ts`; desktop vs drawer chrome are `AppDesktopNav` / `AppNavDrawer`.
+- Top-level order: Now Playing, Songs, Playlists, Artists, Albums, Language, More. Item data lives in `src/components/nav/navConfig.ts`; desktop vs drawer chrome are `AppDesktopNav` / `AppNavDrawer`.
 - **More** is last: rightmost in desktop nav, bottommost in the drawer.
 - There is no Home nav item; clicking the brand title (`tdmusic` + icon) navigates to `/`.
 - **More** is a submenu (desktop dropdown / drawer group) with Search, Stats, Settings, Guidelines for configs.json, About, Logs, and Feedback. Stats (`/stats`) shows per-track play counts for the last 3 / 7 / 30 days. Logs (`/logs`) lists persisted app logs and can clear them after confirmation. Feedback asks for confirmation, then opens the GitHub issues page (`https://github.com/mengtaoxin/tdmusic/issues`) in a new tab.

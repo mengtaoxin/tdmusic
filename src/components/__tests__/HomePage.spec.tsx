@@ -6,7 +6,7 @@ import i18n from '@/i18n';
 import { renderWithTestRouter } from '@/__tests__/renderWithProviders';
 
 const SAMPLE_KEYS = [
-  'music-list',
+  'songs',
   'id',
   'path',
   'title',

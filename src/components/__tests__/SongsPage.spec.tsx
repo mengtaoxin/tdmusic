@@ -3,7 +3,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { renderWithProviders } from '@/__tests__/renderWithProviders';
-import { MusicListPage } from '@/components/MusicListPage';
+import { SongsPage } from '@/components/SongsPage';
 import { useCatalogStore } from '@/stores/catalog';
 import { usePlayerStore } from '@/stores/player';
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
@@ -19,13 +19,13 @@ function track(id: string, title: string): DisplayTrack {
   };
 }
 
-describe('MusicListPage', () => {
+describe('SongsPage', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
   it('hides play-all actions when the catalog is empty', () => {
-    renderWithProviders(<MusicListPage />);
+    renderWithProviders(<SongsPage />);
 
     expect(screen.queryByRole('button', { name: 'Play all' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Shuffle all' })).not.toBeInTheDocument();
@@ -39,7 +39,7 @@ describe('MusicListPage', () => {
     const playFrom = vi.spyOn(usePlayerStore.getState(), 'playFrom');
     vi.spyOn(Math, 'random').mockReturnValue(0.9);
 
-    renderWithProviders(<MusicListPage />);
+    renderWithProviders(<SongsPage />);
 
     await user.click(screen.getByRole('button', { name: 'Play all' }));
     expect(playFrom).toHaveBeenCalledWith(0, ['a', 'b', 'c'], { shuffle: false });

@@ -11,7 +11,7 @@ declare module '@mui/material/styles' {
       pageTopInset: string;
       appBarHeight: string;
       homeViewportOffset: string;
-      musicListHeight: string;
+      songsHeight: string;
       radiusMd: string;
       radiusLg: string;
       blurHeader: string;
@@ -85,7 +85,7 @@ export const muiTheme = createTheme({
     pageTopInset: '24px',
     appBarHeight: '64px',
     homeViewportOffset: '120px',
-    musicListHeight: 'calc(100dvh - 64px - 88px - 6rem)',
+    songsHeight: 'calc(100dvh - 64px - 88px - 6rem)',
     radiusMd: '0.5rem',
     radiusLg: '1rem',
     blurHeader: '10px',

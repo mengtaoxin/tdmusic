@@ -2,9 +2,9 @@
 
 本页说明如何为 tdmusic 编写 configs.json 目录配置文件。
 
-## music-list
+## songs
 
-曲目数组。每条必须有 `id` 和 `path`；缺少任一字段或 `id` 重复会被丢弃，并在音乐列表中显示错误。可选字段若填写，会覆盖从 ID3 提取的标签。
+曲目数组。每条必须有 `id` 和 `path`；缺少任一字段或 `id` 重复会被丢弃，并在歌曲页中显示错误。可选字段若填写，会覆盖从 ID3 提取的标签。
 
 - `id` — 曲目唯一 id（必填）；推荐用字母和中横线，例如 `sample-1`
 - `path` — 音频 URL 或站点路径（必填）
@@ -16,13 +16,13 @@
 
 ## playlists
 
-播放列表数组。每项有 `title`，以及由 `{ "id": "…" }` 组成的 `music-list`（只能引用已接受的曲目）。
+播放列表数组。每项有 `title`，以及由 `{ "id": "…" }` 组成的 `songs`（只能引用已接受的曲目）。
 
 ## 示例
 
 ```json
 {
-  "music-list": [
+  "songs": [
     {
       "id": "sample-1",
       "title": "Sample 1",
@@ -35,7 +35,7 @@
   "playlists": [
     {
       "title": "My Playlist1",
-      "music-list": [{ "id": "sample-1" }]
+      "songs": [{ "id": "sample-1" }]
     }
   ]
 }

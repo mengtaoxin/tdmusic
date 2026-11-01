@@ -59,10 +59,10 @@ const localeChildren: readonly NavLocaleLink[] = [
 
 export const navItems: readonly NavItem[] = [
   { to: '/now-playing', key: 'nav.nowPlaying', Icon: PlayCircleIcon },
-  { to: '/music', key: 'nav.musicList', Icon: LibraryMusicIcon },
+  { to: '/music', key: 'nav.songs', Icon: LibraryMusicIcon },
   { to: '/playlists', key: 'nav.playlist', Icon: QueueMusicIcon },
-  { to: '/artists', key: 'nav.artistList', Icon: PersonIcon },
-  { to: '/albums', key: 'nav.albumList', Icon: AlbumIcon },
+  { to: '/artists', key: 'nav.artists', Icon: PersonIcon },
+  { to: '/albums', key: 'nav.albums', Icon: AlbumIcon },
   {
     key: 'nav.language',
     Icon: TranslateIcon,

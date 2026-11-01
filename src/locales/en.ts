@@ -1,10 +1,10 @@
 export default {
   nav: {
     home: 'Home',
-    musicList: 'Music List',
-    playlist: 'Playlist',
-    artistList: 'Artist List',
-    albumList: 'Album List',
+    songs: 'Songs',
+    playlist: 'Playlists',
+    artists: 'Artists',
+    albums: 'Albums',
     nowPlaying: 'Now Playing',
     search: 'Search',
     more: 'More',
@@ -30,7 +30,7 @@ export default {
       required: 'required',
       optional: 'optional',
       notes: {
-        musicList: 'Your tracks — the only required top-level key',
+        songs: 'Your tracks — the only required top-level key',
         id: 'Unique key; playlists refer to tracks by it',
         path: 'Audio URL or site path; cached on this device once played',
         title: 'Falls back to the ID3 tag, then the file name',
@@ -88,7 +88,7 @@ export default {
   player: {
     unknownArtist: 'Unknown artist',
     unknownAlbum: 'Unknown album',
-    empty: 'Nothing playing yet. Pick a track from Music List.',
+    empty: 'Nothing playing yet. Pick a track from Songs.',
     queue: 'Now playing queue',
     playNext: 'Play next',
     addedToPlayNext: 'Added to play next',
