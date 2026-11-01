@@ -17,6 +17,12 @@ import {
   type AudioDownloadJob,
   type DownloadPriority,
 } from './downloadLimiter';
+import {
+  isMusicCacheStorageError,
+  isMusicCacheUnavailable,
+  markMusicCacheUnavailable,
+  musicCacheUnavailableError,
+} from './musicCacheAvailability';
 import { isPlayablePath } from '../paths';
 
 export type CacheProgress = {
@@ -97,16 +103,16 @@ async function downloadAndStore(
   id?: string,
   onProgress?: (progress: CacheProgress) => void,
 ): Promise<void> {
-  const pendingMeta: TrackCacheMeta = {
-    sourceUrl,
-    id,
-    status: 'pending',
-    downloadedAt: Date.now(),
-  };
   emitProgress(sourceUrl, id, { phase: 'download', loaded: 0, total: null }, onProgress);
-  await putMeta(pendingMeta);
 
   try {
+    const pendingMeta: TrackCacheMeta = {
+      sourceUrl,
+      id,
+      status: 'pending',
+      downloadedAt: Date.now(),
+    };
+    await putMeta(pendingMeta);
     const blob = await fetchAsBlob(sourceUrl, signal, id, onProgress);
     signal.throwIfAborted();
     await ensureQuota(blob.size);
@@ -120,7 +126,8 @@ async function downloadAndStore(
     await putMeta(meta);
     emitProgress(sourceUrl, id, { phase: 'done', loaded: blob.size, total: blob.size }, onProgress);
   } catch (error) {
-    await deleteTrackCacheRecords(sourceUrl);
+    if (isMusicCacheStorageError(error)) markMusicCacheUnavailable();
+    await deleteTrackCacheRecords(sourceUrl).catch(() => {});
     emitProgress(sourceUrl, id, { phase: 'done', loaded: 0, total: 0 }, onProgress);
     throw error;
   }
@@ -138,11 +145,19 @@ export async function ensureTrackCached(
   options?: EnsureTrackCachedOptions,
 ): Promise<void> {
   if (!isPlayablePath(sourceUrl)) return;
+  if (isMusicCacheUnavailable()) throw musicCacheUnavailableError();
 
   const onProgress = options?.onProgress;
   const priority = options?.priority ?? 'normal';
 
-  if (await isTrackCached(sourceUrl)) {
+  let cached = false;
+  try {
+    cached = await isTrackCached(sourceUrl);
+  } catch (error) {
+    if (isMusicCacheStorageError(error)) markMusicCacheUnavailable();
+    throw error;
+  }
+  if (cached) {
     onProgress?.({ phase: 'done', loaded: 0, total: 0 });
     return;
   }

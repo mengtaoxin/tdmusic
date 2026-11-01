@@ -41,6 +41,12 @@ import {
   type ManualDownloadHooks,
   type ManualDownloadTrackRef,
 } from './downloadQueue';
+import {
+  isMusicCacheStorageError,
+  isMusicCacheUnavailable,
+  markMusicCacheUnavailable,
+  resetMusicCacheAvailabilityForTests,
+} from './musicCacheAvailability';
 
 export type {
   CacheProgress,
@@ -63,11 +69,15 @@ export {
   getMusicCacheSizeBytes,
   getTrackCacheDetails,
   getTrackDownloadFailure,
+  isMusicCacheStorageError,
+  isMusicCacheUnavailable,
   isTrackCached,
   isTrackDownloading,
   isTrackQueuedForDownload,
+  markMusicCacheUnavailable,
   putExtractedTrackMeta,
   releaseAudioBlobUrlsExcept,
+  resetMusicCacheAvailabilityForTests,
   resumeManualDownloads,
   setManualDownloadHooks,
   subscribeCacheDownloads,

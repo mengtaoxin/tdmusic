@@ -8,6 +8,7 @@ import {
 } from '../cacheDownloadState';
 import { abortAudioDownloads, resetDownloadLimiterForTests } from '../downloadLimiter';
 import { ensureTrackCached } from '../cacheIngest';
+import { resetMusicCacheAvailabilityForTests } from '../musicCacheAvailability';
 
 function stubFetchBlob(body: string) {
   return vi.fn<typeof fetch>().mockResolvedValue({
@@ -23,6 +24,7 @@ describe('ensureTrackCached', () => {
     await resetCacheDbForTests();
     resetCacheDownloadStateForTests();
     resetDownloadLimiterForTests();
+    resetMusicCacheAvailabilityForTests();
     vi.restoreAllMocks();
   });
 

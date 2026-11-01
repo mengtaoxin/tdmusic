@@ -7,11 +7,13 @@ import {
   isTrackCached,
   resetCacheDbForTests,
 } from '../../cache/cacheStore';
+import { resetMusicCacheAvailabilityForTests } from '../../cache/musicCacheAvailability';
 import { resolvePlayableUrl } from '../resolvePlayableUrl';
 
 describe('resolvePlayableUrl', () => {
   beforeEach(async () => {
     await resetCacheDbForTests();
+    resetMusicCacheAvailabilityForTests();
     vi.restoreAllMocks();
   });
 
@@ -65,5 +67,37 @@ describe('resolvePlayableUrl', () => {
     expect(ensure).toHaveBeenCalledWith('https://example.com/now.mp3', 'now', {
       priority: 'high',
     });
+  });
+
+  it('falls back to the source URL when IndexedDB cache storage fails', async () => {
+    const path = 'https://example.com/private.mp3';
+    const storageError = Object.assign(new Error('Failed to open IndexedDB'), {
+      name: 'OpenFailedError',
+    });
+    const ensure = vi.spyOn(musicCache, 'ensureTrackCached').mockRejectedValue(storageError);
+
+    await expect(resolvePlayableUrl(path, 'private')).resolves.toBe(path);
+    expect(ensure).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps failing when the download itself fails (not a cache storage problem)', async () => {
+    const path = 'https://example.com/missing.mp3';
+    vi.spyOn(musicCache, 'ensureTrackCached').mockRejectedValue(new Error('downloadFailed:404'));
+
+    await expect(resolvePlayableUrl(path, 'missing')).rejects.toThrow(/downloadFailed:404/);
+  });
+
+  it('skips the cache on later plays after IndexedDB was marked unavailable', async () => {
+    const path = 'https://example.com/again.mp3';
+    const storageError = Object.assign(new Error('IndexedDB missing'), {
+      name: 'MissingAPIError',
+    });
+    const ensure = vi.spyOn(musicCache, 'ensureTrackCached').mockRejectedValue(storageError);
+
+    await expect(resolvePlayableUrl(path, 'a')).resolves.toBe(path);
+    ensure.mockClear();
+
+    await expect(resolvePlayableUrl(path, 'a')).resolves.toBe(path);
+    expect(ensure).not.toHaveBeenCalled();
   });
 });
