@@ -21,8 +21,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-await installSpaUpdateNotice();
-
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider theme={muiTheme}>
@@ -33,3 +31,5 @@ createRoot(document.getElementById('root')!).render(
     </ThemeProvider>
   </StrictMode>,
 );
+
+void installSpaUpdateNotice();

@@ -34,4 +34,4 @@ Production builds register a service worker (`registerType: 'autoUpdate'`) and i
 
 ## Stale SPA chunks
 
-After a deploy, open tabs can fail to load old hashed JS chunks. Startup loads the hosted [spa-update-notice](https://spa-update-notice.smt.sh/update-required.js) script (`src/lib/spaUpdateNotice.ts`), calls `install`, and wraps the router in `ChunkErrorBoundary` (which only forwards to the library). Auto-reload and the refresh UI live in that library. Options: `appName: tdmusic`, locale from `tdmusic.locale`.
+After a deploy, open tabs can fail to load old hashed JS chunks. Startup renders the app first, then loads the hosted [spa-update-notice](https://spa-update-notice.smt.sh/update-required.js) script in the background (`src/lib/spaUpdateNotice.ts` → `install`) and wraps the router in `ChunkErrorBoundary` (which only forwards to the library). Auto-reload and the refresh UI live in that library. Options: `appName: tdmusic`, locale from `tdmusic.locale`.

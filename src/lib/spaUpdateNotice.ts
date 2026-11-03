@@ -58,9 +58,9 @@ export async function installSpaUpdateNotice(options: SpaUpdateNoticeOptions = {
 }
 
 export function handleChunkLoadFailure(options: SpaUpdateNoticeOptions = {}): void {
-  window.SpaUpdateNotice!.handle(resolveOptions(options));
+  window.SpaUpdateNotice?.handle(resolveOptions(options));
 }
 
 export function isChunkLoadError(err: unknown): boolean {
-  return window.SpaUpdateNotice!.isChunkError(err);
+  return window.SpaUpdateNotice?.isChunkError(err) ?? false;
 }
