@@ -23,6 +23,20 @@ describe('musicCacheAvailability', () => {
     expect(isMusicCacheStorageError(musicCacheUnavailableError())).toBe(true);
   });
 
+  it('treats a Dexie bulk write failure as a storage error when IndexedDB rejects the blob', () => {
+    const writeError = Object.assign(
+      new Error('Error preparing Blob/File data to be stored in object store'),
+      { name: 'UnknownError' },
+    );
+    const bulkError = Object.assign(
+      new Error(
+        'files.bulkPut(): 1 of 1 operations failed. Errors: UnknownError: Error preparing Blob/File data to be stored in object store',
+      ),
+      { name: 'BulkError', failures: [writeError] },
+    );
+    expect(isMusicCacheStorageError(bulkError)).toBe(true);
+  });
+
   it('does not treat network download failures as storage errors', () => {
     expect(isMusicCacheStorageError(new Error('downloadFailed:404'))).toBe(false);
     expect(

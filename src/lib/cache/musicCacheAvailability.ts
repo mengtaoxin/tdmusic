@@ -21,14 +21,26 @@ function errorName(error: unknown): string | undefined {
   return undefined;
 }
 
-/** True when the failure is from IndexedDB / Dexie storage, not a network download. */
-export function isMusicCacheStorageError(error: unknown): boolean {
+function nestedStorageErrors(error: object): unknown[] {
+  const nested: unknown[] = [];
+  if ('inner' in error) nested.push(error.inner);
+  // Dexie BulkError wraps the IndexedDB failure (for example UnknownError) in `failures`.
+  if ('failures' in error && Array.isArray(error.failures)) nested.push(...error.failures);
+  return nested;
+}
+
+function hasStorageCause(error: unknown, seen: Set<unknown>): boolean {
+  if (!error || typeof error !== 'object') return false;
+  if (seen.has(error)) return false;
+  seen.add(error);
   const name = errorName(error);
   if (name && STORAGE_ERROR_NAMES.has(name)) return true;
-  if (error && typeof error === 'object' && 'inner' in error) {
-    return isMusicCacheStorageError((error as { inner: unknown }).inner);
-  }
-  return false;
+  return nestedStorageErrors(error).some((nested) => hasStorageCause(nested, seen));
+}
+
+/** True when the failure is from IndexedDB / Dexie storage, not a network download. */
+export function isMusicCacheStorageError(error: unknown): boolean {
+  return hasStorageCause(error, new Set());
 }
 
 export function isMusicCacheUnavailable(): boolean {

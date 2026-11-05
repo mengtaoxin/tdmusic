@@ -1,9 +1,25 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+function expectAudioPlaying(page: Page) {
+  return expect
+    .poll(() => page.getByTestId('global-audio').evaluate((el: HTMLAudioElement) => el.paused))
+    .toBe(false);
+}
 
 test('quick-play starts a track and opens now playing', async ({ page }) => {
   await page.goto('/quick-play?type=trick&id=smile-in-the-wind');
   await expect(page).toHaveURL(/\/now-playing$/);
   await expect(page.getByRole('heading', { name: 'Smile in the Wind' })).toBeVisible();
+});
+
+test('opening a quick-play link starts playback', async ({ page, baseURL }) => {
+  await page.setContent(
+    `<a href="${baseURL}/quick-play?type=trick&id=smile-in-the-wind">Open quick</a>`,
+  );
+  await page.getByRole('link', { name: 'Open quick' }).click();
+  await expect(page).toHaveURL(/\/now-playing$/);
+  await expect(page.getByRole('heading', { name: 'Smile in the Wind' })).toBeVisible();
+  await expectAudioPlaying(page);
 });
 
 test('quick-play starts a playlist from its first track', async ({ page }) => {
