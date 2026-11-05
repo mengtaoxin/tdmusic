@@ -44,7 +44,7 @@ describe('HomePage', () => {
     for (const key of SAMPLE_KEYS) {
       expect(within(sample).getAllByText(`"${key}"`).length).toBeGreaterThan(0);
     }
-    expect(within(sample).getAllByText('required')).toHaveLength(3);
+    expect(within(sample).getAllByText('required')).toHaveLength(4);
     expect(within(sample).getAllByText('optional').length).toBeGreaterThan(0);
     expect(
       within(sample).getByText('Unique key; playlists refer to tracks by it'),
@@ -56,7 +56,7 @@ describe('HomePage', () => {
     await renderWithTestRouter({ component: () => <HomePage /> });
 
     const sample = screen.getByTestId('home-json-sample');
-    expect(within(sample).getAllByText('必填')).toHaveLength(3);
+    expect(within(sample).getAllByText('必填')).toHaveLength(4);
     expect(within(sample).getAllByText('可选').length).toBeGreaterThan(0);
   });
 });

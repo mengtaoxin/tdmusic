@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { PlayAllButtons } from '@/components/PlayAllButtons';
 import { TrackList } from '@/components/TrackList';
 import { useTrackListPlayback } from '@/hooks/useTrackListPlayback';
-import { findPlaylistByName } from '@/lib/routes/playlistRoutes';
+import { findPlaylistById, playlistLabel } from '@/lib/routes/playlistRoutes';
 import { selectTrackById, useCatalogStore } from '@/stores/catalog';
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
 
@@ -23,7 +23,7 @@ function PlaylistDetailPage() {
   const trackById = useCatalogStore(selectTrackById);
   const loading = useCatalogStore((s) => s.loading);
 
-  const playlist = findPlaylistByName(playlists, playlistParam);
+  const playlist = findPlaylistById(playlists, playlistParam);
   const tracks = playlist
     ? playlist.trackIds
         .map((id) => trackById.get(id))
@@ -48,7 +48,7 @@ function PlaylistDetailPage() {
   return (
     <Container maxWidth={false} className="page">
       <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-        {playlist?.title || playlistParam || t('nav.playlist')}
+        {playlist ? playlistLabel(playlist) : playlistParam || t('nav.playlist')}
       </Typography>
 
       {!loading && !playlist ? (

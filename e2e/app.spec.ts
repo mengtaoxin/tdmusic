@@ -87,14 +87,14 @@ test('songs page shows catalog tracks', async ({ page }) => {
   await expect(page.getByText('Smile in the Wind')).toBeVisible();
 });
 
-test('playlist list navigates to playlist detail by name', async ({ page }) => {
+test('playlist list navigates to playlist detail by id', async ({ page }) => {
   await page.goto('/playlists');
   await expect(page.getByRole('heading', { name: 'Playlists' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'My Playlist1' })).toBeVisible();
   await expect(page.getByText('Smile in the Wind')).toHaveCount(0);
 
   await page.getByRole('link', { name: 'My Playlist1' }).click();
-  await expect(page).toHaveURL(/\/playlists\/My(%20|\+)Playlist1/);
+  await expect(page).toHaveURL(/\/playlists\/my-playlist-1/);
   await expect(page.getByRole('heading', { name: 'My Playlist1' })).toBeVisible();
   await expect(page.getByText('Smile in the Wind')).toBeVisible();
 });

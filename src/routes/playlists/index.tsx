@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -10,7 +11,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { useTranslation } from 'react-i18next';
 
-import { playlistPath } from '@/lib/routes/playlistRoutes';
+import { playlistLabel, playlistPath } from '@/lib/routes/playlistRoutes';
 import { useCatalogStore } from '@/stores/catalog';
 
 export const Route = createFileRoute('/playlists/')({
@@ -20,12 +21,21 @@ export const Route = createFileRoute('/playlists/')({
 function PlaylistListPage() {
   const { t } = useTranslation();
   const playlists = useCatalogStore((s) => s.playlists);
+  const errors = useCatalogStore((s) => s.errors);
 
   return (
     <Container maxWidth={false} className="page">
       <Typography variant="h5" component="h1" sx={{ mb: 1 }}>
         {t('nav.playlist')}
       </Typography>
+
+      {errors.map((err, i) => (
+        // Messages can repeat (e.g. several duplicate ids); the list is static per load.
+        // oxlint-disable-next-line react/no-array-index-key
+        <Alert key={i} severity="warning" sx={{ mb: 1 }}>
+          {t('catalog.configError', { message: err })}
+        </Alert>
+      ))}
 
       {playlists.length === 0 ? (
         <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
@@ -36,20 +46,18 @@ function PlaylistListPage() {
         </Typography>
       ) : (
         <List sx={{ bgcolor: 'transparent' }}>
-          {playlists.map((playlist, index) => (
+          {playlists.map((playlist) => (
             <ListItemButton
-              // Titles are not deduplicated by the catalog; the list is static per load.
-              // oxlint-disable-next-line react/no-array-index-key
-              key={`${playlist.title}-${index}`}
+              key={playlist.id}
               component={Link}
-              to={playlistPath(playlist.title)}
+              to={playlistPath(playlist.id)}
               sx={{ borderRadius: 2, mb: 0.5 }}
             >
               <ListItemIcon sx={{ minWidth: 40 }}>
                 <QueueMusicIcon />
               </ListItemIcon>
               <ListItemText
-                primary={playlist.title}
+                primary={playlistLabel(playlist)}
                 secondary={t('playlist.trackCount', { count: playlist.trackIds.length })}
               />
               <ChevronRightIcon />

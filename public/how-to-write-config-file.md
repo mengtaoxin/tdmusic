@@ -16,7 +16,11 @@ An array of tracks. Each entry needs `id` and `path`. Missing either, or a dupli
 
 ## playlists
 
-An array of playlists. Each has a `title` and a `songs` of `{ "id": "…" }` refs that must match accepted tracks.
+An array of playlists. Each needs a unique `id`. Missing `id`, or a duplicate `id`, drops that playlist and shows an error in Songs and Playlists. `title` is optional and falls back to `id` in the app. `songs` is `{ "id": "…" }` refs that must match accepted tracks.
+
+- `id` — unique playlist id (required); also the page `/playlists/:id`
+- `title` — display name (optional)
+- `songs` — tracks by id, in play order
 
 ## Example
 
@@ -34,6 +38,7 @@ An array of playlists. Each has a `title` and a `songs` of `{ "id": "…" }` ref
   ],
   "playlists": [
     {
+      "id": "my-playlist-1",
       "title": "My Playlist1",
       "songs": [{ "id": "sample-1" }]
     }

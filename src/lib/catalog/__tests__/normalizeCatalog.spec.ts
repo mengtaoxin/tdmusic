@@ -76,37 +76,64 @@ describe('normalizeSongs', () => {
 });
 
 describe('normalizePlaylist', () => {
+  const tracks = [
+    { id: 'a', path: '/a.mp3', volumeRatio: 100 },
+    { id: 'b', path: '/b.mp3', volumeRatio: 100 },
+  ];
+
   it('resolves playlist entries to known track ids', () => {
-    const tracks = [
-      { id: 'a', path: '/a.mp3', volumeRatio: 100 },
-      { id: 'b', path: '/b.mp3', volumeRatio: 100 },
-    ];
     const playlist = normalizePlaylist(
-      { title: 'Mine', songs: [{ id: 'a' }, { id: 'missing' }, { id: 'b' }] },
+      { id: 'mine', title: 'Mine', songs: [{ id: 'a' }, { id: 'missing' }, { id: 'b' }] },
       tracks,
     );
-    expect(playlist).toEqual({ title: 'Mine', trackIds: ['a', 'b'] });
+    expect(playlist).toEqual({ id: 'mine', title: 'Mine', trackIds: ['a', 'b'] });
+  });
+
+  it('keeps a playlist when title is omitted', () => {
+    const playlist = normalizePlaylist({ id: 'mine', songs: [{ id: 'a' }] }, tracks);
+    expect(playlist).toEqual({ id: 'mine', trackIds: ['a'] });
+  });
+
+  it('drops a playlist that has no id', () => {
+    expect(normalizePlaylist({ title: 'Mine', songs: [{ id: 'a' }] }, tracks)).toBeNull();
   });
 });
 
 describe('normalizePlaylists', () => {
+  const tracks = [
+    { id: 'a', path: '/a.mp3', volumeRatio: 100 },
+    { id: 'b', path: '/b.mp3', volumeRatio: 100 },
+    { id: 'c', path: '/c.mp3', volumeRatio: 100 },
+  ];
+
   it('normalizes multiple playlists from playlists array', () => {
-    const tracks = [
-      { id: 'a', path: '/a.mp3', volumeRatio: 100 },
-      { id: 'b', path: '/b.mp3', volumeRatio: 100 },
-      { id: 'c', path: '/c.mp3', volumeRatio: 100 },
-    ];
-    const playlists = normalizePlaylists(
+    const { playlists, errors } = normalizePlaylists(
       [
-        { title: 'My Playlist1', songs: [{ id: 'a' }, { id: 'b' }] },
-        { title: 'My Playlist2', songs: [{ id: 'c' }, { id: 'missing' }] },
+        { id: 'pl-1', title: 'My Playlist1', songs: [{ id: 'a' }, { id: 'b' }] },
+        { id: 'pl-2', title: 'My Playlist2', songs: [{ id: 'c' }, { id: 'missing' }] },
       ],
       tracks,
     );
     expect(playlists).toEqual([
-      { title: 'My Playlist1', trackIds: ['a', 'b'] },
-      { title: 'My Playlist2', trackIds: ['c'] },
+      { id: 'pl-1', title: 'My Playlist1', trackIds: ['a', 'b'] },
+      { id: 'pl-2', title: 'My Playlist2', trackIds: ['c'] },
     ]);
+    expect(errors).toEqual([]);
+  });
+
+  it('drops playlists missing id or with a duplicate id and records errors', () => {
+    const { playlists, errors } = normalizePlaylists(
+      [
+        { title: 'No Id', songs: [{ id: 'a' }] },
+        { id: 'keep', title: 'Keep', songs: [{ id: 'a' }] },
+        { id: 'keep', title: 'Dup', songs: [{ id: 'b' }] },
+      ],
+      tracks,
+    );
+    expect(playlists).toEqual([{ id: 'keep', title: 'Keep', trackIds: ['a'] }]);
+    expect(errors).toHaveLength(2);
+    expect(errors[0]).toMatch(/missing id/i);
+    expect(errors[1]).toMatch(/id already exists/i);
   });
 });
 
@@ -119,12 +146,24 @@ describe('normalizeConfigs', () => {
       ],
       playlists: [
         {
+          id: 'my-playlist-1',
           title: 'My Playlist1',
           songs: [{ id: 'sample-1' }, { id: '9277' }],
         },
       ],
     });
-    expect(playlists).toEqual([{ title: 'My Playlist1', trackIds: ['sample-1', '9277'] }]);
+    expect(playlists).toEqual([
+      { id: 'my-playlist-1', title: 'My Playlist1', trackIds: ['sample-1', '9277'] },
+    ]);
+  });
+
+  it('records playlist id errors alongside song errors', () => {
+    const { playlists, errors } = normalizeConfigs({
+      songs: [{ id: 'sample-1', path: '/sample-1.mp3' }],
+      playlists: [{ title: 'No Id', songs: [{ id: 'sample-1' }] }],
+    });
+    expect(playlists).toEqual([]);
+    expect(errors.some((error) => /missing id/i.test(error))).toBe(true);
   });
 
   it('ignores legacy singular playlist', () => {

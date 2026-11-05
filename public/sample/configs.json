@@ -24,6 +24,7 @@
   ],
   "playlists": [
     {
+      "id": "my-playlist-1",
       "title": "My Playlist1",
       "songs": [
         {
@@ -35,6 +36,7 @@
       ]
     },
     {
+      "id": "my-playlist-2",
       "title": "My Playlist2",
       "songs": [
         {

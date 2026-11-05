@@ -68,7 +68,8 @@ const SAMPLE_LINE_SPECS: SampleLineSpec[] = [
     tag: 'optional',
   },
   { depth: 2, tokens: [punct('{')] },
-  field(3, 'title', 'Morning Run', { noteKey: note('playlistTitle') }),
+  field(3, 'id', 'morning-run', { noteKey: note('playlistId'), tag: 'required' }),
+  field(3, 'title', 'Morning Run', { noteKey: note('playlistTitle'), tag: 'optional' }),
   { depth: 3, tokens: [key('songs'), punct(': [')], noteKey: note('playlistTracks') },
   {
     depth: 4,

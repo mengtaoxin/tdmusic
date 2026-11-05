@@ -22,12 +22,14 @@ export type MusicTrack = {
 export type CatalogError = string;
 
 export type RawPlaylist = {
+  id?: unknown;
   title?: unknown;
   songs?: unknown;
 };
 
 export type NormalizedPlaylist = {
-  title: string;
+  id: string;
+  title?: string;
   trackIds: string[];
 };
 
@@ -102,25 +104,48 @@ export function normalizeSongs(rawList: unknown): {
 export function normalizePlaylist(raw: unknown, tracks: MusicTrack[]): NormalizedPlaylist | null {
   if (!raw || typeof raw !== 'object') return null;
   const playlist = raw as RawPlaylist;
+  const id = asOptionalString(playlist.id);
+  if (!id) return null;
   const known = new Set(tracks.map((t) => t.id));
-  const title = asOptionalString(playlist.title) ?? 'Playlist';
+  const title = asOptionalString(playlist.title);
   const refs = Array.isArray(playlist.songs) ? playlist.songs : [];
   const trackIds: string[] = [];
   for (const ref of refs) {
-    const id = asOptionalString((ref as { id?: unknown })?.id);
-    if (id && known.has(id)) trackIds.push(id);
+    const trackId = asOptionalString((ref as { id?: unknown })?.id);
+    if (trackId && known.has(trackId)) trackIds.push(trackId);
   }
-  return { title, trackIds };
+  const normalized: NormalizedPlaylist = { id, trackIds };
+  if (title) normalized.title = title;
+  return normalized;
 }
 
-export function normalizePlaylists(raw: unknown, tracks: MusicTrack[]): NormalizedPlaylist[] {
-  if (!Array.isArray(raw)) return [];
+export function normalizePlaylists(
+  raw: unknown,
+  tracks: MusicTrack[],
+): { playlists: NormalizedPlaylist[]; errors: CatalogError[] } {
   const playlists: NormalizedPlaylist[] = [];
+  const errors: CatalogError[] = [];
+  if (!Array.isArray(raw)) return { playlists, errors };
+
+  const seen = new Set<string>();
   for (const entry of raw) {
-    const playlist = normalizePlaylist(entry, tracks);
-    if (playlist) playlists.push(playlist);
+    const playlist = (entry ?? {}) as RawPlaylist;
+    const id = asOptionalString(playlist.id);
+    const label = asOptionalString(playlist.title) ?? id ?? '(unknown)';
+    if (!id) {
+      errors.push(`playlist ${label}: missing id, ignored`);
+      continue;
+    }
+    if (seen.has(id)) {
+      errors.push(`playlist ${id}: id already exists, ignored`);
+      continue;
+    }
+    const normalized = normalizePlaylist(entry, tracks);
+    if (!normalized) continue;
+    seen.add(id);
+    playlists.push(normalized);
   }
-  return playlists;
+  return { playlists, errors };
 }
 
 export type MusicConfigs = {
@@ -135,6 +160,6 @@ export function normalizeConfigs(raw: unknown): {
 } {
   const data = (raw ?? {}) as MusicConfigs;
   const { tracks, errors } = normalizeSongs(data.songs);
-  const playlists = normalizePlaylists(data.playlists, tracks);
-  return { tracks, playlists, errors };
+  const { playlists, errors: playlistErrors } = normalizePlaylists(data.playlists, tracks);
+  return { tracks, playlists, errors: [...errors, ...playlistErrors] };
 }

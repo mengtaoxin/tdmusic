@@ -50,13 +50,13 @@ npm run test:e2e -- --project chromium -- e2e/app.spec.ts
 
 曲库就是**你的** `configs.json` 所描述的内容——托管到任意可访问地址，在设置中填写 URL 后重新加载即可。`public/sample/` 下的文件仅作本地试用示例。
 
-| 部分         | 作用                                                                                   |
-| ------------ | -------------------------------------------------------------------------------------- |
-| 示例（开发） | [`public/sample/configs.json`](../public/sample/configs.json) → `/sample/configs.json` |
-| 你的曲库     | 设置 → 曲库 URL（`tdmusic.configUrl`）                                                 |
-| `songs`      | 必填：每首需唯一 `id` + `path`（音频地址）                                             |
-| 可选字段     | `title`、`artist`、`album`、`cover`（优先于解析出的 ID3）                              |
-| `playlists`  | `{ title, songs: [{ id }] }`，用曲目 `id` 引用                                         |
+| 部分         | 作用                                                                                    |
+| ------------ | --------------------------------------------------------------------------------------- |
+| 示例（开发） | [`public/sample/configs.json`](../public/sample/configs.json) → `/sample/configs.json`  |
+| 你的曲库     | 设置 → 曲库 URL（`tdmusic.configUrl`）                                                  |
+| `songs`      | 必填：每首需唯一 `id` + `path`（音频地址）                                              |
+| 可选字段     | `title`、`artist`、`album`、`cover`（优先于解析出的 ID3）                               |
+| `playlists`  | `{ id, title?, songs: [{ id }] }`；歌单 `id` 必填且唯一，`title` 可选，用曲目 `id` 引用 |
 
 示例结构：
 
@@ -73,6 +73,7 @@ npm run test:e2e -- --project chromium -- e2e/app.spec.ts
   ],
   "playlists": [
     {
+      "id": "my-playlist-1",
       "title": "My Playlist1",
       "songs": [{ "id": "track-1" }]
     }

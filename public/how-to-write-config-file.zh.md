@@ -16,7 +16,11 @@
 
 ## playlists
 
-播放列表数组。每项有 `title`，以及由 `{ "id": "…" }` 组成的 `songs`（只能引用已接受的曲目）。
+播放列表数组。每项必须有唯一 `id`；缺少 `id` 或 `id` 重复会被丢弃，并在歌曲页和播放列表页显示错误。`title` 可选，不填时界面显示 `id`。`songs` 由 `{ "id": "…" }` 组成（只能引用已接受的曲目）。
+
+- `id` — 歌单唯一 id（必填）；也是页面地址 `/playlists/:id`
+- `title` — 显示名称（可选）
+- `songs` — 按 id 引用曲目，顺序即播放顺序
 
 ## 示例
 
@@ -34,6 +38,7 @@
   ],
   "playlists": [
     {
+      "id": "my-playlist-1",
       "title": "My Playlist1",
       "songs": [{ "id": "sample-1" }]
     }
