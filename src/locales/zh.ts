@@ -81,6 +81,7 @@ export default {
     trackNotFound: '未找到该歌曲。',
     playlistNotFound: '未找到该歌单。',
     empty: '这个歌单里没有可播放的歌曲。',
+    nothingPlaying: '当前没有正在播放的列表。',
   },
   artist: {
     allMusic: '该歌手的全部音乐',

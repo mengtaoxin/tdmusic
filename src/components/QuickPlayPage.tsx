@@ -5,13 +5,16 @@ import { useTranslation } from 'react-i18next';
 
 import { planQuickPlay, type QuickPlayPlan } from '@/lib/routes/quickPlay';
 import { selectTrackById, useCatalogStore } from '@/stores/catalog';
+import { usePlayerStore } from '@/stores/player';
 
-function failureMessage(plan: Exclude<QuickPlayPlan, { kind: 'play' }>): string {
+function failureMessage(plan: Exclude<QuickPlayPlan, { kind: 'play' | 'resume' }>): string {
   switch (plan.kind) {
     case 'not-found':
       return plan.target === 'track' ? 'quickPlay.trackNotFound' : 'quickPlay.playlistNotFound';
     case 'empty':
       return 'quickPlay.empty';
+    case 'idle':
+      return 'quickPlay.nothingPlaying';
     case 'invalid':
       return 'quickPlay.invalid';
     default: {
@@ -26,14 +29,22 @@ export function QuickPlayPage({ type, id }: { type: string; id: string }) {
   const { t } = useTranslation();
   const trackById = useCatalogStore(selectTrackById);
   const playlists = useCatalogStore((s) => s.playlists);
-  const plan = planQuickPlay({ type, id }, { trackIds: trackById, playlists });
+  const queue = usePlayerStore((s) => s.queue);
+  const currentId = usePlayerStore((s) => s.currentId);
+  const plan = planQuickPlay(
+    { type, id },
+    { trackIds: trackById, playlists },
+    { queue, currentId },
+  );
 
   return (
     <Container maxWidth={false} className="page">
       <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
         {t('quickPlay.title')}
       </Typography>
-      {plan.kind === 'play' ? null : <Alert severity="warning">{t(failureMessage(plan))}</Alert>}
+      {plan.kind === 'play' || plan.kind === 'resume' ? null : (
+        <Alert severity="warning">{t(failureMessage(plan))}</Alert>
+      )}
     </Container>
   );
 }

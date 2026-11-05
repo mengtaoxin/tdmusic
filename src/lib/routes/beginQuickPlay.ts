@@ -5,12 +5,19 @@ import { usePlayerStore } from '@/stores/player';
 /** Start the queue for a quick-play link. Callers redirect when the plan plays. */
 export function beginQuickPlay(search: QuickPlayRequest): QuickPlayPlan {
   const catalog = useCatalogStore.getState();
-  const plan = planQuickPlay(search, {
-    trackIds: catalog.snapshot.trackById,
-    playlists: catalog.playlists,
-  });
+  const player = usePlayerStore.getState();
+  const plan = planQuickPlay(
+    search,
+    {
+      trackIds: catalog.snapshot.trackById,
+      playlists: catalog.playlists,
+    },
+    { queue: player.queue, currentId: player.currentId },
+  );
   if (plan.kind === 'play') {
-    usePlayerStore.getState().playFrom(0, plan.sourceIds, { shuffle: false });
+    player.playFrom(0, plan.sourceIds, { shuffle: false });
+  } else if (plan.kind === 'resume') {
+    player.play();
   }
   return plan;
 }

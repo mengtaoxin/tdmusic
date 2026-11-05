@@ -5,6 +5,7 @@ import { renderWithProviders } from '@/__tests__/renderWithProviders';
 import { QuickPlayPage } from '@/components/QuickPlayPage';
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
 import { useCatalogStore } from '@/stores/catalog';
+import { usePlayerStore } from '@/stores/player';
 
 function track(id: string): DisplayTrack {
   return {
@@ -33,6 +34,10 @@ describe('QuickPlayPage', () => {
 
     rerender(<QuickPlayPage type="playlist" id="empty-list" />);
     expect(screen.getByRole('alert')).toHaveTextContent('This playlist has no tracks to play.');
+
+    usePlayerStore.setState({ queue: [], currentId: null });
+    rerender(<QuickPlayPage type="playlist" id="now-playing" />);
+    expect(screen.getByRole('alert')).toHaveTextContent('Nothing is playing yet.');
 
     rerender(<QuickPlayPage type="album" id="a" />);
     expect(screen.getByRole('alert')).toHaveTextContent(

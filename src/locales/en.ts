@@ -82,6 +82,7 @@ export default {
     trackNotFound: 'Track not found.',
     playlistNotFound: 'Playlist not found.',
     empty: 'This playlist has no tracks to play.',
+    nothingPlaying: 'Nothing is playing yet.',
   },
   artist: {
     allMusic: 'All music by this artist',

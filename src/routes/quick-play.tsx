@@ -11,7 +11,7 @@ export const Route = createFileRoute('/quick-play')({
   }),
   beforeLoad: ({ search }) => {
     const plan = beginQuickPlay(search);
-    if (plan.kind === 'play') {
+    if (plan.kind === 'play' || plan.kind === 'resume') {
       throw redirect({ to: '/now-playing', replace: true });
     }
   },

@@ -38,6 +38,33 @@ describe('planQuickPlay', () => {
     });
   });
 
+  it('resumes the current queue when the playlist id is now-playing', () => {
+    const withSameId: QuickPlayCatalog = {
+      ...catalog(),
+      playlists: [...playlists, { id: 'now-playing', trackIds: ['b'] }],
+    };
+    const session = { queue: ['b', 'a'], currentId: 'a' };
+
+    expect(planQuickPlay({ type: 'playlist', id: 'now-playing' }, withSameId, session)).toEqual({
+      kind: 'resume',
+    });
+    expect(planQuickPlay({ type: ' Playlist ', id: ' Now-Playing ' }, catalog(), session)).toEqual({
+      kind: 'resume',
+    });
+    expect(
+      planQuickPlay({ type: 'playlist', id: 'now-playing' }, catalog(), {
+        queue: [],
+        currentId: null,
+      }),
+    ).toEqual({ kind: 'idle' });
+    expect(
+      planQuickPlay({ type: 'playlist', id: 'now-playing' }, catalog(), {
+        queue: ['a'],
+        currentId: null,
+      }),
+    ).toEqual({ kind: 'idle' });
+  });
+
   it('does not play when the type or id cannot be resolved', () => {
     expect(planQuickPlay({ type: 'album', id: 'a' }, catalog())).toEqual({ kind: 'invalid' });
     expect(planQuickPlay({ type: 'track', id: '  ' }, catalog())).toEqual({ kind: 'invalid' });
