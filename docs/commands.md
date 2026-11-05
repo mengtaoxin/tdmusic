@@ -9,10 +9,10 @@ npm run dev
 npm run build
 npm run verify
 npm run test:coverage
-npm run test:e2e -- --project chromium
+npm run test:e2e:local -- --project chromium
 ```
 
-Use `package.json` scripts for day-to-day work. Do not add `scripts/*.sh` wrappers.
+Use `package.json` scripts for day-to-day work. `npm run test:e2e:local` points Playwright at the host browser cache. Run it from the system terminal. `npm run test:e2e` is the shared script.
 
 ## Install
 
@@ -56,7 +56,8 @@ Type-check + Vite production build → `dist/`.
 | `npm run test:unit`                                         | Alias for `test:watch`                              |
 | `npm run test -- path/to/spec.ts`                           | One unit file                                       |
 | `npm run test:coverage`                                     | Vitest with V8 coverage (`text` + `coverage/` HTML) |
-| `npm run test:e2e -- --project chromium`                    | Playwright; pick projects explicitly                |
-| `npm run test:e2e -- --project chromium -- path/to/spec.ts` | One e2e file                                        |
+| `npm run test:e2e:local -- --project chromium`              | Host browser cache; run from the system terminal    |
+| `npm run test:e2e:local -- --project chromium -- path/to/spec.ts` | One e2e file                                   |
+| `npm run test:e2e -- --project chromium`                    | Shared Playwright script                            |
 
 E2E defaults in config include chromium, firefox, and webkit; always pass `--project` when you want a subset.
