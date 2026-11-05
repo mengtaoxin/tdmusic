@@ -75,6 +75,13 @@ export default {
     trackCount: '{count} 首',
     notFound: '未找到该播放列表。',
   },
+  quickPlay: {
+    title: '快速播放',
+    invalid: '这个链接需要 type=track 或 type=playlist，以及 id。',
+    trackNotFound: '未找到该歌曲。',
+    playlistNotFound: '未找到该歌单。',
+    empty: '这个歌单里没有可播放的歌曲。',
+  },
   artist: {
     allMusic: '该歌手的全部音乐',
     trackCount: '{count} 首',

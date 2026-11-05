@@ -76,6 +76,13 @@ export default {
     trackCount: '{count} tracks',
     notFound: 'Playlist not found.',
   },
+  quickPlay: {
+    title: 'Quick play',
+    invalid: 'This link needs type=track or type=playlist, and an id.',
+    trackNotFound: 'Track not found.',
+    playlistNotFound: 'Playlist not found.',
+    empty: 'This playlist has no tracks to play.',
+  },
   artist: {
     allMusic: 'All music by this artist',
     trackCount: '{count} tracks',

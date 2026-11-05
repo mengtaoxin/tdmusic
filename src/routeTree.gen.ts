@@ -15,6 +15,7 @@ import { Route as ConfigGuidesRouteImport } from './routes/config-guides'
 import { Route as LogsRouteImport } from './routes/logs'
 import { Route as MusicRouteImport } from './routes/music'
 import { Route as NowPlayingRouteImport } from './routes/now-playing'
+import { Route as QuickPlayRouteImport } from './routes/quick-play'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StatsRouteImport } from './routes/stats'
@@ -55,6 +56,11 @@ const MusicRoute = MusicRouteImport.update({
 const NowPlayingRoute = NowPlayingRouteImport.update({
   id: '/now-playing',
   path: '/now-playing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuickPlayRoute = QuickPlayRouteImport.update({
+  id: '/quick-play',
+  path: '/quick-play',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/logs': typeof LogsRoute
   '/music': typeof MusicRoute
   '/now-playing': typeof NowPlayingRoute
+  '/quick-play': typeof QuickPlayRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/logs': typeof LogsRoute
   '/music': typeof MusicRoute
   '/now-playing': typeof NowPlayingRoute
+  '/quick-play': typeof QuickPlayRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/logs': typeof LogsRoute
   '/music': typeof MusicRoute
   '/now-playing': typeof NowPlayingRoute
+  '/quick-play': typeof QuickPlayRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/stats': typeof StatsRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/logs'
     | '/music'
     | '/now-playing'
+    | '/quick-play'
     | '/search'
     | '/settings'
     | '/stats'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/logs'
     | '/music'
     | '/now-playing'
+    | '/quick-play'
     | '/search'
     | '/settings'
     | '/stats'
@@ -218,6 +229,7 @@ export interface FileRouteTypes {
     | '/logs'
     | '/music'
     | '/now-playing'
+    | '/quick-play'
     | '/search'
     | '/settings'
     | '/stats'
@@ -238,6 +250,7 @@ export interface RootRouteChildren {
   LogsRoute: typeof LogsRoute
   MusicRoute: typeof MusicRoute
   NowPlayingRoute: typeof NowPlayingRoute
+  QuickPlayRoute: typeof QuickPlayRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
   StatsRoute: typeof StatsRoute
@@ -293,6 +306,13 @@ declare module '@tanstack/react-router' {
       path: '/now-playing'
       fullPath: '/now-playing'
       preLoaderRoute: typeof NowPlayingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quick-play': {
+      id: '/quick-play'
+      path: '/quick-play'
+      fullPath: '/quick-play'
+      preLoaderRoute: typeof QuickPlayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -382,6 +402,7 @@ const rootRouteChildren: RootRouteChildren = {
   LogsRoute: LogsRoute,
   MusicRoute: MusicRoute,
   NowPlayingRoute: NowPlayingRoute,
+  QuickPlayRoute: QuickPlayRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
   StatsRoute: StatsRoute,
