@@ -13,6 +13,7 @@ import {
   clearUpcomingTracks,
   emptyQueueSession,
   goToIndex as sessionGoToIndex,
+  moveToNext,
   playNext as enqueuePlayNext,
   removeAt as sessionRemoveAt,
   toggleShuffle as sessionToggleShuffle,
@@ -48,6 +49,7 @@ type PlayerState = QueueSession & {
   toggleRepeat: () => void;
   toggleShuffle: () => void;
   playNext: (id: string) => void;
+  moveToPlayNext: (index: number) => void;
   addToQueue: (id: string) => void;
   removeAt: (index: number) => void;
   clearUpcoming: () => void;
@@ -252,6 +254,13 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
         return;
       }
       set(result.session);
+      flushPersist();
+    },
+
+    moveToPlayNext(index: number) {
+      const moved = moveToNext(readQueueSession(get()), index);
+      if (!moved) return;
+      set(moved);
       flushPersist();
     },
 

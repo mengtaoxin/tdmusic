@@ -117,6 +117,46 @@ describe('useTrackListPlayback', () => {
     expect(useNoticeStore.getState().open).toBe(false);
   });
 
+  it('moves the closest queued copy next when that track is clicked during playback', async () => {
+    usePlayerStore.setState({
+      queue: ['b', 'a', 'c', 'd', 'b'],
+      originalQueue: ['b', 'a', 'c', 'd', 'b'],
+      currentId: 'a',
+      currentIndex: 1,
+      playing: true,
+      pendingPlay: false,
+    });
+
+    let api!: Api;
+
+    render(
+      <Harness
+        ids={['b', 'x']}
+        onReady={(value) => {
+          api = value;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(api).toBeDefined();
+    });
+
+    api.playById('b');
+
+    expect(usePlayerStore.getState()).toMatchObject({
+      queue: ['a', 'b', 'c', 'd', 'b'],
+      originalQueue: ['a', 'b', 'c', 'd', 'b'],
+      currentId: 'a',
+      currentIndex: 0,
+      playing: true,
+    });
+    expect(useNoticeStore.getState()).toMatchObject({
+      open: true,
+      message: i18n.t('player.addedToPlayNext'),
+    });
+  });
+
   it('does not stack another copy when the clicked track is already next', async () => {
     usePlayerStore.setState({
       queue: ['a', 'c'],

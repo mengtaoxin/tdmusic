@@ -49,15 +49,15 @@ Type-check + Vite production build → `dist/`.
 
 ## Tests
 
-| Command                                                     | Notes                                               |
-| ----------------------------------------------------------- | --------------------------------------------------- |
-| `npm run test`                                              | Vitest, full unit suite once                        |
-| `npm run test:watch`                                        | Vitest watch mode (TTY)                             |
-| `npm run test:unit`                                         | Alias for `test:watch`                              |
-| `npm run test -- path/to/spec.ts`                           | One unit file                                       |
-| `npm run test:coverage`                                     | Vitest with V8 coverage (`text` + `coverage/` HTML) |
-| `npm run test:e2e:local -- --project chromium`              | Host browser cache; run from the system terminal    |
-| `npm run test:e2e:local -- --project chromium -- path/to/spec.ts` | One e2e file                                   |
-| `npm run test:e2e -- --project chromium`                    | Shared Playwright script                            |
+| Command                                                           | Notes                                               |
+| ----------------------------------------------------------------- | --------------------------------------------------- |
+| `npm run test`                                                    | Vitest, full unit suite once                        |
+| `npm run test:watch`                                              | Vitest watch mode (TTY)                             |
+| `npm run test:unit`                                               | Alias for `test:watch`                              |
+| `npm run test -- path/to/spec.ts`                                 | One unit file                                       |
+| `npm run test:coverage`                                           | Vitest with V8 coverage (`text` + `coverage/` HTML) |
+| `npm run test:e2e:local -- --project chromium`                    | Host browser cache; run from the system terminal    |
+| `npm run test:e2e:local -- --project chromium -- path/to/spec.ts` | One e2e file                                        |
+| `npm run test:e2e -- --project chromium`                          | Shared Playwright script                            |
 
 E2E defaults in config include chromium, firefox, and webkit; always pass `--project` when you want a subset.

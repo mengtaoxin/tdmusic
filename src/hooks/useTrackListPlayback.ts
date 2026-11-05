@@ -50,6 +50,10 @@ function playClickedTrack(ids: string[], index: number) {
       player.playNext(id);
       notifyAddedToPlayNext();
       return;
+    case 'moveNext':
+      player.moveToPlayNext(result.index);
+      notifyAddedToPlayNext();
+      return;
     case 'alreadyNext':
       notifyAddedToPlayNext();
       return;

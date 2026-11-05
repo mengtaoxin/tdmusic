@@ -12,6 +12,7 @@ import {
   emptyQueueSession,
   goToIndex,
   clickTrack,
+  moveToNext,
   playNext,
   removeAt,
   toggleShuffle,
@@ -146,7 +147,105 @@ describe('queue mutations', () => {
       currentId: 'a',
       currentIndex: 0,
     });
-    expect(clickTrack(queued, ['a', 'b', 'c'], 2, true)).toEqual({ kind: 'queueNext' });
+    expect(clickTrack(queued, ['a', 'b', 'z'], 2, true)).toEqual({ kind: 'queueNext' });
+  });
+
+  it('clickTrack moves the nearest queued copy instead of inserting another', () => {
+    const queued = session({
+      queue: ['b', 'a', 'c', 'd', 'b'],
+      originalQueue: ['b', 'a', 'c', 'd', 'b'],
+      currentId: 'a',
+      currentIndex: 1,
+    });
+    expect(clickTrack(queued, ['b', 'x'], 0, true)).toEqual({ kind: 'moveNext', index: 0 });
+  });
+
+  it('clickTrack moves a closer upcoming copy ahead of an earlier duplicate', () => {
+    const queued = session({
+      queue: ['b', 'x', 'y', 'a', 'c', 'b'],
+      originalQueue: ['b', 'x', 'y', 'a', 'c', 'b'],
+      currentId: 'a',
+      currentIndex: 3,
+    });
+    expect(clickTrack(queued, ['b'], 0, true)).toEqual({ kind: 'moveNext', index: 5 });
+  });
+
+  it('clickTrack prefers the upcoming copy when two are equally close', () => {
+    const queued = session({
+      queue: ['b', 'x', 'a', 'y', 'b'],
+      originalQueue: ['b', 'x', 'a', 'y', 'b'],
+      currentId: 'a',
+      currentIndex: 2,
+    });
+    expect(clickTrack(queued, ['b'], 0, true)).toEqual({ kind: 'moveNext', index: 4 });
+  });
+
+  it('clickTrack leaves a farther duplicate alone when one copy is already next', () => {
+    const queued = session({
+      queue: ['a', 'b', 'c', 'b'],
+      originalQueue: ['a', 'b', 'c', 'b'],
+      currentId: 'a',
+      currentIndex: 0,
+    });
+    expect(clickTrack(queued, ['b'], 0, true)).toEqual({ kind: 'alreadyNext' });
+  });
+
+  it('moveToNext relocates that occurrence to sit after the current track', () => {
+    const closerEarlier = moveToNext(
+      session({
+        queue: ['b', 'a', 'c', 'd', 'b'],
+        originalQueue: ['b', 'a', 'c', 'd', 'b'],
+        currentId: 'a',
+        currentIndex: 1,
+      }),
+      0,
+    );
+    expect(closerEarlier).toEqual(
+      expect.objectContaining({
+        queue: ['a', 'b', 'c', 'd', 'b'],
+        originalQueue: ['a', 'b', 'c', 'd', 'b'],
+        currentId: 'a',
+        currentIndex: 0,
+      }),
+    );
+
+    const tiedUpcoming = moveToNext(
+      session({
+        queue: ['b', 'x', 'a', 'y', 'b'],
+        originalQueue: ['b', 'x', 'a', 'y', 'b'],
+        currentId: 'a',
+        currentIndex: 2,
+      }),
+      4,
+    );
+    expect(tiedUpcoming).toEqual(
+      expect.objectContaining({
+        queue: ['b', 'x', 'a', 'b', 'y'],
+        originalQueue: ['b', 'x', 'a', 'b', 'y'],
+        currentId: 'a',
+        currentIndex: 2,
+      }),
+    );
+  });
+
+  it('moveToNext moves the same occurrence in a shuffled original queue', () => {
+    const moved = moveToNext(
+      session({
+        queue: ['c', 'a', 'd', 'b'],
+        originalQueue: ['a', 'b', 'c', 'd'],
+        currentId: 'a',
+        currentIndex: 1,
+      }),
+      3,
+    );
+    expect(moved).toEqual(
+      expect.objectContaining({
+        queue: ['c', 'a', 'b', 'd'],
+        originalQueue: ['a', 'b', 'c', 'd'],
+        currentId: 'a',
+        currentIndex: 1,
+      }),
+    );
   });
 
   it('clickTrack does not queue another copy when that track is already next', () => {
