@@ -26,7 +26,8 @@ export type QuickPlayPlan =
   | { kind: 'empty' }
   | { kind: 'idle' };
 
-const TRACK_TYPES = new Set(['track', 'trick']);
+/** Canonical URL type is `song` (matches configs `songs`); `track`/`trick` stay for old links. */
+const SONG_TYPES = new Set(['song', 'track', 'trick']);
 const NOW_PLAYING_ID = 'now-playing';
 const ALL_TRACKS_ID = 'all-tricks';
 
@@ -53,7 +54,7 @@ export function planQuickPlay(
 ): QuickPlayPlan {
   const type = request.type.trim().toLowerCase();
   const id = request.id.trim();
-  if (!id || (type !== 'playlist' && !TRACK_TYPES.has(type))) {
+  if (!id || (type !== 'playlist' && !SONG_TYPES.has(type))) {
     return { kind: 'invalid' };
   }
 
@@ -67,7 +68,7 @@ export function planQuickPlay(
     return { kind: 'play', sourceIds: [...catalog.orderedTrackIds] };
   }
 
-  if (TRACK_TYPES.has(type)) {
+  if (SONG_TYPES.has(type)) {
     if (!catalog.trackIds.has(id)) return { kind: 'not-found', target: 'track' };
     return { kind: 'play', sourceIds: [id] };
   }

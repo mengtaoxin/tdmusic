@@ -7,14 +7,14 @@ function expectAudioPlaying(page: Page) {
 }
 
 test('quick-play starts a track and opens now playing', async ({ page }) => {
-  await page.goto('/quick-play?type=trick&id=smile-in-the-wind');
+  await page.goto('/quick-play?type=song&id=smile-in-the-wind');
   await expect(page).toHaveURL(/\/now-playing$/);
   await expect(page.getByRole('heading', { name: 'Smile in the Wind' })).toBeVisible();
 });
 
 test('opening a quick-play link starts playback', async ({ page, baseURL }) => {
   await page.setContent(
-    `<a href="${baseURL}/quick-play?type=trick&id=smile-in-the-wind">Open quick</a>`,
+    `<a href="${baseURL}/quick-play?type=song&id=smile-in-the-wind">Open quick</a>`,
   );
   await page.getByRole('link', { name: 'Open quick' }).click();
   await expect(page).toHaveURL(/\/now-playing$/);
@@ -74,7 +74,7 @@ test('refresh keeps the track you reached instead of replaying the link', async 
 });
 
 test('quick-play stays put when the track is missing', async ({ page }) => {
-  await page.goto('/quick-play?type=track&id=missing-track');
+  await page.goto('/quick-play?type=song&id=missing-track');
   await expect(page).toHaveURL(/\/quick-play\?/);
   await expect(page.getByRole('heading', { name: 'Quick play' })).toBeVisible();
   await expect(page.getByRole('alert')).toHaveText('Track not found.');

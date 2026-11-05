@@ -28,7 +28,7 @@ describe('beginQuickPlay', () => {
     });
     const playFrom = vi.spyOn(usePlayerStore.getState(), 'playFrom');
 
-    expect(beginQuickPlay({ type: 'trick', id: 'a' })).toEqual({
+    expect(beginQuickPlay({ type: 'song', id: 'a' })).toEqual({
       kind: 'play',
       sourceIds: ['a'],
     });
@@ -102,7 +102,7 @@ describe('beginQuickPlay', () => {
 
   it('does not touch the player when the link cannot play', () => {
     const playFrom = vi.spyOn(usePlayerStore.getState(), 'playFrom');
-    expect(beginQuickPlay({ type: 'track', id: 'missing' })).toEqual({
+    expect(beginQuickPlay({ type: 'song', id: 'missing' })).toEqual({
       kind: 'not-found',
       target: 'track',
     });

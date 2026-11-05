@@ -78,7 +78,7 @@ export default {
   },
   quickPlay: {
     title: 'Quick play',
-    invalid: 'This link needs type=track or type=playlist, and an id.',
+    invalid: 'This link needs type=song or type=playlist, and an id.',
     trackNotFound: 'Track not found.',
     playlistNotFound: 'Playlist not found.',
     empty: 'This playlist has no tracks to play.',

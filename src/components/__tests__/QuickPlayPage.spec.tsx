@@ -25,7 +25,7 @@ describe('QuickPlayPage', () => {
       playlists: [{ id: 'empty-list', trackIds: ['gone'] }],
     });
 
-    const { rerender } = renderWithProviders(<QuickPlayPage type="track" id="missing" />);
+    const { rerender } = renderWithProviders(<QuickPlayPage type="song" id="missing" />);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Quick play');
     expect(screen.getByRole('alert')).toHaveTextContent('Track not found.');
 
@@ -41,7 +41,7 @@ describe('QuickPlayPage', () => {
 
     rerender(<QuickPlayPage type="album" id="a" />);
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'This link needs type=track or type=playlist, and an id.',
+      'This link needs type=song or type=playlist, and an id.',
     );
   });
 });

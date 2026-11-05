@@ -19,8 +19,8 @@ function catalog(orderedTrackIds: readonly string[] = ['a', 'b']): QuickPlayCata
 
 describe('parseQuickPlaySearch', () => {
   it('keeps a numeric catalog id after the router JSON-parses the query', () => {
-    expect(parseQuickPlaySearch(defaultParseSearch('?type=track&id=1332'))).toEqual({
-      type: 'track',
+    expect(parseQuickPlaySearch(defaultParseSearch('?type=song&id=1332'))).toEqual({
+      type: 'song',
       id: '1332',
     });
     expect(parseQuickPlaySearch(defaultParseSearch('?type=playlist&id=7'))).toEqual({
@@ -31,7 +31,11 @@ describe('parseQuickPlaySearch', () => {
 });
 
 describe('planQuickPlay', () => {
-  it('plays one known track from type track or trick', () => {
+  it('plays one known track from type song, or legacy track/trick', () => {
+    expect(planQuickPlay({ type: 'song', id: 'a' }, catalog())).toEqual({
+      kind: 'play',
+      sourceIds: ['a'],
+    });
     expect(planQuickPlay({ type: 'track', id: 'a' }, catalog())).toEqual({
       kind: 'play',
       sourceIds: ['a'],
@@ -40,7 +44,7 @@ describe('planQuickPlay', () => {
       kind: 'play',
       sourceIds: ['b'],
     });
-    expect(planQuickPlay({ type: 'TRACK', id: 'a' }, catalog())).toEqual({
+    expect(planQuickPlay({ type: 'SONG', id: 'a' }, catalog())).toEqual({
       kind: 'play',
       sourceIds: ['a'],
     });
@@ -101,8 +105,8 @@ describe('planQuickPlay', () => {
 
   it('does not play when the type or id cannot be resolved', () => {
     expect(planQuickPlay({ type: 'album', id: 'a' }, catalog())).toEqual({ kind: 'invalid' });
-    expect(planQuickPlay({ type: 'track', id: '  ' }, catalog())).toEqual({ kind: 'invalid' });
-    expect(planQuickPlay({ type: 'track', id: 'nope' }, catalog())).toEqual({
+    expect(planQuickPlay({ type: 'song', id: '  ' }, catalog())).toEqual({ kind: 'invalid' });
+    expect(planQuickPlay({ type: 'song', id: 'nope' }, catalog())).toEqual({
       kind: 'not-found',
       target: 'track',
     });
