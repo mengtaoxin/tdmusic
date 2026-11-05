@@ -30,6 +30,21 @@ const TRACK_TYPES = new Set(['track', 'trick']);
 const NOW_PLAYING_ID = 'now-playing';
 const ALL_TRACKS_ID = 'all-tricks';
 
+function searchText(value: unknown): string {
+  if (typeof value === 'string') return value;
+  // The router JSON-parses query values, so `id=1332` arrives as a number.
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  return '';
+}
+
+/** Read type and id from the search object the router already parsed. */
+export function parseQuickPlaySearch(search: Record<string, unknown>): QuickPlayRequest {
+  return {
+    type: searchText(search.type),
+    id: searchText(search.id),
+  };
+}
+
 /** Resolve a /quick-play link to a queue, or a reason it cannot play. */
 export function planQuickPlay(
   request: QuickPlayRequest,

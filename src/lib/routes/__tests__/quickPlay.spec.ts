@@ -1,7 +1,8 @@
+import { defaultParseSearch } from '@tanstack/react-router';
 import { describe, expect, it } from 'vitest';
 
 import type { NormalizedPlaylist } from '../../catalog/normalizeCatalog';
-import { planQuickPlay, type QuickPlayCatalog } from '../quickPlay';
+import { parseQuickPlaySearch, planQuickPlay, type QuickPlayCatalog } from '../quickPlay';
 
 const playlists: NormalizedPlaylist[] = [
   { id: 'evening', title: 'Evening', trackIds: ['a', 'missing', 'b', 'a'] },
@@ -15,6 +16,19 @@ function catalog(orderedTrackIds: readonly string[] = ['a', 'b']): QuickPlayCata
     playlists,
   };
 }
+
+describe('parseQuickPlaySearch', () => {
+  it('keeps a numeric catalog id after the router JSON-parses the query', () => {
+    expect(parseQuickPlaySearch(defaultParseSearch('?type=track&id=1332'))).toEqual({
+      type: 'track',
+      id: '1332',
+    });
+    expect(parseQuickPlaySearch(defaultParseSearch('?type=playlist&id=7'))).toEqual({
+      type: 'playlist',
+      id: '7',
+    });
+  });
+});
 
 describe('planQuickPlay', () => {
   it('plays one known track from type track or trick', () => {
