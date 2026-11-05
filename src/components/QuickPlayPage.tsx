@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 
 import { planQuickPlay, type QuickPlayPlan } from '@/lib/routes/quickPlay';
-import { selectTrackById, useCatalogStore } from '@/stores/catalog';
+import { selectTrackById, selectTracks, useCatalogStore } from '@/stores/catalog';
 import { usePlayerStore } from '@/stores/player';
 
 function failureMessage(plan: Exclude<QuickPlayPlan, { kind: 'play' | 'resume' }>): string {
@@ -28,12 +28,13 @@ function failureMessage(plan: Exclude<QuickPlayPlan, { kind: 'play' | 'resume' }
 export function QuickPlayPage({ type, id }: { type: string; id: string }) {
   const { t } = useTranslation();
   const trackById = useCatalogStore(selectTrackById);
+  const orderedTrackIds = useCatalogStore(selectTracks).map((item) => item.id);
   const playlists = useCatalogStore((s) => s.playlists);
   const queue = usePlayerStore((s) => s.queue);
   const currentId = usePlayerStore((s) => s.currentId);
   const plan = planQuickPlay(
     { type, id },
-    { trackIds: trackById, playlists },
+    { trackIds: trackById, orderedTrackIds, playlists },
     { queue, currentId },
   );
 

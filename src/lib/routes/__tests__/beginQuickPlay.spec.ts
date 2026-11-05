@@ -42,6 +42,20 @@ describe('beginQuickPlay', () => {
     expect(playFrom).toHaveBeenCalledWith(0, ['b', 'a'], { shuffle: false });
   });
 
+  it('plays every catalog track for playlist all-tricks', () => {
+    useCatalogStore.getState().setTracks([track('a'), track('b')]);
+    useCatalogStore.setState({
+      playlists: [{ id: 'all-tricks', trackIds: ['b'] }],
+    });
+    const playFrom = vi.spyOn(usePlayerStore.getState(), 'playFrom');
+
+    expect(beginQuickPlay({ type: 'playlist', id: 'all-tricks' })).toEqual({
+      kind: 'play',
+      sourceIds: ['a', 'b'],
+    });
+    expect(playFrom).toHaveBeenCalledWith(0, ['a', 'b'], { shuffle: false });
+  });
+
   it('resumes the current queue from its saved progress', () => {
     useCatalogStore.getState().setTracks([track('a'), track('b')]);
     useCatalogStore.setState({

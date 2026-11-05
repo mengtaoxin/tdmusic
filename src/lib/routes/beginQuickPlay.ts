@@ -10,6 +10,7 @@ export function beginQuickPlay(search: QuickPlayRequest): QuickPlayPlan {
     search,
     {
       trackIds: catalog.snapshot.trackById,
+      orderedTrackIds: catalog.snapshot.tracks.map((item) => item.id),
       playlists: catalog.playlists,
     },
     { queue: player.queue, currentId: player.currentId },

@@ -8,9 +8,10 @@ const playlists: NormalizedPlaylist[] = [
   { id: 'empty-list', trackIds: ['gone'] },
 ];
 
-function catalog(): QuickPlayCatalog {
+function catalog(orderedTrackIds: readonly string[] = ['a', 'b']): QuickPlayCatalog {
   return {
-    trackIds: new Set(['a', 'b']),
+    trackIds: new Set(orderedTrackIds),
+    orderedTrackIds,
     playlists,
   };
 }
@@ -63,6 +64,25 @@ describe('planQuickPlay', () => {
         currentId: null,
       }),
     ).toEqual({ kind: 'idle' });
+  });
+
+  it('plays every catalog track in listed order when the playlist id is all-tricks', () => {
+    const withSameId: QuickPlayCatalog = {
+      ...catalog(),
+      playlists: [...playlists, { id: 'all-tricks', trackIds: ['b'] }],
+    };
+
+    expect(planQuickPlay({ type: 'playlist', id: 'all-tricks' }, withSameId)).toEqual({
+      kind: 'play',
+      sourceIds: ['a', 'b'],
+    });
+    expect(planQuickPlay({ type: 'playlist', id: ' All-Tricks ' }, catalog(['b', 'a']))).toEqual({
+      kind: 'play',
+      sourceIds: ['b', 'a'],
+    });
+    expect(planQuickPlay({ type: 'playlist', id: 'all-tricks' }, catalog([]))).toEqual({
+      kind: 'empty',
+    });
   });
 
   it('does not play when the type or id cannot be resolved', () => {

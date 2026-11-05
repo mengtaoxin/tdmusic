@@ -7,6 +7,8 @@ export type QuickPlayRequest = {
 
 export type QuickPlayCatalog = {
   trackIds: { has(id: string): boolean };
+  /** Catalog order, used by playlist id all-tricks. */
+  orderedTrackIds: readonly string[];
   playlists: readonly NormalizedPlaylist[];
 };
 
@@ -26,6 +28,7 @@ export type QuickPlayPlan =
 
 const TRACK_TYPES = new Set(['track', 'trick']);
 const NOW_PLAYING_ID = 'now-playing';
+const ALL_TRACKS_ID = 'all-tricks';
 
 /** Resolve a /quick-play link to a queue, or a reason it cannot play. */
 export function planQuickPlay(
@@ -42,6 +45,11 @@ export function planQuickPlay(
   if (type === 'playlist' && id.toLowerCase() === NOW_PLAYING_ID) {
     if (!session.currentId || !session.queue.includes(session.currentId)) return { kind: 'idle' };
     return { kind: 'resume' };
+  }
+
+  if (type === 'playlist' && id.toLowerCase() === ALL_TRACKS_ID) {
+    if (!catalog.orderedTrackIds.length) return { kind: 'empty' };
+    return { kind: 'play', sourceIds: [...catalog.orderedTrackIds] };
   }
 
   if (TRACK_TYPES.has(type)) {

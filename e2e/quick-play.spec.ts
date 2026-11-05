@@ -36,6 +36,27 @@ test('quick-play continues the current queue from its saved track', async ({ pag
   await expect(page.getByRole('button', { name: /Smile in the Wind/ })).toBeVisible();
 });
 
+test('quick-play starts every track from all-tricks', async ({ page }) => {
+  await page.goto('/quick-play?type=playlist&id=all-tricks');
+  await expect(page).toHaveURL(/\/now-playing$/);
+  await expect(page.getByRole('heading', { name: 'Smile in the Wind' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Drink in the Wind/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Life in the Wind/ })).toBeVisible();
+});
+
+test('refresh keeps the track you reached instead of replaying the link', async ({ page }) => {
+  await page.goto('/quick-play?type=playlist&id=my-playlist-1');
+  await expect(page).toHaveURL(/\/now-playing$/);
+  await expect(page.getByRole('button', { name: /Drink in the Wind/ })).toBeVisible();
+  await page.getByTestId('footer-next').click();
+  await expect(page.getByRole('heading', { name: 'Drink in the Wind' })).toBeVisible();
+
+  await page.reload();
+  await expect(page).toHaveURL(/\/now-playing$/);
+  await expect(page).not.toHaveURL(/type=/);
+  await expect(page.getByRole('heading', { name: 'Drink in the Wind' })).toBeVisible();
+});
+
 test('quick-play stays put when the track is missing', async ({ page }) => {
   await page.goto('/quick-play?type=track&id=missing-track');
   await expect(page).toHaveURL(/\/quick-play\?/);
