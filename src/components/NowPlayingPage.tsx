@@ -142,11 +142,11 @@ export function NowPlayingPage() {
                 position: 'absolute',
                 top: (theme) => theme.spacing(1),
                 right: (theme) => theme.spacing(1),
-                color: 'rgba(255, 255, 255, 0.72)',
-                bgcolor: 'rgba(0, 0, 0, 0.28)',
+                color: 'rgba(255, 255, 255, 0.42)',
+                bgcolor: 'rgba(0, 0, 0, 0.14)',
                 '&:hover': {
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  bgcolor: 'rgba(0, 0, 0, 0.42)',
+                  color: 'rgba(255, 255, 255, 0.78)',
+                  bgcolor: 'rgba(0, 0, 0, 0.28)',
                 },
               }}
             >
