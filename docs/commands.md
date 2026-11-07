@@ -9,10 +9,10 @@ npm run dev
 npm run build
 npm run verify
 npm run test:coverage
-npm run test:e2e:local -- --project chromium
+npm run test:e2e -- --project chromium
 ```
 
-Use `package.json` scripts for day-to-day work. `npm run test:e2e:local` points Playwright at the host browser cache. Run it from the system terminal. `npm run test:e2e` is the shared script.
+Use `package.json` scripts for day-to-day work.
 
 ## Install
 
@@ -49,15 +49,14 @@ Type-check + Vite production build → `dist/`.
 
 ## Tests
 
-| Command                                                           | Notes                                               |
-| ----------------------------------------------------------------- | --------------------------------------------------- |
-| `npm run test`                                                    | Vitest, full unit suite once                        |
-| `npm run test:watch`                                              | Vitest watch mode (TTY)                             |
-| `npm run test:unit`                                               | Alias for `test:watch`                              |
-| `npm run test -- path/to/spec.ts`                                 | One unit file                                       |
-| `npm run test:coverage`                                           | Vitest with V8 coverage (`text` + `coverage/` HTML) |
-| `npm run test:e2e:local -- --project chromium`                    | Host browser cache; run from the system terminal    |
-| `npm run test:e2e:local -- --project chromium -- path/to/spec.ts` | One e2e file                                        |
-| `npm run test:e2e -- --project chromium`                          | Shared Playwright script                            |
+| Command                                                     | Notes                                               |
+| ----------------------------------------------------------- | --------------------------------------------------- |
+| `npm run test`                                              | Vitest, full unit suite once                        |
+| `npm run test:watch`                                        | Vitest watch mode (TTY)                             |
+| `npm run test:unit`                                         | Alias for `test:watch`                              |
+| `npm run test -- path/to/spec.ts`                           | One unit file                                       |
+| `npm run test:coverage`                                     | Vitest with V8 coverage (`text` + `coverage/` HTML) |
+| `npm run test:e2e -- --project chromium`                    | Playwright e2e                                      |
+| `npm run test:e2e -- --project chromium -- path/to/spec.ts` | One e2e file                                        |
 
 E2E defaults in config include chromium, firefox, and webkit; always pass `--project` when you want a subset.

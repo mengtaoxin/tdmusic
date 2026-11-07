@@ -12,7 +12,6 @@
     "test:unit": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:local": "sh scripts/test-e2e-local.sh",
     "build-only": "vite build",
     "type-check": "tsc -b",
     "lint": "oxlint .",
