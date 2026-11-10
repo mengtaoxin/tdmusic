@@ -7,7 +7,6 @@ test('stats ranges and clear-all-cache clears listen history', async ({ page }) 
   await expect(
     page.getByTestId('nav-more-menu').getByRole('menuitem', { name: 'Stats' }),
   ).toBeVisible();
-  await page.screenshot({ path: '/opt/cursor/artifacts/stats-nav-more.webp' });
 
   await page.goto('/stats');
   await expect(page.getByRole('heading', { name: 'Stats' })).toBeVisible();
@@ -44,12 +43,10 @@ test('stats ranges and clear-all-cache clears listen history', async ({ page }) 
 
   await page.getByRole('button', { name: 'Last 30 days' }).click();
   await expect(page.getByTestId('stats-row-track-OLD')).toBeVisible();
-  await page.screenshot({ path: '/opt/cursor/artifacts/stats-page-30d.webp' });
 
   await page.goto('/settings');
   await page.getByRole('button', { name: 'Clear all cache' }).click();
   await page.getByRole('button', { name: 'Confirm' }).click();
   await page.goto('/stats');
   await expect(page.getByText('No listening stats yet.')).toBeVisible();
-  await page.screenshot({ path: '/opt/cursor/artifacts/stats-after-clear-cache.webp' });
 });
