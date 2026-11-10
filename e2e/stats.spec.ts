@@ -12,43 +12,28 @@ test('stats ranges and clear-all-cache clears listen history', async ({ page }) 
   await page.goto('/stats');
   await expect(page.getByRole('heading', { name: 'Stats' })).toBeVisible();
 
-  // The app's Dexie schema owns the DB version; seed only after it has created the store.
-  await expect
-    .poll(() =>
-      page.evaluate(async () =>
-        (await indexedDB.databases()).some((info) => info.name === 'play-history'),
-      ),
-    )
-    .toBe(true);
+  await expect.poll(() => page.evaluate(() => Boolean(window.tdmusicTestApi))).toBe(true);
 
   await page.evaluate(async () => {
-    const db = await new Promise<IDBDatabase>((resolve, reject) => {
-      const req = indexedDB.open('play-history');
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error ?? new Error('open failed'));
-    });
+    const api = window.tdmusicTestApi!;
+    await api.waitForDb();
     const now = Date.now();
     const min = 60_001;
     const day = 86_400_000;
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction('plays', 'readwrite');
-      const store = tx.objectStore('plays');
-      store.clear();
-      store.add({ trackId: 'track-smile', startedAt: now - day, endedAt: now - day + min });
-      store.add({
+    await api.seedPlayHistory([
+      { trackId: 'track-smile', startedAt: now - day, endedAt: now - day + min },
+      {
         trackId: 'track-smile',
         startedAt: now - day + 10_000,
         endedAt: now - day + 10_000 + min,
-      });
-      store.add({ trackId: 'track-drink', startedAt: now - day, endedAt: now - day + min });
-      store.add({
+      },
+      { trackId: 'track-drink', startedAt: now - day, endedAt: now - day + min },
+      {
         trackId: 'track-OLD',
         startedAt: now - 10 * day,
         endedAt: now - 10 * day + min,
-      });
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error ?? new Error('tx failed'));
-    });
+      },
+    ]);
   });
 
   await page.reload();

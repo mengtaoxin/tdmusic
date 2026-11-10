@@ -13,3 +13,5 @@ Route unit specs live under `src/routes/__tests__/`. Vite's TanStack Router plug
 When to write and run tests: [change-code-steps.md](change-code-steps.md). Commands: [commands.md](commands.md).
 
 E2E (Playwright) runs in parallel. Pass `--project` (e.g. `chromium`) to select browsers — see [commands.md](commands.md).
+
+Playwright can seed listen history through `window.tdmusicTestApi` (`src/lib/storage/e2eTestApi.ts`) instead of talking to storage internals directly.
