@@ -14,11 +14,11 @@ import { readStoredConfigUrl } from '@/lib/catalog/configUrl';
 
 bindAppCatalogBootstrap();
 
-// happy-dom Blob is not structured-cloneable into fake-indexeddb reliably.
+// jsdom Blob is not structured-cloneable into fake-indexeddb reliably.
 globalThis.Blob = NodeBlob as unknown as typeof globalThis.Blob;
 globalThis.File = NodeFile as unknown as typeof globalThis.File;
 
-// happy-dom's createObjectURL expects browser Blobs; Node Blob needs a stub.
+// jsdom's createObjectURL expects browser Blobs; Node Blob needs a stub.
 let blobUrlSeq = 0;
 URL.createObjectURL = () => {
   blobUrlSeq += 1;
@@ -64,8 +64,8 @@ beforeAll(() => {
     disconnect() {}
   };
 
-  // happy-dom ships IntersectionObserver but does not layout, so entries never
-  // intersect. Match the previous jsdom fallback (undefined → treat as visible).
+  // jsdom has no layout, so IntersectionObserver entries never intersect.
+  // Treat observed targets as visible (same contract as the previous stub).
   globalThis.IntersectionObserver = class {
     readonly root: Element | Document | null = null;
     readonly rootMargin = '';
