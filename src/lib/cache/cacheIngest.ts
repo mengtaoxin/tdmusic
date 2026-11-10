@@ -34,7 +34,10 @@ export type CacheProgress = {
 const ensureInFlight = new Map<string, AudioDownloadJob<void>>();
 
 function isAbortError(error: unknown): boolean {
-  return error instanceof Error && error.name === 'AbortError';
+  // Duck-type by name: jsdom's DOMException is not `instanceof` the Vitest realm's Error.
+  return (
+    typeof error === 'object' && error !== null && 'name' in error && error.name === 'AbortError'
+  );
 }
 
 function emitProgress(

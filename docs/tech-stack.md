@@ -19,7 +19,7 @@ tdmusic is a React SPA (Vite) at the repo root — no separate `api/` or `web/` 
 | IndexedDB     | Dexie (no raw `indexedDB` calls in app code)                                         |
 | Shared kit    | tdkit → @mengtaoxin/tdkit (GitHub Packages)                                          |
 | Lint / format | oxlint + oxfmt                                                                       |
-| Unit tests    | Vitest + Testing Library                                                             |
+| Unit tests    | Vitest + Testing Library + jsdom                                                     |
 | Coverage      | `@vitest/coverage-v8` (`npm run test:coverage`)                                      |
 | E2E           | Playwright                                                                           |
 | PWA           | vite-plugin-pwa (manifest + app-shell SW)                                            |
