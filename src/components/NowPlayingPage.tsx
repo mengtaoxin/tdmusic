@@ -157,7 +157,12 @@ export function NowPlayingPage() {
           <Typography variant="h5" sx={{ mb: 0.5 }}>
             {current.displayTitle}
           </Typography>
-          <Typography color="text.secondary" sx={{ mb: 2 }}>
+          <Typography
+            data-testid="now-playing-track-meta"
+            color="text.secondary"
+            noWrap
+            sx={{ mb: 2 }}
+          >
             <Box
               component={Link}
               to={artistAlbumsPath(current.displayArtist)}

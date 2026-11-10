@@ -52,4 +52,29 @@ describe('NowPlayingPage', () => {
 
     expect(screen.queryByRole('button', { name: 'Track info' })).not.toBeInTheDocument();
   });
+
+  it('keeps artist and album on one line with ellipsis when the album name is long', async () => {
+    const longAlbum =
+      'An Extremely Long Album Title That Must Not Wrap Onto A Second Line And Push Controls Down';
+    const track = makeTrack();
+    track.displayAlbum = longAlbum;
+    useCatalogStore.getState().setTracks([track]);
+    usePlayerStore.setState({
+      queue: [track.id],
+      originalQueue: [track.id],
+      currentId: track.id,
+      currentIndex: 0,
+    });
+
+    await renderWithTestRouter({ component: () => <NowPlayingPage /> });
+
+    const meta = screen.getByTestId('now-playing-track-meta');
+    expect(meta).toHaveTextContent('Artist One');
+    expect(meta).toHaveTextContent(longAlbum);
+    expect(meta).toHaveStyle({
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    });
+  });
 });
