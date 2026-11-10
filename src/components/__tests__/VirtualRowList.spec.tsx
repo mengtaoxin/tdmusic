@@ -69,4 +69,44 @@ describe('VirtualRowList', () => {
       expect((scroller as HTMLElement).scrollTop).toBe(320);
     });
   });
+
+  it('scrolls to scrollToIndex after the scroller gains a measured height', async () => {
+    // Before CSS height applies, the scroller can match content height (offset → 0).
+    let clientHeight = 20 * 64;
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
+      configurable: true,
+      get() {
+        return clientHeight;
+      },
+    });
+    Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
+      configurable: true,
+      get() {
+        return 20 * 64;
+      },
+    });
+
+    const items = Array.from({ length: 20 }, (_, i) => `row-${i}`);
+    render(
+      <VirtualRowList
+        items={items}
+        itemHeight={64}
+        height="min(1280px, 50vh)"
+        scrollToIndex={5}
+        listClassName="track-list"
+        getItemKey={(item) => item}
+        renderRow={(item) => <div>{item}</div>}
+      />,
+    );
+
+    const scroller = document.querySelector('.track-list') as HTMLElement;
+    expect(scroller).toBeInstanceOf(HTMLElement);
+    scroller.scrollTop = 0;
+
+    clientHeight = 192;
+
+    await waitFor(() => {
+      expect(scroller.scrollTop).toBe(320);
+    });
+  });
 });

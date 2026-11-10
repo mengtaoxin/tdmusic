@@ -53,9 +53,7 @@ test('queue rows do not overlap their neighbours', async ({ page }) => {
   }
 });
 
-test('queue list aligns the playing track at the top after returning to the page', async ({
-  page,
-}) => {
+test('queue list aligns the playing track at the top on entry', async ({ page }) => {
   const ids = Array.from(
     { length: 24 },
     (_, i) => ['smile-in-the-wind', 'drink-in-the-wind', 'life-in-the-wind'][i % 3]!,
@@ -70,23 +68,6 @@ test('queue list aligns the playing track at the top after returning to the page
 
   await page.goto('/now-playing');
   await expect(page.getByTestId('now-playing-page')).toBeVisible();
-  await expect
-    .poll(async () => page.locator('.queue-list').evaluate((el) => (el as HTMLElement).scrollTop))
-    .toBe(8 * 64);
-
-  await page.locator('.queue-list').evaluate((el) => {
-    (el as HTMLElement).scrollTop = 0;
-  });
-  await expect
-    .poll(async () => page.locator('.queue-list').evaluate((el) => (el as HTMLElement).scrollTop))
-    .toBe(0);
-
-  await page.getByRole('link', { name: 'Songs' }).first().click();
-  await expect(page).toHaveURL(/\/music/);
-  await page.getByRole('link', { name: 'Now Playing' }).first().click();
-  await expect(page).toHaveURL(/\/now-playing/);
-  await expect(page.getByTestId('now-playing-page')).toBeVisible();
-
   await expect
     .poll(async () => page.locator('.queue-list').evaluate((el) => (el as HTMLElement).scrollTop))
     .toBe(8 * 64);

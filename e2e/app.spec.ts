@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('visits the app root url', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('main').getByText('tdmusic', { exact: true })).toBeVisible();
+  await expect(page.getByRole('banner').getByRole('link', { name: /tdmusic/i })).toBeVisible();
 });
 
 test('desktop nav menu toggles match link button font size', async ({ page }) => {

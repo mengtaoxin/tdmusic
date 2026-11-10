@@ -26,7 +26,7 @@ npx playwright install chromium firefox webkit
 ```sh
 npm run format && npm run lint:fix && npm run type-check   # write
 npm run check                                              # read-only: format:check + lint + type-check
-npm run verify                                             # read-only: check + full unit suite
+npm run verify                                             # read-only: check + full unit suite + e2e
 ```
 
 `npm run format` and `npm run lint:fix` write files; `format:check` / `lint` / `check` / `verify` do not.
@@ -59,4 +59,4 @@ Type-check + Vite production build → `dist/`.
 | `npm run test:e2e -- --project chromium`                    | Playwright e2e                                      |
 | `npm run test:e2e -- --project chromium -- path/to/spec.ts` | One e2e file                                        |
 
-E2E defaults in config include chromium, firefox, and webkit; always pass `--project` when you want a subset.
+`verify` runs e2e for all configured projects (chromium, firefox, webkit). Outside `verify`, always pass `--project` when you want a subset.

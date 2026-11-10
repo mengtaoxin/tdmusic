@@ -40,6 +40,7 @@ export function VirtualRowList<T>({
   const { listHostRef, hostHeight } = useVirtualListHost();
   const [scrollParent, setScrollParent] = useState<HTMLDivElement | null>(null);
   const scrolledToRef = useRef<number | null>(null);
+  const scrolledParentRef = useRef<HTMLDivElement | null>(null);
 
   const listHeight = fillHost ? capVirtualListHeight(items.length, itemHeight, hostHeight) : height;
   const listFlush = fillHost
@@ -72,19 +73,48 @@ export function VirtualRowList<T>({
 
   useLayoutEffect(() => {
     if (scrollParent == null || scrollToIndex == null || scrollToIndex < 0) return;
-    if (scrolledToRef.current === scrollToIndex) return;
     if (scrollToIndex >= items.length) return;
-    const viewport =
-      scrollParent.clientHeight > 0
-        ? scrollParent.clientHeight
-        : typeof listHeight === 'number'
-          ? listHeight
-          : 0;
-    const offset = alignStartScrollOffset(scrollToIndex, itemHeight, items.length, viewport);
-    scrollParent.scrollTop = offset;
-    rowVirtualizer.scrollToOffset(offset, { align: 'start' });
-    scrolledToRef.current = scrollToIndex;
-  }, [scrollParent, scrollToIndex, itemHeight, items.length, listHeight, rowVirtualizer]);
+    if (
+      scrolledToRef.current === scrollToIndex &&
+      scrolledParentRef.current === scrollParent &&
+      (scrollToIndex === 0 || scrollParent.scrollTop > 0)
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const tryScroll = () => {
+      if (cancelled) return;
+      const viewport =
+        scrollParent.clientHeight > 0
+          ? scrollParent.clientHeight
+          : typeof listHeight === 'number'
+            ? listHeight
+            : 0;
+      // Wait for a measured viewport; scrolling early can clamp to 0 (Firefox).
+      if (viewport <= 0) return;
+      const offset = alignStartScrollOffset(scrollToIndex, itemHeight, items.length, viewport);
+      // Before CSS height applies, the scroller can grow with content so offset
+      // collapses to 0; keep retrying until a real non-zero offset is possible.
+      if (scrollToIndex > 0 && offset === 0) return;
+      scrollParent.scrollTop = offset;
+      if (offset > 0 && scrollParent.scrollTop === 0) return;
+      scrolledToRef.current = scrollToIndex;
+      scrolledParentRef.current = scrollParent;
+    };
+
+    tryScroll();
+    // Re-apply for a window so a later layout pass cannot silently undo entry scroll.
+    const intervalId = window.setInterval(tryScroll, 50);
+    const timeoutId = window.setTimeout(() => window.clearInterval(intervalId), 5000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [scrollParent, scrollToIndex, itemHeight, items.length, listHeight]);
 
   const scroller = (
     <Box
@@ -93,6 +123,7 @@ export function VirtualRowList<T>({
       sx={{
         height: listHeight,
         overflowY: listFlush ? 'hidden' : 'auto',
+        overflowAnchor: 'none',
         bgcolor: 'transparent',
         position: 'relative',
       }}
