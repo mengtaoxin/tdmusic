@@ -171,7 +171,7 @@ describe('music cache', () => {
     expect(await isTrackCached(sourceUrl)).toBe(false);
   });
 
-  it('getCachedBlobUrl rewraps audio MIME from path without mutating IndexedDB', async () => {
+  it('getCachedBlobUrl rewraps audio MIME from path without mutating stored bytes', async () => {
     const sourceUrl = 'https://example.com/batch01/song.flac?x=1';
     const stored = new Blob(['fLaC-bytes'], { type: 'application/octet-stream' });
     await putFiles(sourceUrl, [{ relativePath: AUDIO_FILE_KEY, blob: stored }]);

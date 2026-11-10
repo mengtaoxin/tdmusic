@@ -16,7 +16,7 @@ tdmusic is a React SPA (Vite) at the repo root — no separate `api/` or `web/` 
 | Virtual lists | @tanstack/react-virtual                                                              |
 | Markdown      | marked (Config Guides page)                                                          |
 | Audio meta    | music-metadata                                                                       |
-| IndexedDB     | Dexie (no raw `indexedDB` calls in app code)                                         |
+| Local DB      | SQLite Wasm (`@sqlite.org/sqlite-wasm`) + OPFS (SAH pool); in-memory under Vitest    |
 | Shared kit    | tdkit → @mengtaoxin/tdkit (GitHub Packages)                                          |
 | Lint / format | oxlint + oxfmt                                                                       |
 | Unit tests    | Vitest + Testing Library + jsdom                                                     |
@@ -30,7 +30,9 @@ Prefer MUI components and theme/`sx`; use CSS modules or `src/styles/` for local
 
 ## PWA
 
-Production builds register a service worker (`registerType: 'autoUpdate'`) and inject a web app manifest (`standalone`, theme `#0b1c22`, icons `/pwa-192.png` and `/pwa-512.png`). The worker precaches the app shell and falls back to `index.html` for client-side routes. It does not cache audio or `configs.json` — playable files stay in IndexedDB (`musicCache`), and the catalog stays on the app’s own config cache. The dev server does not register the worker. Options live in `src/lib/pwa/pwaOptions.ts`.
+Production builds register a service worker (`registerType: 'autoUpdate'`) and inject a web app manifest (`standalone`, theme `#0b1c22`, icons `/pwa-192.png` and `/pwa-512.png`). The worker precaches the app shell and falls back to `index.html` for client-side routes. It does not cache audio or `configs.json` — playable files stay in the SQLite OPFS database (`musicCache`), and the catalog stays on the app’s own config cache. The dev server does not register the worker. Options live in `src/lib/pwa/pwaOptions.ts`.
+
+SQLite OPFS needs cross-origin isolation: Vite `server`/`preview` and `vercel.json` send `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: credentialless` (credentialless so the hosted spa-update-notice script can still load).
 
 ## Stale SPA chunks
 

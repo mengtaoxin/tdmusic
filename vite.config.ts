@@ -26,5 +26,20 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    headers: {
+      // Required for SQLite Wasm OPFS (SharedArrayBuffer). credentialless keeps
+      // cross-origin scripts such as spa-update-notice loadable without CORP.
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'credentialless',
+    },
+  },
+  preview: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'credentialless',
+    },
+  },
+  optimizeDeps: {
+    exclude: ['@sqlite.org/sqlite-wasm'],
   },
 });

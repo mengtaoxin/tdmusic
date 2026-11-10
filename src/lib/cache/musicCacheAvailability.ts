@@ -1,4 +1,4 @@
-/** Session flag: IndexedDB music cache cannot be used (e.g. private browsing). */
+/** Session flag: local music cache cannot be used (e.g. private browsing / no OPFS). */
 let unavailable = false;
 
 const STORAGE_ERROR_NAMES = new Set([
@@ -11,6 +11,8 @@ const STORAGE_ERROR_NAMES = new Set([
   'SecurityError',
   'UnsupportedError',
   'MusicCacheUnavailableError',
+  'SQLite3Error',
+  'WasmAllocError',
 ]);
 
 function errorName(error: unknown): string | undefined {
@@ -24,8 +26,9 @@ function errorName(error: unknown): string | undefined {
 function nestedStorageErrors(error: object): unknown[] {
   const nested: unknown[] = [];
   if ('inner' in error) nested.push(error.inner);
-  // Dexie BulkError wraps the IndexedDB failure (for example UnknownError) in `failures`.
+  // Legacy Dexie BulkError wrapped IndexedDB failures in `failures`.
   if ('failures' in error && Array.isArray(error.failures)) nested.push(...error.failures);
+  if ('cause' in error) nested.push(error.cause);
   return nested;
 }
 
@@ -38,7 +41,7 @@ function hasStorageCause(error: unknown, seen: Set<unknown>): boolean {
   return nestedStorageErrors(error).some((nested) => hasStorageCause(nested, seen));
 }
 
-/** True when the failure is from IndexedDB / Dexie storage, not a network download. */
+/** True when the failure is from local SQLite / OPFS storage, not a network download. */
 export function isMusicCacheStorageError(error: unknown): boolean {
   return hasStorageCause(error, new Set());
 }
