@@ -1,8 +1,7 @@
 import sqlite3InitModule, { type Database, type SqlValue } from '@sqlite.org/sqlite-wasm';
 
-import { APP_DB_SCHEMA_SQL, META_IDB_MIGRATED_KEY } from './appDbSchema';
+import { APP_DB_SCHEMA_SQL } from './appDbSchema';
 import type { WorkerRequest, WorkerRequestBody, WorkerResponse } from './appDbWorkerProtocol';
-import { migrateFromIndexedDbIfNeeded } from './migrateFromIdb';
 
 export type SqlStatement = { sql: string; bind?: readonly SqlValue[] };
 
@@ -16,8 +15,6 @@ export type AppDb = {
   ): Promise<T | undefined>;
   all<T extends Record<string, SqlValue>>(sql: string, bind?: readonly SqlValue[]): Promise<T[]>;
   runInTransaction(statements: readonly SqlStatement[]): Promise<void>;
-  getMeta(key: string): Promise<string | undefined>;
-  setMeta(key: string, value: string): Promise<void>;
 };
 
 type OpenOptions = {
@@ -79,21 +76,12 @@ function wrapMemoryDb(raw: Database): AppDb {
     }
   };
 
-  const getMeta = async (key: string) =>
-    (await get<{ value: string }>('SELECT value FROM meta_kv WHERE key = ?', [key]))?.value;
-
-  const setMeta = async (key: string, value: string) => {
-    await exec('INSERT OR REPLACE INTO meta_kv (key, value) VALUES (?, ?)', [key, value]);
-  };
-
   return {
     persistent: false,
     exec,
     get,
     all,
     runInTransaction,
-    getMeta,
-    setMeta,
   };
 }
 
@@ -197,21 +185,12 @@ async function openWorkerDb(): Promise<AppDb & { terminate: () => void }> {
       });
     };
 
-    const getMeta = async (key: string) =>
-      (await get<{ value: string }>('SELECT value FROM meta_kv WHERE key = ?', [key]))?.value;
-
-    const setMeta = async (key: string, value: string) => {
-      await exec('INSERT OR REPLACE INTO meta_kv (key, value) VALUES (?, ?)', [key, value]);
-    };
-
     return {
       persistent,
       exec,
       get,
       all,
       runInTransaction,
-      getMeta,
-      setMeta,
       terminate: client.terminate,
     };
   } catch (error) {
@@ -221,14 +200,7 @@ async function openWorkerDb(): Promise<AppDb & { terminate: () => void }> {
 }
 
 async function createAppDb(options?: OpenOptions): Promise<AppDb> {
-  const db = shouldUseMemory(options) ? await openMemoryDb() : await openWorkerDb();
-
-  if ((await db.getMeta(META_IDB_MIGRATED_KEY)) !== '1') {
-    await migrateFromIndexedDbIfNeeded(db);
-    await db.setMeta(META_IDB_MIGRATED_KEY, '1');
-  }
-
-  return db;
+  return shouldUseMemory(options) ? openMemoryDb() : openWorkerDb();
 }
 
 /** Open (or reuse) the app SQLite database. */

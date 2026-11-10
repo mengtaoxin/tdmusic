@@ -52,7 +52,7 @@ Repository layout for tdmusic. Changing code: [change-code-steps.md](change-code
 | `src/lib/playback/` | Queue session, player math, persist codec, transport, media session, prefetch                   |
 | `src/lib/pwa/`      | Web app manifest and service-worker options for `vite-plugin-pwa`                               |
 | `src/lib/routes/`   | Album / artist / playlist route helpers                                                         |
-| `src/lib/storage/`  | Shared SQLite Wasm + OPFS database (schema, open, IDB migration, e2e test hooks)                |
+| `src/lib/storage/`  | Shared SQLite Wasm + OPFS database (schema, open, e2e test hooks)                               |
 | `src/stores/`       | Zustand stores                                                                                  |
 | `src/locales/`      | Locale message modules (wired via `src/i18n/`)                                                  |
 | `src/i18n/`         | react-i18next setup                                                                             |

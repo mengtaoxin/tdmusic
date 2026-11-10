@@ -26,7 +26,6 @@ function errorName(error: unknown): string | undefined {
 function nestedStorageErrors(error: object): unknown[] {
   const nested: unknown[] = [];
   if ('inner' in error) nested.push(error.inner);
-  // Legacy Dexie BulkError wrapped IndexedDB failures in `failures`.
   if ('failures' in error && Array.isArray(error.failures)) nested.push(...error.failures);
   if ('cause' in error) nested.push(error.cause);
   return nested;

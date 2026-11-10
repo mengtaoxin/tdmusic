@@ -38,13 +38,7 @@ CREATE TABLE IF NOT EXISTS play_history (
 );
 
 CREATE INDEX IF NOT EXISTS play_history_started_at ON play_history (started_at);
-
-CREATE TABLE IF NOT EXISTS meta_kv (
-  key TEXT PRIMARY KEY NOT NULL,
-  value TEXT NOT NULL
-);
 `;
 
-export const META_IDB_MIGRATED_KEY = 'idb_migrated';
 export const APP_DB_FILENAME = '/tdmusic.sqlite3';
 export const APP_DB_SAH_POOL_NAME = 'tdmusic';
