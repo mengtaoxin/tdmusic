@@ -2,7 +2,7 @@
 
 [English README](../README.md)
 
-由**你自己的** `configs.json` 驱动的浏览器端音乐播放器：在文件里列出曲目（及可选播放列表），在设置中填写其 URL 即可播放。无需后端——音轨在播放时拉取，缓存到 SQLite（OPFS），并按播放列表、歌手、专辑或搜索浏览。界面支持中文 / English。
+由**你自己的** `configs.json` 驱动的浏览器端音乐播放器：在文件里列出曲目（及可选播放列表），在设置中填写其 URL 即可播放。无需后端——音轨在播放时拉取，缓存到 IndexedDB，并按播放列表、歌手、专辑或搜索浏览。界面支持中文 / English。
 
 **用法：** 托管或编写一份 `configs.json`，在 `songs` 中提供 `{ id, path }`，可选再写用 `id` 引用曲目的 `playlists`，然后在设置里填写曲库 URL。仓库自带的 `/sample/configs.json` 仅作本地试用示例。字段说明见应用内 **更多 → configs.json 指南**。
 
@@ -10,7 +10,7 @@
 
 - 曲库完全由你的 `configs.json` 决定（在设置中填写曲库 URL；自带文件仅为示例）
 - 播放队列、随机播放、循环；状态在刷新后保留
-- 音轨与封面写入 SQLite / OPFS，并预取即将播放的曲目
+- 音轨与封面写入 IndexedDB，并预取即将播放的曲目
 - 配置元数据不全时，从已缓存音频补充 ID3 信息
 - 浏览：歌曲、播放列表、歌手、专辑、搜索
 - 应用内 configs.json 指南与日志
@@ -100,7 +100,7 @@ React · Vite · TypeScript · Zustand · TanStack Router · react-i18next · MU
 | [conventions.md](conventions.md)             | 编码约定                                  |
 | [testing.md](testing.md)                     | 测试分层与命名                            |
 | [catalog.md](catalog.md)                     | configs.json、曲库路由、enrich            |
-| [cache.md](cache.md)                         | SQLite / OPFS 音频缓存与封面              |
+| [cache.md](cache.md)                         | IndexedDB 音频缓存与封面                  |
 | [playback.md](playback.md)                   | 队列、随机、Media Session                 |
 | [persistence.md](persistence.md)             | localStorage、语言、应用日志              |
 | [ui-chrome.md](ui-chrome.md)                 | 顶栏布局与导航外观                        |

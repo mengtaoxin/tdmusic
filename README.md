@@ -2,7 +2,7 @@
 
 [中文说明](docs/README.zh.md)
 
-A browser music player driven by **your** `configs.json`: list tracks (and optional playlists) in that file, point the app at its URL in Settings, and play. No backend — audio is fetched on play, cached in SQLite (OPFS), and browsable by playlist, artist, album, or search. UI is English / 中文.
+A browser music player driven by **your** `configs.json`: list tracks (and optional playlists) in that file, point the app at its URL in Settings, and play. No backend — audio is fetched on play, cached in IndexedDB, and browsable by playlist, artist, album, or search. UI is English / 中文.
 
 **How you use it:** host or edit a `configs.json` with a `songs` array of `{ id, path }` entries and optional `playlists` that reference tracks by `id`, then set the catalog URL in Settings. The repo’s `/sample/configs.json` is only a sample for local demos. Field-by-field help lives in the app under **More → Guidelines for configs.json**.
 
@@ -10,7 +10,7 @@ A browser music player driven by **your** `configs.json`: list tracks (and optio
 
 - Library entirely from your `configs.json` (set the catalog URL in Settings; bundled file is a sample)
 - Playback with queue, shuffle, and repeat; state survives reloads
-- Offline-friendly audio + cover cache in SQLite / OPFS (prefetch upcoming tracks)
+- Offline-friendly audio + cover cache in IndexedDB (prefetch upcoming tracks)
 - ID3 enrichment from cached audio when config metadata is incomplete
 - Browse: Songs, Playlists, Artists, Albums, Search
 - In-app Guidelines for configs.json and Logs
@@ -101,7 +101,7 @@ React · Vite · TypeScript · Zustand · TanStack Router · react-i18next · MU
 | [docs/conventions.md](docs/conventions.md)             | Coding conventions                     |
 | [docs/testing.md](docs/testing.md)                     | Test layers and naming                 |
 | [docs/catalog.md](docs/catalog.md)                     | `configs.json`, catalog routes, enrich |
-| [docs/cache.md](docs/cache.md)                         | SQLite / OPFS audio cache and covers   |
+| [docs/cache.md](docs/cache.md)                         | IndexedDB audio cache and covers       |
 | [docs/playback.md](docs/playback.md)                   | Queue, shuffle, Media Session          |
 | [docs/persistence.md](docs/persistence.md)             | localStorage, locale, app logs         |
 | [docs/ui-chrome.md](docs/ui-chrome.md)                 | Header layout and nav chrome           |
