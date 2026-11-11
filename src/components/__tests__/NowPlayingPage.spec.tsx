@@ -77,4 +77,26 @@ describe('NowPlayingPage', () => {
       whiteSpace: 'nowrap',
     });
   });
+
+  it('keeps a very long song title on one line with ellipsis', async () => {
+    const longTitle =
+      'An Extremely Long Song Title That Must Not Wrap Onto A Second Line And Push Controls Down';
+    const track = makeTrack('t1', longTitle);
+    useCatalogStore.getState().setTracks([track]);
+    usePlayerStore.setState({
+      queue: [track.id],
+      originalQueue: [track.id],
+      currentId: track.id,
+      currentIndex: 0,
+    });
+
+    await renderWithTestRouter({ component: () => <NowPlayingPage /> });
+
+    const title = screen.getByRole('heading', { level: 5, name: longTitle });
+    expect(title).toHaveStyle({
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    });
+  });
 });

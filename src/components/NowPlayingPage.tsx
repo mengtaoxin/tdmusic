@@ -154,7 +154,7 @@ export function NowPlayingPage() {
             </IconButton>
           </Box>
 
-          <Typography variant="h5" sx={{ mb: 0.5 }}>
+          <Typography variant="h5" noWrap sx={{ mb: 0.5 }}>
             {current.displayTitle}
           </Typography>
           <Typography
