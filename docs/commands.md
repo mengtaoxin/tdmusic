@@ -61,4 +61,6 @@ Type-check + Vite production build → `dist/`.
 
 By default those suite scripts (`test` / `test:coverage` / `test:e2e` / `verify`) run on the host. Set `RUN_TESTS_IN_CONTAINER=1` (exact `1` only; unset/`0` = host) so they run in an ephemeral [`ubuntu-b`](https://github.com/mengtaoxin/dockers/tree/main/ubuntu-b) container (`scripts/run-in-test-env.sh`, pin `docker/UBUNTU_B_VERSION`). Prefer a sibling `../dockers/ubuntu-b` build when present; otherwise pull the pinned GHCR tag. Nested suite calls inside the container do not spawn another container. Leave the var unset on Cursor Cloud. Edit / format / lint / `check` / `test:watch` stay on the host for day-to-day work.
 
+`scripts/run-in-test-env.sh` clears `npm_config_prefix` and `NPM_CONFIG_PREFIX` before exec. `npm run verify` starts a login shell (`bash -lc`); that shell sources nvm, and nvm leaves `npm` off PATH (exit 127) when either variable is set (often `/`).
+
 `verify` runs e2e for all configured projects (chromium, firefox, webkit). Outside `verify`, always pass `--project` when you want a subset.
