@@ -109,4 +109,45 @@ describe('VirtualRowList', () => {
       expect(scroller.scrollTop).toBe(320);
     });
   });
+
+  it('does not keep resetting scrollTop after entry scroll succeeds', async () => {
+    Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
+      configurable: true,
+      get() {
+        return 192;
+      },
+    });
+    Object.defineProperty(HTMLElement.prototype, 'scrollHeight', {
+      configurable: true,
+      get() {
+        return 20 * 64;
+      },
+    });
+
+    const items = Array.from({ length: 20 }, (_, i) => `row-${i}`);
+    render(
+      <VirtualRowList
+        items={items}
+        itemHeight={64}
+        height={192}
+        scrollToIndex={5}
+        listClassName="track-list"
+        getItemKey={(item) => item}
+        renderRow={(item) => <div>{item}</div>}
+      />,
+    );
+
+    const scroller = document.querySelector('.track-list') as HTMLElement;
+    expect(scroller).toBeInstanceOf(HTMLElement);
+    await waitFor(() => {
+      expect(scroller.scrollTop).toBe(320);
+    });
+
+    // User scrolls the queue (touch) after entry alignment.
+    scroller.scrollTop = 80;
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, 150);
+    });
+    expect(scroller.scrollTop).toBe(80);
+  });
 });
