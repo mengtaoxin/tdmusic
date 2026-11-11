@@ -2,25 +2,12 @@ import { create } from 'zustand';
 
 import { getItem, removeItem, setItem } from '@/lib/clientStorage';
 import {
-  addToQueue as enqueueAdd,
-  advanceNext,
-  advancePrev,
   applyPlayFromChunk,
   applyPlayFromDone,
   applyPlayFromHead,
   applyPlayFromReset,
-  clearQueue,
-  clearUpcomingTracks,
-  emptyQueueSession,
-  goToIndex as sessionGoToIndex,
-  moveToNext,
-  playNext as enqueuePlayNext,
-  removeAt as sessionRemoveAt,
-  toggleShuffle as sessionToggleShuffle,
-  withRepeatMode,
-  withShuffleFlag,
-  type QueueSession,
-} from '@/lib/playback/playbackQueue';
+} from '@/lib/playback/playFromApply';
+import { createPlayerSessionApply, readQueueSession } from '@/lib/playback/playerSessionApply';
 import {
   hydratePlayerState,
   parsePlayerState,
@@ -29,6 +16,24 @@ import {
 import { createPlayFromSession } from '@/lib/playback/playFromSession';
 import type { RepeatMode } from '@/lib/playback/playerLogic';
 import { createPlayerPersist } from '@/lib/playback/playerPersist';
+import {
+  addToQueue as enqueueAdd,
+  clearQueue,
+  clearUpcomingTracks,
+  playNext as enqueuePlayNext,
+  removeAt as sessionRemoveAt,
+} from '@/lib/playback/queueMutations';
+import {
+  advanceNext,
+  advancePrev,
+  emptyQueueSession,
+  goToIndex as sessionGoToIndex,
+  toggleShuffle as sessionToggleShuffle,
+  withRepeatMode,
+  withShuffleFlag,
+  type QueueSession,
+} from '@/lib/playback/queueSession';
+import { clickTrack, moveToNext } from '@/lib/playback/trackClick';
 
 type PlayerState = QueueSession & {
   currentTime: number;
@@ -38,6 +43,7 @@ type PlayerState = QueueSession & {
   seekTo: number | null;
   pendingPlay: boolean;
   playFrom: (startIndex: number, sourceIds: string[], options?: { shuffle?: boolean }) => void;
+  playTrackFromList: (sourceIds: string[], index: number) => boolean;
   play: () => void;
   pause: () => void;
   togglePlay: () => void;
@@ -60,17 +66,6 @@ type PlayerState = QueueSession & {
   goToIndex: (index: number, autoPlay: boolean) => void;
 };
 
-function readQueueSession(s: PlayerState): QueueSession {
-  return {
-    queue: s.queue,
-    originalQueue: s.originalQueue,
-    currentId: s.currentId,
-    currentIndex: s.currentIndex,
-    shuffle: s.shuffle,
-    repeatMode: s.repeatMode,
-  };
-}
-
 export const usePlayerStore = create<PlayerState>((set, get) => {
   const playFromSession = createPlayFromSession();
   const persist = createPlayerPersist({
@@ -89,26 +84,22 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     },
   });
   const { schedulePersist, flushPersist } = persist;
-
-  function applyCue(
-    session: QueueSession,
-    options: { autoPlay: boolean; bumpLoad: boolean; currentTime?: number; seekTo?: number | null },
-  ) {
-    set({
-      ...session,
-      currentTime: options.currentTime ?? 0,
-      seekTo: options.seekTo ?? 0,
-      pendingPlay: options.autoPlay,
-      playing: options.autoPlay,
-      ...(options.bumpLoad ? { loadToken: get().loadToken + 1 } : {}),
-    });
-  }
+  const sessionApply = createPlayerSessionApply({
+    getSession: () => readQueueSession(get()),
+    getLoadToken: () => get().loadToken,
+    set,
+    flushPersist,
+    schedulePersist,
+  });
 
   function goToIndex(index: number, autoPlay: boolean) {
-    const result = sessionGoToIndex(readQueueSession(get()), index, autoPlay);
+    const result = sessionGoToIndex(sessionApply.readSession(), index, autoPlay);
     if (!result) return;
-    applyCue(result.session, { autoPlay: result.autoPlay, bumpLoad: true, seekTo: 0 });
-    flushPersist();
+    sessionApply.applyCueAndFlush(result.session, {
+      autoPlay: result.autoPlay,
+      bumpLoad: true,
+      seekTo: 0,
+    });
   }
 
   function pause() {
@@ -122,13 +113,16 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
   }
 
   function next() {
-    const result = advanceNext(readQueueSession(get()));
+    const result = advanceNext(sessionApply.readSession());
     if (result.kind === 'pause') {
       pause();
       return;
     }
-    applyCue(result.session, { autoPlay: result.autoPlay, bumpLoad: true, seekTo: 0 });
-    flushPersist();
+    sessionApply.applyCueAndFlush(result.session, {
+      autoPlay: result.autoPlay,
+      bumpLoad: true,
+      seekTo: 0,
+    });
   }
 
   function clearPlaybackFields() {
@@ -152,7 +146,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       const hydrated = hydratePlayerState(persisted, knownIds);
       if (!hydrated) {
         removeItem(PLAYER_STORAGE_KEY);
-        set(clearQueue(readQueueSession(get())));
+        set(clearQueue(sessionApply.readSession()));
         clearPlaybackFields();
         return false;
       }
@@ -174,31 +168,72 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
 
     playFrom(startIndex: number, sourceIds: string[], options?: { shuffle?: boolean }) {
       if (options?.shuffle != null) {
-        set(withShuffleFlag(readQueueSession(get()), options.shuffle));
+        set(withShuffleFlag(sessionApply.readSession(), options.shuffle));
       }
       playFromSession.start(startIndex, sourceIds, {
         onReset: () => {
-          const reset = applyPlayFromReset(readQueueSession(get()));
+          const reset = applyPlayFromReset(sessionApply.readSession());
           set({ ...reset, currentTime: 0, seekTo: 0 });
         },
         onHead: (headId, index) => {
-          set({
-            ...applyPlayFromHead(readQueueSession(get()), headId, index),
-            pendingPlay: true,
-            playing: true,
-            loadToken: get().loadToken + 1,
+          sessionApply.applyCue(applyPlayFromHead(sessionApply.readSession(), headId, index), {
+            autoPlay: true,
+            bumpLoad: true,
           });
           schedulePersist();
         },
         onChunk: (chunk) => {
-          set(applyPlayFromChunk(readQueueSession(get()), chunk));
-          schedulePersist();
+          sessionApply.applySession(
+            applyPlayFromChunk(sessionApply.readSession(), chunk),
+            'schedule',
+          );
         },
         onDone: () => {
-          set(applyPlayFromDone(readQueueSession(get())));
-          flushPersist();
+          sessionApply.applySession(applyPlayFromDone(sessionApply.readSession()), 'flush');
         },
       });
+    },
+
+    playTrackFromList(sourceIds: string[], index: number) {
+      const player = get();
+      const result = clickTrack(
+        sessionApply.readSession(),
+        sourceIds,
+        index,
+        player.playing || player.pendingPlay,
+      );
+      const id = sourceIds[index];
+      switch (result.kind) {
+        case 'noop':
+          return false;
+        case 'playFrom':
+          player.playFrom(index, sourceIds);
+          return false;
+        case 'resume':
+          play();
+          return false;
+        case 'playIndex':
+          goToIndex(result.index, true);
+          return false;
+        case 'insertAndPlay':
+          if (!id) return false;
+          player.playNext(id);
+          goToIndex(result.index, true);
+          return false;
+        case 'queueNext':
+          if (!id) return false;
+          player.playNext(id);
+          return true;
+        case 'moveNext':
+          player.moveToPlayNext(result.index);
+          return true;
+        case 'alreadyNext':
+          return true;
+        default: {
+          const unreachable: never = result;
+          return unreachable;
+        }
+      }
     },
 
     play,
@@ -226,56 +261,56 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
     },
 
     prev() {
-      const result = advancePrev(readQueueSession(get()), get().currentTime);
+      const result = advancePrev(sessionApply.readSession(), get().currentTime);
       if (result.kind === 'seekZero') {
         get().seek(0);
         return;
       }
-      applyCue(result.session, { autoPlay: result.autoPlay, bumpLoad: true, seekTo: 0 });
-      flushPersist();
+      sessionApply.applyCueAndFlush(result.session, {
+        autoPlay: result.autoPlay,
+        bumpLoad: true,
+        seekTo: 0,
+      });
     },
 
     toggleRepeat() {
       const order: RepeatMode[] = ['off', 'all', 'one'];
       const i = order.indexOf(get().repeatMode);
-      set(withRepeatMode(readQueueSession(get()), order[(i + 1) % order.length]!));
-      flushPersist();
+      sessionApply.applySession(
+        withRepeatMode(sessionApply.readSession(), order[(i + 1) % order.length]!),
+      );
     },
 
     toggleShuffle() {
-      set(sessionToggleShuffle(readQueueSession(get())));
-      flushPersist();
+      sessionApply.applySession(sessionToggleShuffle(sessionApply.readSession()));
     },
 
     playNext(id: string) {
-      const result = enqueuePlayNext(readQueueSession(get()), id);
+      const result = enqueuePlayNext(sessionApply.readSession(), id);
       if (result.kind === 'playFrom') {
         get().playFrom(0, result.sourceIds);
         return;
       }
-      set(result.session);
-      flushPersist();
+      sessionApply.applySession(result.session);
     },
 
     moveToPlayNext(index: number) {
-      const moved = moveToNext(readQueueSession(get()), index);
+      const moved = moveToNext(sessionApply.readSession(), index);
       if (!moved) return;
-      set(moved);
-      flushPersist();
+      sessionApply.applySession(moved);
     },
 
     addToQueue(id: string) {
-      const result = enqueueAdd(readQueueSession(get()), id);
+      const result = enqueueAdd(sessionApply.readSession(), id);
       if (result.kind === 'playFrom') {
         get().playFrom(0, result.sourceIds);
         return;
       }
-      set(result.session);
-      flushPersist();
+      sessionApply.applySession(result.session);
     },
 
     removeAt(index: number) {
-      const result = sessionRemoveAt(readQueueSession(get()), index);
+      const result = sessionRemoveAt(sessionApply.readSession(), index);
       if (result.kind === 'noop') return;
       if (result.kind === 'pause') {
         pause();
@@ -283,7 +318,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
       }
       if (result.kind === 'clear') {
         playFromSession.cancel();
-        set({ ...clearQueue(readQueueSession(get())), seekTo: 0 });
+        set({ ...clearQueue(sessionApply.readSession()), seekTo: 0 });
         clearPlaybackFields();
         pause();
         flushPersist();
@@ -294,20 +329,18 @@ export const usePlayerStore = create<PlayerState>((set, get) => {
         goToIndex(result.index, true);
         return;
       }
-      set(result.session);
-      flushPersist();
+      sessionApply.applySession(result.session);
     },
 
     clearUpcoming() {
-      const nextSession = clearUpcomingTracks(readQueueSession(get()));
+      const nextSession = clearUpcomingTracks(sessionApply.readSession());
       if (!nextSession) return;
-      set(nextSession);
-      flushPersist();
+      sessionApply.applySession(nextSession);
     },
 
     clearNowPlaying() {
       playFromSession.cancel();
-      set({ ...clearQueue(readQueueSession(get())), seekTo: 0 });
+      set({ ...clearQueue(sessionApply.readSession()), seekTo: 0 });
       clearPlaybackFields();
       pause();
       flushPersist();

@@ -335,4 +335,141 @@ describe('playerStore', () => {
     expect(usePlayerStore.getState().currentId).toBe('a');
     expect(usePlayerStore.getState().currentTime).toBe(9);
   });
+
+  describe('playTrackFromList', () => {
+    it('starts the source list when the queue is empty', async () => {
+      const showNotice = usePlayerStore.getState().playTrackFromList(['a', 'b', 'c'], 1);
+      expect(showNotice).toBe(false);
+      expect(usePlayerStore.getState().currentId).toBe('b');
+      expect(usePlayerStore.getState().playing).toBe(true);
+      expect(usePlayerStore.getState().queue).toEqual(['a', 'b']);
+      await vi.runAllTimersAsync();
+      expect(usePlayerStore.getState().queue).toEqual(['a', 'b', 'c']);
+    });
+
+    it('queues next while playback is active and reports a notice', () => {
+      usePlayerStore.setState({
+        queue: ['a', 'c'],
+        originalQueue: ['a', 'c'],
+        currentId: 'a',
+        currentIndex: 0,
+        playing: true,
+        pendingPlay: true,
+      });
+      const showNotice = usePlayerStore.getState().playTrackFromList(['a', 'b', 'c'], 1);
+      expect(showNotice).toBe(true);
+      expect(usePlayerStore.getState()).toMatchObject({
+        queue: ['a', 'b', 'c'],
+        currentId: 'a',
+        currentIndex: 0,
+        playing: true,
+        pendingPlay: true,
+      });
+    });
+
+    it('moves the closest queued copy next during playback', () => {
+      usePlayerStore.setState({
+        queue: ['b', 'a', 'c', 'd', 'b'],
+        originalQueue: ['b', 'a', 'c', 'd', 'b'],
+        currentId: 'a',
+        currentIndex: 1,
+        playing: true,
+        pendingPlay: false,
+      });
+      expect(usePlayerStore.getState().playTrackFromList(['b', 'x'], 0)).toBe(true);
+      expect(usePlayerStore.getState()).toMatchObject({
+        queue: ['a', 'b', 'c', 'd', 'b'],
+        currentId: 'a',
+        currentIndex: 0,
+        playing: true,
+      });
+    });
+
+    it('does not insert another copy when the track is already next', () => {
+      usePlayerStore.setState({
+        queue: ['a', 'b', 'c'],
+        originalQueue: ['a', 'b', 'c'],
+        currentId: 'a',
+        currentIndex: 0,
+        playing: true,
+        pendingPlay: true,
+      });
+      expect(usePlayerStore.getState().playTrackFromList(['a', 'b', 'c'], 1)).toBe(true);
+      expect(usePlayerStore.getState().queue).toEqual(['a', 'b', 'c']);
+    });
+
+    it('resumes the paused current track', () => {
+      usePlayerStore.setState({
+        queue: ['a', 'c'],
+        originalQueue: ['a', 'c'],
+        currentId: 'a',
+        currentIndex: 0,
+        playing: false,
+        pendingPlay: false,
+      });
+      expect(usePlayerStore.getState().playTrackFromList(['a', 'b', 'c'], 0)).toBe(false);
+      expect(usePlayerStore.getState()).toMatchObject({
+        queue: ['a', 'c'],
+        currentId: 'a',
+        playing: true,
+        pendingPlay: true,
+      });
+    });
+
+    it('starts an already-next track when paused', () => {
+      usePlayerStore.setState({
+        queue: ['a', 'b', 'c'],
+        originalQueue: ['a', 'b', 'c'],
+        currentId: 'a',
+        currentIndex: 0,
+        playing: false,
+        pendingPlay: false,
+      });
+      expect(usePlayerStore.getState().playTrackFromList(['a', 'b', 'c'], 1)).toBe(false);
+      expect(usePlayerStore.getState()).toMatchObject({
+        currentId: 'b',
+        currentIndex: 1,
+        playing: true,
+        pendingPlay: true,
+      });
+    });
+
+    it('inserts and plays when paused on a different track', () => {
+      usePlayerStore.setState({
+        queue: ['a', 'b', 'c'],
+        originalQueue: ['a', 'b', 'c'],
+        currentId: 'a',
+        currentIndex: 0,
+        playing: false,
+        pendingPlay: false,
+      });
+      expect(usePlayerStore.getState().playTrackFromList(['a', 'b', 'c'], 2)).toBe(false);
+      expect(usePlayerStore.getState()).toMatchObject({
+        queue: ['a', 'c', 'b', 'c'],
+        currentId: 'c',
+        currentIndex: 1,
+        playing: true,
+        pendingPlay: true,
+      });
+    });
+
+    it('queues next while a track is still loading', () => {
+      usePlayerStore.setState({
+        queue: ['a', 'c'],
+        originalQueue: ['a', 'c'],
+        currentId: 'a',
+        currentIndex: 0,
+        playing: false,
+        pendingPlay: true,
+      });
+      expect(usePlayerStore.getState().playTrackFromList(['a', 'b', 'c'], 1)).toBe(true);
+      expect(usePlayerStore.getState()).toMatchObject({
+        queue: ['a', 'b', 'c'],
+        currentId: 'a',
+        currentIndex: 0,
+        playing: false,
+        pendingPlay: true,
+      });
+    });
+  });
 });
