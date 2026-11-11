@@ -7,10 +7,12 @@ Repository layout for tdmusic. Changing code: [change-code-steps.md](change-code
 ├── AGENTS.md
 ├── .cursor/mcp.json              Shared MCP servers
 ├── .cursor/rules/                Shared Cursor rules (sandbox, path-scoped)
+├── docker/UBUNTU_B_VERSION       Pin for ghcr.io/mengtaoxin/ubuntu-b (ephemeral test container)
 ├── docs/                         Project docs (this file, commands, conventions, …)
 ├── e2e/                          Playwright specs
 ├── public/                       Static assets
 │   └── sample/                   Sample catalog + mp3s (default config URL)
+├── scripts/                      RUN_TESTS_IN_CONTAINER=1 → ubuntu-b; else host
 ├── src/
 │   ├── __tests__/                Vitest setup + app-level specs only (e.g. App.spec.tsx)
 │   ├── assets/
@@ -43,6 +45,8 @@ Repository layout for tdmusic. Changing code: [change-code-steps.md](change-code
 | ------------------- | ----------------------------------------------------------------------------------------------- |
 | `.cursor/mcp.json`  | Shared MCP server config (API keys via env)                                                     |
 | `.cursor/rules/`    | Versioned Cursor rules                                                                          |
+| `docker/`           | Pin file for the ephemeral `ubuntu-b` test image                                                |
+| `scripts/`          | `RUN_TESTS_IN_CONTAINER` wrapper and container prep                                             |
 | `src/`              | React SPA source                                                                                |
 | `src/components/`   | Shared React components (`.tsx`)                                                                |
 | `src/hooks/`        | React hooks (`use*`)                                                                            |

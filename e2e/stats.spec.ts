@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test('stats ranges and clear-all-cache clears listen history', async ({ page }) => {
   await page.setViewportSize({ width: 1400, height: 800 });
@@ -46,7 +46,9 @@ test('stats ranges and clear-all-cache clears listen history', async ({ page }) 
 
   await page.goto('/settings');
   await page.getByRole('button', { name: 'Clear all cache' }).click();
+  await expect(page.getByRole('button', { name: 'Confirm' })).toBeVisible();
   await page.getByRole('button', { name: 'Confirm' }).click();
+  await expect(page.getByText('All music cache cleared.')).toBeVisible();
   await page.goto('/stats');
   await expect(page.getByText('No listening stats yet.')).toBeVisible();
 });

@@ -14,5 +14,12 @@ export default defineConfig({
         'react/only-export-components': 'off',
       },
     },
+    {
+      // Playwright fixture callbacks are not React hooks.
+      files: ['e2e/**'],
+      rules: {
+        'react-hooks/rules-of-hooks': 'off',
+      },
+    },
   ],
 });

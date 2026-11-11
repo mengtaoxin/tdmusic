@@ -4,27 +4,28 @@ tdmusic is a React SPA (Vite) at the repo root — no separate `api/` or `web/` 
 
 ## Frontend
 
-| Area          | Choice                                                                               |
-| ------------- | ------------------------------------------------------------------------------------ |
-| Framework     | React 19                                                                             |
-| Build         | Vite 8                                                                               |
-| Language      | TypeScript 6.x                                                                       |
-| Routing       | TanStack Router                                                                      |
-| State         | Zustand                                                                              |
-| i18n          | react-i18next (en default, zh)                                                       |
-| UI            | MUI 9 + Emotion + Material Icons                                                     |
-| Virtual lists | @tanstack/react-virtual                                                              |
-| Markdown      | marked (Config Guides page)                                                          |
-| Audio meta    | music-metadata                                                                       |
-| Local DB      | SQLite Wasm (`@sqlite.org/sqlite-wasm`) + OPFS (SAH pool); in-memory under Vitest    |
-| Shared kit    | tdkit → @mengtaoxin/tdkit (GitHub Packages)                                          |
-| Lint / format | oxlint + oxfmt                                                                       |
-| Unit tests    | Vitest + Testing Library + jsdom                                                     |
-| Coverage      | `@vitest/coverage-v8` (`npm run test:coverage`)                                      |
-| E2E           | Playwright                                                                           |
-| PWA           | vite-plugin-pwa (manifest + app-shell SW)                                            |
-| Stale chunks  | [spa-update-notice](https://github.com/mengtaoxin/spa-update-notice) (hosted script) |
-| Node          | see `package.json` `engines`                                                         |
+| Area           | Choice                                                                                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Framework      | React 19                                                                                                                                                     |
+| Build          | Vite 8                                                                                                                                                       |
+| Language       | TypeScript 6.x                                                                                                                                               |
+| Routing        | TanStack Router                                                                                                                                              |
+| State          | Zustand                                                                                                                                                      |
+| i18n           | react-i18next (en default, zh)                                                                                                                               |
+| UI             | MUI 9 + Emotion + Material Icons                                                                                                                             |
+| Virtual lists  | @tanstack/react-virtual                                                                                                                                      |
+| Markdown       | marked (Config Guides page)                                                                                                                                  |
+| Audio meta     | music-metadata                                                                                                                                               |
+| Local DB       | SQLite Wasm (`@sqlite.org/sqlite-wasm`) + OPFS (SAH pool); in-memory under Vitest                                                                            |
+| Shared kit     | tdkit → @mengtaoxin/tdkit (GitHub Packages)                                                                                                                  |
+| Lint / format  | oxlint + oxfmt                                                                                                                                               |
+| Unit tests     | Vitest + Testing Library + jsdom                                                                                                                             |
+| Coverage       | `@vitest/coverage-v8` (`npm run test:coverage`)                                                                                                              |
+| E2E            | Playwright (keep `@playwright/test` aligned with `ubuntu-b` pin `1.64.1` when using `RUN_TESTS_IN_CONTAINER=1`)                                              |
+| Test container | Optional ephemeral [`ubuntu-b`](https://github.com/mengtaoxin/dockers/tree/main/ubuntu-b) via `scripts/run-in-test-env.sh` and pin `docker/UBUNTU_B_VERSION` |
+| PWA            | vite-plugin-pwa (manifest + app-shell SW)                                                                                                                    |
+| Stale chunks   | [spa-update-notice](https://github.com/mengtaoxin/spa-update-notice) (hosted script)                                                                         |
+| Node           | see `package.json` `engines`                                                                                                                                 |
 
 Prefer MUI components and theme/`sx`; use CSS modules or `src/styles/` for local tweaks. No Vue, Nuxt, or Tailwind.
 
