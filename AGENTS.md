@@ -8,6 +8,7 @@ Never verify this application in a browser. Browser Use, Computer Use, screensho
 
 - Changing code (structure, TDD, tests, format/check, i18n): [docs/change-code-steps.md](docs/change-code-steps.md).
 - Views that need the catalog rely on root `beforeLoad` / `ensureCatalogLoaded` — do not fetch `configs.json` from views.
+- Tests default to the host. Export `RUN_TESTS_IN_CONTAINER=1` so `test*` / `verify` run in ephemeral `ubuntu-b` ([docs/commands.md](docs/commands.md)); leave unset/`0` on Cursor Cloud. Edit / format / lint stay on the host.
 
 ## Read when
 
