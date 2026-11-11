@@ -5,6 +5,11 @@
 # TDMUSIC_INSIDE_TEST_CONTAINER=1 and exec.
 set -euo pipefail
 
+# `npm run` exports npm_config_prefix (often "/"). verify starts a login shell,
+# which sources nvm; nvm then leaves `npm` off PATH (exit 127). Drop both names
+# before exec. When they are already unset, node and npm stay as the shell resolved them.
+unset npm_config_prefix NPM_CONFIG_PREFIX
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 UBUNTU_B_VERSION="$(tr -d '[:space:]' < "${ROOT_DIR}/docker/UBUNTU_B_VERSION")"
