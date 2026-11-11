@@ -6,14 +6,12 @@ import { routeTree } from './routeTree.gen';
 import { ChunkErrorBoundary } from '@/components/ChunkErrorBoundary';
 import { installSpaUpdateNotice } from '@/lib/spaUpdateNotice';
 import { muiTheme } from '@/theme/muiTheme';
-import { installE2eTestApi } from '@/lib/storage/e2eTestApi';
 import { bindAppCatalogBootstrap, bindAppManualDownloads } from '@/stores/bindAppCatalog';
 import '@/i18n';
 import '@/styles/app.css';
 
 bindAppCatalogBootstrap();
 bindAppManualDownloads();
-installE2eTestApi();
 
 const router = createRouter({ routeTree });
 

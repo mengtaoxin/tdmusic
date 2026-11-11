@@ -18,7 +18,7 @@ Never verify this application in a browser. Browser Use, Computer Use, screensho
 - Adding or moving files → [docs/file-structure.md](docs/file-structure.md)
 - Style, MUI, log language → [docs/conventions.md](docs/conventions.md)
 - `configs.json`, catalog routes, enrich, `ensureCatalogLoaded` → [docs/catalog.md](docs/catalog.md)
-- Local audio cache (SQLite / OPFS), covers, download limiter → [docs/cache.md](docs/cache.md)
+- IndexedDB audio cache, covers, download limiter → [docs/cache.md](docs/cache.md)
 - Queue, shuffle, repeat, Media Session → [docs/playback.md](docs/playback.md)
 - localStorage keys, locale, app logs → [docs/persistence.md](docs/persistence.md)
 - Header layout or nav animation → [docs/ui-chrome.md](docs/ui-chrome.md)
