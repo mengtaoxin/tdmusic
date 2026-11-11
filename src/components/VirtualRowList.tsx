@@ -83,9 +83,17 @@ export function VirtualRowList<T>({
     }
 
     let cancelled = false;
+    let applied = false;
+    let intervalId = 0;
+    let timeoutId = 0;
+
+    const stopRetry = () => {
+      window.clearInterval(intervalId);
+      window.clearTimeout(timeoutId);
+    };
 
     const tryScroll = () => {
-      if (cancelled) return;
+      if (cancelled || applied) return;
       const viewport =
         scrollParent.clientHeight > 0
           ? scrollParent.clientHeight
@@ -102,17 +110,21 @@ export function VirtualRowList<T>({
       if (offset > 0 && scrollParent.scrollTop === 0) return;
       scrolledToRef.current = scrollToIndex;
       scrolledParentRef.current = scrollParent;
+      applied = true;
+      // Stop once applied so touch/wheel scroll is not fought every 50ms.
+      stopRetry();
     };
 
     tryScroll();
-    // Re-apply for a window so a later layout pass cannot silently undo entry scroll.
-    const intervalId = window.setInterval(tryScroll, 50);
-    const timeoutId = window.setTimeout(() => window.clearInterval(intervalId), 5000);
+    // Retry only while layout still blocks a measured viewport / offset.
+    if (!applied) {
+      intervalId = window.setInterval(tryScroll, 50);
+      timeoutId = window.setTimeout(stopRetry, 5000);
+    }
 
     return () => {
       cancelled = true;
-      window.clearInterval(intervalId);
-      window.clearTimeout(timeoutId);
+      stopRetry();
     };
   }, [scrollParent, scrollToIndex, itemHeight, items.length, listHeight]);
 
