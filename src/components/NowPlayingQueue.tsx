@@ -37,10 +37,15 @@ export function NowPlayingQueue({
     entryScrollIndexRef.current = playingRowIndex;
   }
 
-  const queueListHeight = `min(${Math.max(queueRows.length, 1) * TRACK_ROW_HEIGHT}px, ${'calc(100dvh - 64px - 88px - 6rem)'})`;
-
   return (
-    <>
+    <Box
+      sx={{
+        flex: '1 1 auto',
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <Box
         sx={{
           display: 'flex',
@@ -49,6 +54,7 @@ export function NowPlayingQueue({
           mb: 1.5,
           gap: 1.5,
           flexWrap: 'wrap',
+          flexShrink: 0,
         }}
       >
         <Typography variant="h6" component="h2" sx={{ m: 0, whiteSpace: 'nowrap', flexShrink: 0 }}>
@@ -60,7 +66,7 @@ export function NowPlayingQueue({
       <VirtualRowList
         items={queueRows}
         itemHeight={TRACK_ROW_HEIGHT}
-        height={queueListHeight}
+        fillHost
         listClassName="queue-list"
         scrollToIndex={entryScrollIndexRef.current}
         getItemKey={(item) => item.key}
@@ -74,6 +80,6 @@ export function NowPlayingQueue({
           />
         )}
       />
-    </>
+    </Box>
   );
 }

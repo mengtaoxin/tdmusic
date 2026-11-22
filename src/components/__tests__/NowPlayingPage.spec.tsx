@@ -31,6 +31,29 @@ function seedPlaying() {
 }
 
 describe('NowPlayingPage', () => {
+  it('locks page height so only the queue list scrolls', async () => {
+    const tracks = [
+      makeTrack('t1', 'Song One'),
+      makeTrack('t2', 'Song Two'),
+      makeTrack('t3', 'Song Three'),
+    ];
+    useCatalogStore.getState().setTracks(tracks);
+    usePlayerStore.setState({
+      queue: tracks.map((track) => track.id),
+      originalQueue: tracks.map((track) => track.id),
+      currentId: tracks[0]!.id,
+      currentIndex: 0,
+    });
+
+    await renderWithTestRouter({ component: () => <NowPlayingPage /> });
+
+    const page = screen.getByTestId('now-playing-page');
+    expect(page).toHaveStyle({ height: '100%', overflow: 'hidden' });
+    const listHost = page.querySelector('.list-host');
+    expect(listHost).not.toBeNull();
+    expect(listHost!.querySelector('.queue-list')).not.toBeNull();
+  });
+
   it('opens track info for the current song from the player', async () => {
     const user = userEvent.setup();
     seedPlaying();

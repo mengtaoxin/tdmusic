@@ -83,14 +83,15 @@ export function NowPlayingHero({
   }
 
   return (
-    <Box className="player-hero" sx={{ textAlign: 'center', mb: 4 }}>
+    <Box className="player-hero" sx={{ textAlign: 'center', mb: 3 }}>
       <Box
         className="cover-wrap"
         sx={{
           position: 'relative',
           mx: 'auto',
           mb: 2,
-          maxWidth: (theme) => theme.layout.coverMaxWidth,
+          // Cap cover so the locked now-playing shell still leaves room for the queue.
+          maxWidth: (theme) => `min(${theme.layout.coverMaxWidth}, 40dvh)`,
           borderRadius: 'var(--td-radius-lg)',
           overflow: 'hidden',
           boxShadow: 'var(--td-cover-shadow)',

@@ -15,9 +15,9 @@ export type VirtualRowListProps<T> = {
   getItemKey: (item: T, index: number) => string;
   renderRow: (item: T, index: number) => ReactNode;
   overscan?: number;
-  /** Fill a flex host and cap scroller height (Music / Artists). */
+  /** Fill a flex host and cap scroller height (Music / Artists / Now Playing queue). */
   fillHost?: boolean;
-  /** Explicit scroller height when not filling a host (Now Playing queue). */
+  /** Explicit scroller height when not filling a host. */
   height?: number | string;
   listClassName?: string;
   hostClassName?: string;

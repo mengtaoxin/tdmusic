@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 
 import { NowPlayingHero } from '@/components/NowPlayingHero';
@@ -6,6 +7,16 @@ import { NowPlayingQueue } from '@/components/NowPlayingQueue';
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
 import { selectTrackById, useCatalogStore } from '@/stores/catalog';
 import { usePlayerStore } from '@/stores/player';
+
+/** Locked-height shell so only the queue list scrolls (same idea as CatalogPageShell). */
+const fillSx = {
+  display: 'flex',
+  flexDirection: 'column',
+  boxSizing: 'border-box',
+  height: '100%',
+  minHeight: 0,
+  overflow: 'hidden',
+} as const;
 
 export function NowPlayingPage() {
   const trackById = useCatalogStore(selectTrackById);
@@ -44,21 +55,24 @@ export function NowPlayingPage() {
       maxWidth={false}
       data-testid="now-playing-page"
       className="page-narrow no-touch-callout"
+      sx={fillSx}
     >
-      <NowPlayingHero
-        current={current}
-        currentTime={currentTime}
-        duration={duration}
-        playing={playing}
-        repeatMode={repeatMode}
-        shuffle={shuffle}
-        seek={seek}
-        toggleRepeat={toggleRepeat}
-        toggleShuffle={toggleShuffle}
-        togglePlay={togglePlay}
-        prev={prev}
-        next={next}
-      />
+      <Box sx={{ flexShrink: 0 }}>
+        <NowPlayingHero
+          current={current}
+          currentTime={currentTime}
+          duration={duration}
+          playing={playing}
+          repeatMode={repeatMode}
+          shuffle={shuffle}
+          seek={seek}
+          toggleRepeat={toggleRepeat}
+          toggleShuffle={toggleShuffle}
+          togglePlay={togglePlay}
+          prev={prev}
+          next={next}
+        />
+      </Box>
       <NowPlayingQueue
         queueRows={queueRows}
         currentIndex={currentIndex}
