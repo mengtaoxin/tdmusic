@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import { alpha, type Theme } from '@mui/material/styles';
@@ -19,6 +19,23 @@ function contentBandSx(theme: Theme) {
 
 /** Right-side sheet clipped to the page content band; width fills up to contentMaxWidth. */
 export function NowPlayingQueueSheet({ open, onClose, children }: NowPlayingQueueSheetProps) {
+  const paperRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const paper = paperRef.current;
+      const target = event.target;
+      if (!paper || !(target instanceof Node) || paper.contains(target)) return;
+      onClose();
+    };
+
+    // Capture so app-bar / footer clicks (outside the clipped Modal band) still dismiss.
+    document.addEventListener('pointerdown', handlePointerDown, true);
+    return () => document.removeEventListener('pointerdown', handlePointerDown, true);
+  }, [open, onClose]);
+
   return (
     <Drawer
       anchor="right"
@@ -35,6 +52,7 @@ export function NowPlayingQueueSheet({ open, onClose, children }: NowPlayingQueu
           }),
         },
         paper: {
+          ref: paperRef,
           sx: (theme) => {
             const inset = theme.spacing(1.5);
             return {

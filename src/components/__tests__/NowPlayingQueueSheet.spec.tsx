@@ -1,11 +1,45 @@
 import { describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { renderWithProviders } from '@/__tests__/renderWithProviders';
 import { NowPlayingQueueSheet } from '@/components/NowPlayingQueueSheet';
 import { muiTheme } from '@/theme/muiTheme';
 
 describe('NowPlayingQueueSheet', () => {
+  it('closes on pointerdown outside the sheet, including chrome beyond the content band', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+
+    renderWithProviders(
+      <>
+        <button type="button">App chrome</button>
+        <NowPlayingQueueSheet open onClose={onClose}>
+          <div>queue</div>
+        </NowPlayingQueueSheet>
+      </>,
+    );
+
+    expect(screen.getByTestId('now-playing-queue-sheet')).toBeInTheDocument();
+    // Modal aria-hides siblings (app bar / footer); pointer events still reach them.
+    await user.click(screen.getByRole('button', { name: 'App chrome', hidden: true }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not close when pointerdown stays inside the sheet', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+
+    renderWithProviders(
+      <NowPlayingQueueSheet open onClose={onClose}>
+        <button type="button">Inside sheet</button>
+      </NowPlayingQueueSheet>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Inside sheet' }));
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   it('slides in from the right within the page content band', () => {
     renderWithProviders(
       <NowPlayingQueueSheet open onClose={vi.fn()}>
