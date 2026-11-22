@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
-import type { Theme } from '@mui/material/styles';
+import { alpha, type Theme } from '@mui/material/styles';
 
 export type NowPlayingQueueSheetProps = {
   open: boolean;
@@ -17,7 +17,7 @@ function contentBandSx(theme: Theme) {
   };
 }
 
-/** Right-side sheet clipped to the page content band (below header, above footer). */
+/** Right-side sheet clipped to the page content band; width fills up to contentMaxWidth. */
 export function NowPlayingQueueSheet({ open, onClose, children }: NowPlayingQueueSheetProps) {
   return (
     <Drawer
@@ -29,13 +29,16 @@ export function NowPlayingQueueSheet({ open, onClose, children }: NowPlayingQueu
           sx: contentBandSx,
         },
         backdrop: {
-          sx: contentBandSx,
+          sx: (theme) => ({
+            ...contentBandSx(theme),
+            bgcolor: alpha(theme.palette.common.black, 0.4),
+          }),
         },
         paper: {
           sx: (theme) => ({
             ...contentBandSx(theme),
             width: '100%',
-            maxWidth: '100%',
+            maxWidth: theme.layout.contentMaxWidth,
             display: 'flex',
             flexDirection: 'column',
             bgcolor: 'background.default',
