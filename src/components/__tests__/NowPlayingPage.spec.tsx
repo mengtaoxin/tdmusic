@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { renderWithTestRouter } from '@/__tests__/renderWithProviders';
@@ -31,7 +31,8 @@ function seedPlaying() {
 }
 
 describe('NowPlayingPage', () => {
-  it('locks page height so only the queue list scrolls', async () => {
+  it('keeps the queue in a near-fullscreen sheet opened from the player', async () => {
+    const user = userEvent.setup();
     const tracks = [
       makeTrack('t1', 'Song One'),
       makeTrack('t2', 'Song Two'),
@@ -48,10 +49,20 @@ describe('NowPlayingPage', () => {
     await renderWithTestRouter({ component: () => <NowPlayingPage /> });
 
     const page = screen.getByTestId('now-playing-page');
-    expect(page).toHaveStyle({ height: '100%', overflow: 'hidden' });
-    const listHost = page.querySelector('.list-host');
-    expect(listHost).not.toBeNull();
-    expect(listHost!.querySelector('.queue-list')).not.toBeNull();
+    expect(page.querySelector('.queue-list')).toBeNull();
+    expect(screen.queryByTestId('now-playing-queue-sheet')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Open queue' }));
+
+    const sheet = await screen.findByTestId('now-playing-queue-sheet');
+    expect(within(sheet).getByRole('heading', { name: 'Now playing queue' })).toBeInTheDocument();
+    expect(sheet.querySelector('.queue-list')).not.toBeNull();
+    expect(sheet.querySelector('.list-host')).not.toBeNull();
+
+    await user.click(within(sheet).getByRole('button', { name: 'Close queue' }));
+    await waitFor(() => {
+      expect(screen.queryByTestId('now-playing-queue-sheet')).not.toBeInTheDocument();
+    });
   });
 
   it('opens track info for the current song from the player', async () => {

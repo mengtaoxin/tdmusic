@@ -1,6 +1,8 @@
 import { useRef } from 'react';
 import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from 'react-i18next';
 
 import { ClearUpcomingButton } from '@/components/ClearUpcomingButton';
@@ -21,6 +23,7 @@ export type NowPlayingQueueProps = {
   goToIndex: (index: number, autoPlay: boolean) => void;
   removeAt: (index: number) => void;
   clearUpcoming: () => void;
+  onClose: () => void;
 };
 
 export function NowPlayingQueue({
@@ -29,6 +32,7 @@ export function NowPlayingQueue({
   goToIndex,
   removeAt,
   clearUpcoming,
+  onClose,
 }: NowPlayingQueueProps) {
   const { t } = useTranslation();
   const playingRowIndex = playingQueueRowIndex(queueRows, currentIndex);
@@ -60,7 +64,12 @@ export function NowPlayingQueue({
         <Typography variant="h6" component="h2" sx={{ m: 0, whiteSpace: 'nowrap', flexShrink: 0 }}>
           {t('player.queue')}
         </Typography>
-        {queueRows.length > 1 ? <ClearUpcomingButton onClick={clearUpcoming} /> : null}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto', flexWrap: 'wrap' }}>
+          {queueRows.length > 1 ? <ClearUpcomingButton onClick={clearUpcoming} /> : null}
+          <IconButton aria-label={t('player.closeQueue')} onClick={onClose} edge="end">
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </Box>
 
       <VirtualRowList

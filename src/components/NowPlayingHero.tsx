@@ -9,6 +9,7 @@ import AlbumIcon from '@mui/icons-material/Album';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import QueueMusicIcon from '@mui/icons-material/QueueMusic';
 import RepeatIcon from '@mui/icons-material/Repeat';
 import RepeatOneIcon from '@mui/icons-material/RepeatOne';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
@@ -44,6 +45,7 @@ export type NowPlayingHeroProps = {
   togglePlay: () => void;
   prev: () => void;
   next: () => void;
+  onOpenQueue: () => void;
 };
 
 export function NowPlayingHero({
@@ -59,6 +61,7 @@ export function NowPlayingHero({
   togglePlay,
   prev,
   next,
+  onOpenQueue,
 }: NowPlayingHeroProps) {
   const { t } = useTranslation();
   const [infoTrackId, setInfoTrackId] = useState<string | null>(null);
@@ -83,15 +86,14 @@ export function NowPlayingHero({
   }
 
   return (
-    <Box className="player-hero" sx={{ textAlign: 'center', mb: 3 }}>
+    <Box className="player-hero" sx={{ textAlign: 'center', mb: 4 }}>
       <Box
         className="cover-wrap"
         sx={{
           position: 'relative',
           mx: 'auto',
           mb: 2,
-          // Cap cover so the locked now-playing shell still leaves room for the queue.
-          maxWidth: (theme) => `min(${theme.layout.coverMaxWidth}, 40dvh)`,
+          maxWidth: (theme) => theme.layout.coverMaxWidth,
           borderRadius: 'var(--td-radius-lg)',
           overflow: 'hidden',
           boxShadow: 'var(--td-cover-shadow)',
@@ -233,6 +235,9 @@ export function NowPlayingHero({
           aria-label="Shuffle"
         >
           <ShuffleIcon sx={{ opacity: shuffle ? 1 : 0.5 }} />
+        </IconButton>
+        <IconButton color="default" onClick={onOpenQueue} aria-label={t('player.openQueue')}>
+          <QueueMusicIcon />
         </IconButton>
       </Box>
       <TrackInfoDialog

@@ -99,6 +99,8 @@ export default {
     unknownAlbum: 'Unknown album',
     empty: 'Nothing playing yet. Pick a track from Songs.',
     queue: 'Now playing queue',
+    openQueue: 'Open queue',
+    closeQueue: 'Close queue',
     playNext: 'Play next',
     addedToPlayNext: 'Added to play next',
     addToQueue: 'Add to queue',

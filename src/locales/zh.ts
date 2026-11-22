@@ -98,6 +98,8 @@ export default {
     unknownAlbum: '未知专辑',
     empty: '暂无播放。请从歌曲中选择一首。',
     queue: '正在播放列表',
+    openQueue: '打开播放列表',
+    closeQueue: '关闭播放列表',
     playNext: '下一首播放',
     addedToPlayNext: '已添加到下一首播放',
     addToQueue: '添加到队列',

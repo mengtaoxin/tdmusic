@@ -1,4 +1,10 @@
 import { test, expect } from './fixtures';
+import type { Page } from '@playwright/test';
+
+async function openQueueSheet(page: Page) {
+  await page.getByRole('button', { name: 'Open queue' }).click();
+  await expect(page.getByTestId('now-playing-queue-sheet')).toBeVisible();
+}
 
 const PLAYER_STATE = {
   v: 1,
@@ -100,6 +106,7 @@ test('queue heading stays on one line on a narrow screen', async ({ page }) => {
   }, PLAYER_STATE);
 
   await page.goto('/now-playing');
+  await openQueueSheet(page);
   await expect(page.getByTestId('clear-upcoming')).toBeVisible();
 
   const heading = page.getByRole('heading', { name: 'Now playing queue' });
@@ -121,6 +128,7 @@ test('queue rows do not overlap their neighbours', async ({ page }) => {
   }, PLAYER_STATE);
 
   await page.goto('/now-playing');
+  await openQueueSheet(page);
   const rows = page.locator('.queue-list .track-row');
   await expect(rows).toHaveCount(3);
 
@@ -150,6 +158,7 @@ test('queue list aligns the playing track at the top on entry', async ({ page })
 
   await page.goto('/now-playing');
   await expect(page.getByTestId('now-playing-page')).toBeVisible();
+  await openQueueSheet(page);
   await expect
     .poll(async () => page.locator('.queue-list').evaluate((el) => (el as HTMLElement).scrollTop))
     .toBe(8 * 64);

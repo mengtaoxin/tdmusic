@@ -1,22 +1,12 @@
-import { useMemo } from 'react';
-import Box from '@mui/material/Box';
+import { useMemo, useState } from 'react';
 import Container from '@mui/material/Container';
 
 import { NowPlayingHero } from '@/components/NowPlayingHero';
 import { NowPlayingQueue } from '@/components/NowPlayingQueue';
+import { NowPlayingQueueSheet } from '@/components/NowPlayingQueueSheet';
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
 import { selectTrackById, useCatalogStore } from '@/stores/catalog';
 import { usePlayerStore } from '@/stores/player';
-
-/** Locked-height shell so only the queue list scrolls (same idea as CatalogPageShell). */
-const fillSx = {
-  display: 'flex',
-  flexDirection: 'column',
-  boxSizing: 'border-box',
-  height: '100%',
-  minHeight: 0,
-  overflow: 'hidden',
-} as const;
 
 export function NowPlayingPage() {
   const trackById = useCatalogStore(selectTrackById);
@@ -37,6 +27,7 @@ export function NowPlayingPage() {
   const goToIndex = usePlayerStore((s) => s.goToIndex);
   const removeAt = usePlayerStore((s) => s.removeAt);
   const clearUpcoming = usePlayerStore((s) => s.clearUpcoming);
+  const [queueOpen, setQueueOpen] = useState(false);
 
   const current = currentId ? trackById.get(currentId) : undefined;
 
@@ -55,31 +46,34 @@ export function NowPlayingPage() {
       maxWidth={false}
       data-testid="now-playing-page"
       className="page-narrow no-touch-callout"
-      sx={fillSx}
     >
-      <Box sx={{ flexShrink: 0 }}>
-        <NowPlayingHero
-          current={current}
-          currentTime={currentTime}
-          duration={duration}
-          playing={playing}
-          repeatMode={repeatMode}
-          shuffle={shuffle}
-          seek={seek}
-          toggleRepeat={toggleRepeat}
-          toggleShuffle={toggleShuffle}
-          togglePlay={togglePlay}
-          prev={prev}
-          next={next}
-        />
-      </Box>
-      <NowPlayingQueue
-        queueRows={queueRows}
-        currentIndex={currentIndex}
-        goToIndex={goToIndex}
-        removeAt={removeAt}
-        clearUpcoming={clearUpcoming}
+      <NowPlayingHero
+        current={current}
+        currentTime={currentTime}
+        duration={duration}
+        playing={playing}
+        repeatMode={repeatMode}
+        shuffle={shuffle}
+        seek={seek}
+        toggleRepeat={toggleRepeat}
+        toggleShuffle={toggleShuffle}
+        togglePlay={togglePlay}
+        prev={prev}
+        next={next}
+        onOpenQueue={() => setQueueOpen(true)}
       />
+      <NowPlayingQueueSheet open={queueOpen} onClose={() => setQueueOpen(false)}>
+        {queueOpen ? (
+          <NowPlayingQueue
+            queueRows={queueRows}
+            currentIndex={currentIndex}
+            goToIndex={goToIndex}
+            removeAt={removeAt}
+            clearUpcoming={clearUpcoming}
+            onClose={() => setQueueOpen(false)}
+          />
+        ) : null}
+      </NowPlayingQueueSheet>
     </Container>
   );
 }

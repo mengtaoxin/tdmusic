@@ -7,6 +7,11 @@ function expectAudioPlaying(page: Page) {
     .toBe(false);
 }
 
+async function openQueueSheet(page: Page) {
+  await page.getByRole('button', { name: 'Open queue' }).click();
+  await expect(page.getByTestId('now-playing-queue-sheet')).toBeVisible();
+}
+
 test('quick-play starts a track and opens now playing', async ({ page }) => {
   await page.goto('/quick-play?type=song&id=smile-in-the-wind');
   await expect(page).toHaveURL(/\/now-playing$/);
@@ -27,6 +32,7 @@ test('quick-play starts a playlist from its first track', async ({ page }) => {
   await page.goto('/quick-play?type=playlist&id=my-playlist-1');
   await expect(page).toHaveURL(/\/now-playing$/);
   await expect(page.getByRole('heading', { name: 'Smile in the Wind' })).toBeVisible();
+  await openQueueSheet(page);
   await expect(page.getByRole('button', { name: /Drink in the Wind/ })).toBeVisible();
 });
 
@@ -50,6 +56,7 @@ test('quick-play continues the current queue from its saved track', async ({ pag
   await page.goto('/quick-play?type=playlist&id=now-playing');
   await expect(page).toHaveURL(/\/now-playing$/);
   await expect(page.getByRole('heading', { name: 'Drink in the Wind' })).toBeVisible();
+  await openQueueSheet(page);
   await expect(page.getByRole('button', { name: /Smile in the Wind/ })).toBeVisible();
 });
 
@@ -57,6 +64,7 @@ test('quick-play starts every track from all-tricks', async ({ page }) => {
   await page.goto('/quick-play?type=playlist&id=all-tricks');
   await expect(page).toHaveURL(/\/now-playing$/);
   await expect(page.getByRole('heading', { name: 'Smile in the Wind' })).toBeVisible();
+  await openQueueSheet(page);
   await expect(page.getByRole('button', { name: /Drink in the Wind/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /Life in the Wind/ })).toBeVisible();
 });
@@ -64,7 +72,10 @@ test('quick-play starts every track from all-tricks', async ({ page }) => {
 test('refresh keeps the track you reached instead of replaying the link', async ({ page }) => {
   await page.goto('/quick-play?type=playlist&id=my-playlist-1');
   await expect(page).toHaveURL(/\/now-playing$/);
+  await openQueueSheet(page);
   await expect(page.getByRole('button', { name: /Drink in the Wind/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Close queue' }).click();
+  await expect(page.getByTestId('now-playing-queue-sheet')).toHaveCount(0);
   await page.getByTestId('footer-next').click();
   await expect(page.getByRole('heading', { name: 'Drink in the Wind' })).toBeVisible();
 
