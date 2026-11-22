@@ -90,7 +90,6 @@ export function NowPlayingHero({
       <Box
         className="cover-wrap"
         sx={{
-          position: 'relative',
           mx: 'auto',
           mb: 2,
           maxWidth: (theme) => theme.layout.coverMaxWidth,
@@ -122,24 +121,6 @@ export function NowPlayingHero({
             <AlbumIcon sx={{ fontSize: 72 }} />
           </Box>
         )}
-        <IconButton
-          data-testid="now-playing-track-info"
-          aria-label={t('trackInfo.open')}
-          onClick={() => setInfoTrackId(current.id)}
-          sx={{
-            position: 'absolute',
-            top: (theme) => theme.spacing(1),
-            right: (theme) => theme.spacing(1),
-            color: 'rgba(255, 255, 255, 0.42)',
-            bgcolor: 'rgba(0, 0, 0, 0.14)',
-            '&:hover': {
-              color: 'rgba(255, 255, 255, 0.78)',
-              bgcolor: 'rgba(0, 0, 0, 0.28)',
-            },
-          }}
-        >
-          <InfoOutlinedIcon />
-        </IconButton>
       </Box>
 
       <Typography variant="h5" noWrap sx={{ mb: 0.5 }}>
@@ -199,9 +180,19 @@ export function NowPlayingHero({
 
       <Box
         className="controls"
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}
       >
         <IconButton
+          data-testid="now-playing-track-info"
+          size="small"
+          color="default"
+          onClick={() => setInfoTrackId(current.id)}
+          aria-label={t('trackInfo.open')}
+        >
+          <InfoOutlinedIcon />
+        </IconButton>
+        <IconButton
+          size="small"
           color={repeatMode === 'off' ? 'default' : 'secondary'}
           onClick={toggleRepeat}
           aria-label="Repeat"
@@ -230,13 +221,19 @@ export function NowPlayingHero({
           <SkipNextIcon fontSize="large" />
         </IconButton>
         <IconButton
+          size="small"
           color={shuffle ? 'secondary' : 'default'}
           onClick={toggleShuffle}
           aria-label="Shuffle"
         >
           <ShuffleIcon sx={{ opacity: shuffle ? 1 : 0.5 }} />
         </IconButton>
-        <IconButton color="default" onClick={onOpenQueue} aria-label={t('player.openQueue')}>
+        <IconButton
+          size="small"
+          color="default"
+          onClick={onOpenQueue}
+          aria-label={t('player.openQueue')}
+        >
           <QueueMusicIcon />
         </IconButton>
       </Box>

@@ -35,14 +35,22 @@ export function NowPlayingQueueSheet({ open, onClose, children }: NowPlayingQueu
           }),
         },
         paper: {
-          sx: (theme) => ({
-            ...contentBandSx(theme),
-            width: '100%',
-            maxWidth: theme.layout.contentMaxWidth,
-            display: 'flex',
-            flexDirection: 'column',
-            bgcolor: 'background.default',
-          }),
+          sx: (theme) => {
+            const inset = theme.spacing(1.5);
+            return {
+              top: `calc(${theme.layout.appBarHeight} + ${inset})`,
+              bottom: `calc(${theme.layout.footerClearance} + ${inset})`,
+              right: inset,
+              height: 'auto',
+              width: `calc(100% - (${inset}) * 2)`,
+              maxWidth: theme.layout.contentMaxWidth,
+              borderRadius: theme.layout.radiusLg,
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              bgcolor: 'background.default',
+            };
+          },
         },
       }}
     >

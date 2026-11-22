@@ -79,16 +79,29 @@ describe('NowPlayingPage', () => {
     });
   });
 
-  it('opens track info for the current song from the player', async () => {
+  it('opens track info from the leftmost control so play stays centered', async () => {
     const user = userEvent.setup();
     seedPlaying();
     await renderWithTestRouter({ component: () => <NowPlayingPage /> });
 
     const cover = document.querySelector('.cover-wrap');
     expect(cover).not.toBeNull();
-    const button = within(cover as HTMLElement).getByRole('button', { name: 'Track info' });
-    expect(button).not.toHaveTextContent('Track info');
-    await user.click(button);
+    expect(within(cover as HTMLElement).queryByRole('button', { name: 'Track info' })).toBeNull();
+
+    const controls = document.querySelector('.controls');
+    expect(controls).not.toBeNull();
+    const buttons = within(controls as HTMLElement).getAllByRole('button');
+    expect(buttons.map((button) => button.getAttribute('aria-label'))).toEqual([
+      'Track info',
+      'Repeat',
+      'Previous',
+      'Play',
+      'Next',
+      'Shuffle',
+      'Open queue',
+    ]);
+
+    await user.click(buttons[0]!);
 
     const dialog = await screen.findByRole('dialog', { name: 'Track info' });
     expect(within(dialog).getByText('Song One')).toBeInTheDocument();

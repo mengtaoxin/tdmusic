@@ -25,7 +25,7 @@ describe('NowPlayingQueueSheet', () => {
     };
     expect(drawer).toHaveStyle(band);
     expect(drawer!.querySelector('.MuiBackdrop-root')).toHaveStyle(band);
-    expect(drawer!.querySelector('.MuiDrawer-paper')).toHaveStyle(band);
+    expect(drawer!.querySelector('.MuiDrawer-paper')).toHaveStyle({ height: 'auto' });
   });
 
   it('caps sheet width at content max width and dims the uncovered band', () => {
@@ -39,13 +39,33 @@ describe('NowPlayingQueueSheet', () => {
     const drawer = sheet.closest('.MuiDrawer-root');
     expect(drawer).not.toBeNull();
 
-    // jsdom getComputedStyle resolves rem to px (40rem → 640px).
+    // jsdom getComputedStyle resolves rem to px (40rem → 640px; 1rem → 16px).
     expect(drawer!.querySelector('.MuiDrawer-paper')).toHaveStyle({
-      width: '100%',
       maxWidth: '640px',
     });
     expect(drawer!.querySelector('.MuiBackdrop-root')).toHaveStyle({
       backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    });
+  });
+
+  it('insets the sheet from the menu with rounded corners', () => {
+    renderWithProviders(
+      <NowPlayingQueueSheet open onClose={vi.fn()}>
+        <div>queue</div>
+      </NowPlayingQueueSheet>,
+    );
+
+    const sheet = screen.getByTestId('now-playing-queue-sheet');
+    const paper = sheet.closest('.MuiDrawer-root')?.querySelector('.MuiDrawer-paper');
+    expect(paper).not.toBeNull();
+
+    // jsdom resolves calc() / rem (spacing 1.5 → 12px; radiusLg 1rem → 16px).
+    const insetPx = 12;
+    expect(paper).toHaveStyle({
+      top: `${parseInt(muiTheme.layout.appBarHeight, 10) + insetPx}px`,
+      bottom: `${parseInt(muiTheme.layout.footerClearance, 10) + insetPx}px`,
+      right: `${insetPx}px`,
+      borderRadius: '16px',
     });
   });
 });
