@@ -46,6 +46,12 @@ export function NowPlayingPage() {
       maxWidth={false}
       data-testid="now-playing-page"
       className="page-narrow no-touch-callout"
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+      }}
     >
       <NowPlayingHero
         current={current}

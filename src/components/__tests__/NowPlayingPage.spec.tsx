@@ -31,7 +31,20 @@ function seedPlaying() {
 }
 
 describe('NowPlayingPage', () => {
-  it('keeps the queue in a near-fullscreen sheet opened from the player', async () => {
+  it('centers the player in the page content area', async () => {
+    seedPlaying();
+    await renderWithTestRouter({ component: () => <NowPlayingPage /> });
+
+    const page = screen.getByTestId('now-playing-page');
+    expect(page).toHaveStyle({
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+    });
+  });
+
+  it('keeps the queue in a right-side sheet opened from the player', async () => {
     const user = userEvent.setup();
     const tracks = [
       makeTrack('t1', 'Song One'),
@@ -55,6 +68,7 @@ describe('NowPlayingPage', () => {
     await user.click(screen.getByRole('button', { name: 'Open queue' }));
 
     const sheet = await screen.findByTestId('now-playing-queue-sheet');
+    expect(sheet.closest('.MuiDrawer-root')).toHaveClass('MuiDrawer-anchorRight');
     expect(within(sheet).getByRole('heading', { name: 'Now playing queue' })).toBeInTheDocument();
     expect(sheet.querySelector('.queue-list')).not.toBeNull();
     expect(sheet.querySelector('.list-host')).not.toBeNull();

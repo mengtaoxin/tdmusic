@@ -86,7 +86,7 @@ export function NowPlayingHero({
   }
 
   return (
-    <Box className="player-hero" sx={{ textAlign: 'center', mb: 4 }}>
+    <Box className="player-hero" sx={{ textAlign: 'center' }}>
       <Box
         className="cover-wrap"
         sx={{
