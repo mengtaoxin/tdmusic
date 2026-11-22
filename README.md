@@ -24,12 +24,11 @@ A browser music player driven by **your** `configs.json`: list tracks (and optio
 ```sh
 npm install
 npx playwright install chromium firefox webkit
+npx playwright install-deps
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000). Stop with Ctrl+C.
-
-Optional: `export RUN_TESTS_IN_CONTAINER=1` so `npm run test` / `test:e2e` / `verify` run in an ephemeral Docker `ubuntu-b` container (default is host; leave unset on Cursor Cloud).
 
 Commands and options: [docs/commands.md](docs/commands.md).
 
