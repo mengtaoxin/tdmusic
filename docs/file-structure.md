@@ -5,6 +5,7 @@ Repository layout for tdmusic. Changing code: [change-code-steps.md](change-code
 ```
 .
 ├── AGENTS.md
+├── .github/workflows/            GitHub Actions (e.g. Vercel production deploy)
 ├── .cursor/mcp.json              Shared MCP servers
 ├── .cursor/rules/                Shared Cursor rules (sandbox, path-scoped)
 ├── docs/                         Project docs (this file, commands, conventions, …)
@@ -31,6 +32,7 @@ Repository layout for tdmusic. Changing code: [change-code-steps.md](change-code
 │   └── main.tsx
 ├── index.html
 ├── package.json
+├── vercel.json                   Vercel routing / cache headers (unchanged by Actions migration PR)
 ├── vite.config.ts
 ├── vitest.config.ts
 └── playwright.config.ts
