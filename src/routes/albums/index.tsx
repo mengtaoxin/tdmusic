@@ -1,8 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import Container from '@mui/material/Container';
 import LinearProgress from '@mui/material/LinearProgress';
-import Typography from '@mui/material/Typography';
-import { useTranslation } from 'react-i18next';
 
 import { AlbumGallery } from '@/components/AlbumGallery';
 import { albumPath, firstAlbumCoverSrc } from '@/lib/routes/albumRoutes';
@@ -13,7 +11,6 @@ export const Route = createFileRoute('/albums/')({
 });
 
 function AlbumsPage() {
-  const { t } = useTranslation();
   const albums = useCatalogStore(selectAlbums);
   const loading = useCatalogStore((s) => s.loading);
 
@@ -36,10 +33,6 @@ function AlbumsPage() {
         overflow: 'hidden',
       }}
     >
-      <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-        {t('nav.albums')}
-      </Typography>
-
       {loading ? (
         <LinearProgress sx={{ mb: 2 }} />
       ) : (

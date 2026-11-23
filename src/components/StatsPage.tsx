@@ -41,10 +41,6 @@ export function StatsPage() {
 
   return (
     <Container maxWidth={false} data-testid="stats-page" className="page-narrow">
-      <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-        {t('nav.stats')}
-      </Typography>
-
       <ToggleButtonGroup
         exclusive
         size="small"

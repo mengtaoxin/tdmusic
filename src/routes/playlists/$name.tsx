@@ -2,13 +2,12 @@ import { createFileRoute } from '@tanstack/react-router';
 import Alert from '@mui/material/Alert';
 import Container from '@mui/material/Container';
 import LinearProgress from '@mui/material/LinearProgress';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 
 import { PlayAllButtons } from '@/components/PlayAllButtons';
 import { TrackList } from '@/components/TrackList';
 import { useTrackListPlayback } from '@/hooks/useTrackListPlayback';
-import { findPlaylistById, playlistLabel } from '@/lib/routes/playlistRoutes';
+import { findPlaylistById } from '@/lib/routes/playlistRoutes';
 import { selectTrackById, useCatalogStore } from '@/stores/catalog';
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
 
@@ -47,10 +46,6 @@ function PlaylistDetailPage() {
 
   return (
     <Container maxWidth={false} className="page">
-      <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-        {playlist ? playlistLabel(playlist) : playlistParam || t('nav.playlist')}
-      </Typography>
-
       {!loading && !playlist ? (
         <Alert severity="warning" sx={{ mb: 2 }}>
           {t('playlist.notFound')}

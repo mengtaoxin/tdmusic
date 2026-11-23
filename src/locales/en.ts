@@ -17,6 +17,7 @@ export default {
     feedback: 'Feedback',
     feedbackConfirm: 'Open GitHub to send feedback?',
     openMenu: 'Open menu',
+    breadcrumbs: 'Current location',
     beta: 'Beta',
   },
   home: {

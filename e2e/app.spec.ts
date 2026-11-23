@@ -69,9 +69,10 @@ test('locks document scroll and reserves gutter on the main scroller', async ({ 
 
 test('settings links to config guides', async ({ page }) => {
   await page.goto('/settings');
-  await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+  await expect(page.getByTestId('nav-breadcrumbs')).toHaveText('Settings');
   await page.getByRole('main').getByRole('link', { name: 'Guidelines for configs.json' }).click();
   await expect(page).toHaveURL(/\/config-guides/);
+  await expect(page.getByTestId('nav-breadcrumbs')).toHaveText('Guidelines for configs.json');
   await expect(page.getByRole('heading', { name: 'Guidelines for configs.json' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'songs' })).toBeVisible();
   await expect(
@@ -81,7 +82,7 @@ test('settings links to config guides', async ({ page }) => {
 
 test('songs page shows catalog tracks', async ({ page }) => {
   await page.goto('/music');
-  await expect(page.getByRole('heading', { name: 'Songs' })).toBeVisible();
+  await expect(page.getByTestId('nav-breadcrumbs')).toHaveText('Songs');
   await expect(page.getByRole('button', { name: 'Play all' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Shuffle all' })).toBeVisible();
   await expect(page.getByText('Smile in the Wind')).toBeVisible();
@@ -89,37 +90,42 @@ test('songs page shows catalog tracks', async ({ page }) => {
 
 test('playlist list navigates to playlist detail by id', async ({ page }) => {
   await page.goto('/playlists');
-  await expect(page.getByRole('heading', { name: 'Playlists' })).toBeVisible();
+  await expect(page.getByTestId('nav-breadcrumbs')).toHaveText('Playlists');
   await expect(page.getByRole('link', { name: 'My Playlist1' })).toBeVisible();
   await expect(page.getByText('Smile in the Wind')).toHaveCount(0);
 
   await page.getByRole('link', { name: 'My Playlist1' }).click();
   await expect(page).toHaveURL(/\/playlists\/my-playlist-1/);
-  await expect(page.getByRole('heading', { name: 'My Playlist1' })).toBeVisible();
+  await expect(page.getByTestId('nav-breadcrumbs')).toContainText('Playlists');
+  await expect(page.getByTestId('nav-breadcrumbs')).toContainText('My Playlist1');
   await expect(page.getByText('Smile in the Wind')).toBeVisible();
 });
 
 test('artists page navigates to albums, album tracks, and all music', async ({ page }) => {
   await page.goto('/artists');
-  await expect(page.getByRole('heading', { name: 'Artists' })).toBeVisible();
+  await expect(page.getByTestId('nav-breadcrumbs')).toHaveText('Artists');
   await expect(page.getByRole('link', { name: 'Doubao' })).toBeVisible();
   await expect(page.getByText('Smile in the Wind')).toHaveCount(0);
 
   await page.getByRole('link', { name: 'Doubao' }).click();
   await expect(page).toHaveURL(/\/artists\/Doubao\/albums/);
-  await expect(page.getByRole('heading', { name: 'Doubao' })).toBeVisible();
+  await expect(page.getByTestId('nav-breadcrumbs')).toContainText('Artists');
+  await expect(page.getByTestId('nav-breadcrumbs')).toContainText('Doubao');
   await expect(page.getByRole('link', { name: 'All music by this artist' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Album 1' })).toBeVisible();
   await expect(page.getByText('Smile in the Wind')).toHaveCount(0);
 
   await page.getByRole('link', { name: 'Album 1' }).click();
   await expect(page).toHaveURL(/\/artists\/Doubao\/albums\/Album(%20|\+)1/);
-  await expect(page.getByRole('heading', { name: 'Album 1' })).toBeVisible();
+  await expect(page.getByTestId('nav-breadcrumbs')).toContainText('Artists');
+  await expect(page.getByTestId('nav-breadcrumbs')).toContainText('Doubao');
+  await expect(page.getByTestId('nav-breadcrumbs')).toContainText('Album 1');
   await expect(page.getByText('Smile in the Wind')).toBeVisible();
 
   await page.goto('/artists/Doubao/albums');
   await page.getByRole('link', { name: 'All music by this artist' }).click();
   await expect(page).toHaveURL(/\/artists\/Doubao$/);
-  await expect(page.getByRole('heading', { name: 'Doubao' })).toBeVisible();
+  await expect(page.getByTestId('nav-breadcrumbs')).toContainText('Artists');
+  await expect(page.getByTestId('nav-breadcrumbs')).toContainText('Doubao');
   await expect(page.getByText('Smile in the Wind')).toBeVisible();
 });

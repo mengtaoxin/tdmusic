@@ -86,10 +86,6 @@ function SettingsPage() {
 
   return (
     <Container maxWidth={false} className="page-narrow">
-      <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-        {t('nav.settings')}
-      </Typography>
-
       <Box component="section" className="setting" sx={settingSx}>
         <Typography variant="subtitle1" sx={{ mb: 0.5 }}>
           {t('settings.configUrl')}

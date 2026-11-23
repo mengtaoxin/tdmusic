@@ -9,7 +9,7 @@ test('stats ranges and clear-all-cache clears listen history', async ({ page }) 
   ).toBeVisible();
 
   await page.goto('/stats');
-  await expect(page.getByRole('heading', { name: 'Stats' })).toBeVisible();
+  await expect(page.getByTestId('nav-breadcrumbs')).toHaveText('Stats');
 
   // The app's Dexie schema owns the DB version; seed only after it has created the store.
   await expect

@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 
 import brandIconUrl from '@/assets/brand-icon.png';
 import { AppDesktopNav, type DesktopMenuState } from '@/components/nav/AppDesktopNav';
+import { AppNavBreadcrumbs } from '@/components/nav/AppNavBreadcrumbs';
 import { AppNavDrawer } from '@/components/nav/AppNavDrawer';
 import { FeedbackConfirmDialog } from '@/components/nav/FeedbackConfirmDialog';
 import { GITHUB_ISSUES_URL, moreChildPaths } from '@/components/nav/navConfig';
@@ -26,7 +27,7 @@ export function AppHeader() {
   const [drawerExpanded, setDrawerExpanded] = useState<Record<string, boolean>>({});
 
   const toolbarRef = useRef<HTMLDivElement | null>(null);
-  const brandRef = useRef<HTMLDivElement | null>(null);
+  const leftClusterRef = useRef<HTMLDivElement | null>(null);
   const desktopNavRef = useRef<HTMLElement | null>(null);
 
   const locale = (i18nInstance.language?.startsWith('zh') ? 'zh' : 'en') as AppLocale;
@@ -34,10 +35,10 @@ export function AppHeader() {
 
   const updateCompactNav = useCallback(() => {
     const toolbar = toolbarRef.current;
-    const brand = brandRef.current;
+    const leftCluster = leftClusterRef.current;
     const nav = desktopNavRef.current;
-    if (!toolbar || !brand || !nav) return;
-    const availableWidth = toolbar.clientWidth - brand.offsetWidth;
+    if (!toolbar || !leftCluster || !nav) return;
+    const availableWidth = toolbar.clientWidth - leftCluster.offsetWidth;
     setCompactNav(shouldCollapseNav(nav.scrollWidth, availableWidth));
   }, []);
 
@@ -51,6 +52,7 @@ export function AppHeader() {
       updateCompactNav();
     });
     observer.observe(toolbar);
+    if (leftClusterRef.current) observer.observe(leftClusterRef.current);
     if (desktopNavRef.current) observer.observe(desktopNavRef.current);
     updateCompactNav();
     return () => observer.disconnect();
@@ -120,69 +122,84 @@ export function AppHeader() {
           sx={{ alignItems: 'center', gap: 0.5, minHeight: 64 }}
         >
           <Box
-            ref={brandRef}
-            className="brand flex-grow-0 flex-shrink-0"
+            ref={leftClusterRef}
+            data-testid="header-left"
             sx={{
-              fontWeight: 700,
-              letterSpacing: '0.04em',
+              display: 'flex',
+              alignItems: 'center',
               flexGrow: 0,
-              flexShrink: 0,
-              color: 'secondary.main',
-              alignSelf: 'center',
-              minWidth: 'max-content',
+              flexShrink: 1,
+              minWidth: 0,
             }}
           >
             <Box
-              component={Link}
-              to="/"
-              data-testid="brand-title"
-              className="brand-mark header-centerline"
+              className="brand flex-grow-0 flex-shrink-0"
               sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 1,
-                whiteSpace: 'nowrap',
-                lineHeight: 1.25,
-                height: '2.25rem',
-                color: 'inherit',
-                textDecoration: 'none',
+                fontWeight: 700,
+                letterSpacing: '0.04em',
+                flexGrow: 0,
+                flexShrink: 0,
+                color: 'secondary.main',
+                alignSelf: 'center',
+                minWidth: 'max-content',
               }}
             >
               <Box
-                component="img"
-                data-testid="brand-icon"
-                src={brandIconUrl}
-                width={28}
-                height={28}
-                alt=""
-                sx={{ display: 'block', borderRadius: 'var(--td-radius-md)', flexShrink: 0 }}
-              />
-              tdmusic
-              <Box
-                component="span"
-                data-testid="brand-beta"
+                component={Link}
+                to="/"
+                data-testid="brand-title"
+                className="brand-mark header-centerline"
                 sx={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  ml: 0.25,
-                  px: 0.7,
-                  py: 0.1,
-                  borderRadius: 0.5,
-                  fontSize: '0.5rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.06em',
-                  lineHeight: 1.2,
-                  textTransform: 'uppercase',
-                  color: 'secondary.contrastText',
-                  bgcolor: 'rgba(255, 193, 7, 0.85)',
-                  flexShrink: 0,
+                  gap: 1,
+                  whiteSpace: 'nowrap',
+                  lineHeight: 1.25,
+                  height: '2.25rem',
+                  color: 'inherit',
+                  textDecoration: 'none',
                 }}
               >
-                {t('nav.beta')}
+                <Box
+                  component="img"
+                  data-testid="brand-icon"
+                  src={brandIconUrl}
+                  width={28}
+                  height={28}
+                  alt=""
+                  sx={{ display: 'block', borderRadius: 'var(--td-radius-md)', flexShrink: 0 }}
+                />
+                tdmusic
+                <Box
+                  component="span"
+                  data-testid="brand-beta"
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    ml: 0.25,
+                    px: 0.7,
+                    py: 0.1,
+                    borderRadius: 0.5,
+                    fontSize: '0.5rem',
+                    fontWeight: 700,
+                    letterSpacing: '0.06em',
+                    lineHeight: 1.2,
+                    textTransform: 'uppercase',
+                    color: 'secondary.contrastText',
+                    bgcolor: 'rgba(255, 193, 7, 0.85)',
+                    flexShrink: 0,
+                  }}
+                >
+                  {t('nav.beta')}
+                </Box>
               </Box>
             </Box>
+
+            <AppNavBreadcrumbs pathname={pathname} />
           </Box>
+
+          <Box sx={{ flex: 1, minWidth: 8 }} />
 
           {compactNav ? (
             <IconButton
@@ -195,8 +212,6 @@ export function AppHeader() {
               <MenuIcon />
             </IconButton>
           ) : null}
-
-          <Box sx={{ flex: 1 }} />
 
           <AppDesktopNav
             pathname={pathname}

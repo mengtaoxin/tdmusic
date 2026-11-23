@@ -27,7 +27,7 @@ function stubResizeObserver() {
 
 function applyDesktopWidths() {
   const toolbar = document.querySelector('.MuiToolbar-root');
-  const brand = document.querySelector('[data-testid="brand-title"]')?.parentElement;
+  const brand = document.querySelector('[data-testid="header-left"]');
   const nav = document.querySelector('[data-testid="desktop-nav"]');
 
   if (toolbar) {
@@ -77,6 +77,26 @@ describe('AppHeader', () => {
     await waitFor(() => {
       expect(screen.getByTestId('desktop-nav')).not.toHaveAttribute('aria-hidden', 'true');
     });
+  });
+
+  it('shows a display-only breadcrumb for the current route beside the brand', async () => {
+    await renderWithTestRouter({
+      component: () => <AppHeader />,
+      initialEntries: ['/music'],
+    });
+    await measureNavLayout();
+
+    const crumbs = screen.getByTestId('nav-breadcrumbs');
+    expect(crumbs).toHaveTextContent('Songs');
+    expect(crumbs.querySelector('a')).toBeNull();
+    expect(screen.getByTestId('brand-title')).toHaveAttribute('href', '/');
+  });
+
+  it('hides the breadcrumb on the home route', async () => {
+    await renderWithTestRouter({ component: () => <AppHeader /> });
+    await measureNavLayout();
+
+    expect(screen.queryByTestId('nav-breadcrumbs')).not.toBeInTheDocument();
   });
 
   it('shows locale menu options when opened on a desktop layout', async () => {

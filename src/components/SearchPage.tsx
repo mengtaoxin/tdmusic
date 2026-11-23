@@ -49,9 +49,6 @@ export function SearchPage() {
 
   return (
     <Container maxWidth={false} className="page">
-      <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-        {t('nav.search')}
-      </Typography>
       <TextField
         value={query}
         onChange={(e) => setQuery(e.target.value)}

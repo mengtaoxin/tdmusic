@@ -2,11 +2,9 @@ import { createFileRoute } from '@tanstack/react-router';
 import Alert from '@mui/material/Alert';
 import Container from '@mui/material/Container';
 import LinearProgress from '@mui/material/LinearProgress';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 
 import { AlbumGallery, type AlbumGalleryTile } from '@/components/AlbumGallery';
-import { localizeArtistName } from '@/lib/catalog/displayLabels';
 import {
   artistAlbumPath,
   artistAlbumsGalleryEntries,
@@ -68,10 +66,6 @@ function ArtistAlbumsPage() {
         overflow: 'hidden',
       }}
     >
-      <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-        {localizeArtistName(artist?.name || artistName || '', t) || t('nav.artists')}
-      </Typography>
-
       {!loading && !artist ? (
         <Alert severity="warning" sx={{ mb: 2 }}>
           {t('artist.notFound')}

@@ -26,7 +26,7 @@ describe('QuickPlayPage', () => {
     });
 
     const { rerender } = renderWithProviders(<QuickPlayPage type="song" id="missing" />);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Quick play');
+    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
     expect(screen.getByRole('alert')).toHaveTextContent('Track not found.');
 
     rerender(<QuickPlayPage type="playlist" id="missing" />);

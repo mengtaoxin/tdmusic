@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { PlayAllButtons } from '@/components/PlayAllButtons';
 import { TrackList } from '@/components/TrackList';
 import { useTrackListPlayback } from '@/hooks/useTrackListPlayback';
-import { localizeArtistName } from '@/lib/catalog/displayLabels';
 import { findArtistGroup } from '@/lib/routes/artistRoutes';
 import { selectArtists, useCatalogStore } from '@/stores/catalog';
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
@@ -37,9 +36,6 @@ export function ArtistTracksPage({ artistName }: { artistName: string }) {
 
   return (
     <Container maxWidth={false} className="page">
-      <Typography variant="h5" component="h1" sx={{ mb: 1 }}>
-        {localizeArtistName(artist?.name || artistName || '', t) || t('nav.artists')}
-      </Typography>
       <Typography color="text.secondary" sx={{ mb: 2 }}>
         {t('artist.allMusic')}
       </Typography>

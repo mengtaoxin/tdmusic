@@ -47,18 +47,7 @@ function LogsPage() {
 
   return (
     <Container maxWidth={false} data-testid="logs-page" className="page-narrow">
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 2,
-          gap: 1.5,
-        }}
-      >
-        <Typography variant="h5" component="h1" sx={{ m: 0 }}>
-          {t('nav.logs')}
-        </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
         <Button
           data-testid="logs-clear"
           color="error"

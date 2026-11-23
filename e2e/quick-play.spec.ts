@@ -88,6 +88,6 @@ test('refresh keeps the track you reached instead of replaying the link', async 
 test('quick-play stays put when the track is missing', async ({ page }) => {
   await page.goto('/quick-play?type=song&id=missing-track');
   await expect(page).toHaveURL(/\/quick-play\?/);
-  await expect(page.getByRole('heading', { name: 'Quick play' })).toBeVisible();
+  await expect(page.getByTestId('nav-breadcrumbs')).toHaveText('Quick play');
   await expect(page.getByRole('alert')).toHaveText('Track not found.');
 });

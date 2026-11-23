@@ -32,7 +32,6 @@ export function SongsPage() {
   return (
     <CatalogPageShell
       className="songs-page"
-      title={t('nav.songs')}
       loading={loading}
       headerExtra={
         <>

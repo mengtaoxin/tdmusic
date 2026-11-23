@@ -25,10 +25,6 @@ function PlaylistListPage() {
 
   return (
     <Container maxWidth={false} className="page">
-      <Typography variant="h5" component="h1" sx={{ mb: 1 }}>
-        {t('nav.playlist')}
-      </Typography>
-
       {errors.map((err, i) => (
         // Messages can repeat (e.g. several duplicate ids); the list is static per load.
         // oxlint-disable-next-line react/no-array-index-key

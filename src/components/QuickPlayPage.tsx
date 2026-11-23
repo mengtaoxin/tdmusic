@@ -1,6 +1,5 @@
 import Alert from '@mui/material/Alert';
 import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 
 import { planQuickPlay, type QuickPlayPlan } from '@/lib/routes/quickPlay';
@@ -40,9 +39,6 @@ export function QuickPlayPage({ type, id }: { type: string; id: string }) {
 
   return (
     <Container maxWidth={false} className="page">
-      <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-        {t('quickPlay.title')}
-      </Typography>
       {plan.kind === 'play' || plan.kind === 'resume' ? null : (
         <Alert severity="warning">{t(failureMessage(plan))}</Alert>
       )}

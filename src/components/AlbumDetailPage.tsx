@@ -1,13 +1,11 @@
 import Alert from '@mui/material/Alert';
 import Container from '@mui/material/Container';
 import LinearProgress from '@mui/material/LinearProgress';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 
 import { PlayAllButtons } from '@/components/PlayAllButtons';
 import { TrackList } from '@/components/TrackList';
 import { useTrackListPlayback } from '@/hooks/useTrackListPlayback';
-import { localizeAlbumName } from '@/lib/catalog/displayLabels';
 import { findAlbumGroup } from '@/lib/routes/albumRoutes';
 import { selectAlbums, useCatalogStore } from '@/stores/catalog';
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
@@ -37,10 +35,6 @@ export function AlbumDetailPage({ albumName }: { albumName: string }) {
 
   return (
     <Container maxWidth={false} className="page">
-      <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-        {localizeAlbumName(album?.name || albumName || '', t) || t('nav.albums')}
-      </Typography>
-
       {!loading && !album ? (
         <Alert severity="warning" sx={{ mb: 2 }}>
           {t('album.notFound')}

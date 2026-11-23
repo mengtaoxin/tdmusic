@@ -24,7 +24,7 @@ function ArtistsPage() {
   const loading = useCatalogStore((s) => s.loading);
 
   return (
-    <CatalogPageShell className="artists-page" title={t('nav.artists')} loading={loading}>
+    <CatalogPageShell className="artists-page" loading={loading}>
       <VirtualRowList
         items={artists}
         itemHeight={ARTIST_ROW_HEIGHT}

@@ -3,14 +3,12 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import LinearProgress from '@mui/material/LinearProgress';
-import Typography from '@mui/material/Typography';
 import { useTranslation } from 'react-i18next';
 
 import { DownloadAllButton } from '@/components/DownloadAllButton';
 import { TrackList } from '@/components/TrackList';
 import { useTrackListPlayback } from '@/hooks/useTrackListPlayback';
 import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
-import { localizeAlbumName } from '@/lib/catalog/displayLabels';
 import { findArtistGroup, tracksForArtistAlbum } from '@/lib/routes/artistRoutes';
 import { decodeRouteParam } from '@/lib/routes/routeParams';
 import { selectArtists, useCatalogStore } from '@/stores/catalog';
@@ -40,10 +38,6 @@ function ArtistAlbumDetailPage() {
 
   return (
     <Container maxWidth={false} className="page">
-      <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-        {localizeAlbumName(albumName || '', t) || t('nav.albums')}
-      </Typography>
-
       {!loading && !artist ? (
         <Alert severity="warning" sx={{ mb: 2 }}>
           {t('artist.notFound')}
