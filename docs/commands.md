@@ -51,6 +51,8 @@ npm run build
 
 Type-check + Vite production build → `dist/`.
 
+Production hosting and the Vercel CLI GitHub Actions workflow: [deployment.md](deployment.md).
+
 ## Tests
 
 | Command                                                     | Notes                                               |

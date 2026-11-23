@@ -41,6 +41,9 @@ __screenshots__/
 test-results/
 playwright-report/
 
+# Vercel CLI (local vercel pull / link)
+.vercel/
+
 .cursor/*
 !.cursor/rules/
 !.cursor/rules/**
