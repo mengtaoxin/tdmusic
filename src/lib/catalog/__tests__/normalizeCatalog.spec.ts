@@ -8,68 +8,68 @@ import {
 } from '../normalizeCatalog';
 
 describe('normalizeSongs', () => {
-  it('keeps entries with id and path', () => {
+  it('keeps entries with id and url', () => {
     const { tracks, errors } = normalizeSongs([
-      { id: 'a', path: '/a.mp3', title: 'A' },
-      { id: 'b', path: 'https://ex.com/b.mp3' },
+      { id: 'a', url: '/a.mp3', title: 'A' },
+      { id: 'b', url: 'https://ex.com/b.mp3' },
     ]);
     expect(tracks).toHaveLength(2);
-    expect(tracks[0]).toMatchObject({ id: 'a', path: '/a.mp3', title: 'A' });
+    expect(tracks[0]).toMatchObject({ id: 'a', url: '/a.mp3', title: 'A' });
     expect(errors).toEqual([]);
   });
 
-  it('drops entries missing id or path and records errors', () => {
+  it('drops entries missing id or url and records errors', () => {
     const { tracks, errors } = normalizeSongs([
-      { path: '/a.mp3' },
+      { url: '/a.mp3' },
       { id: 'b' },
-      { id: 'c', path: '/c.mp3' },
+      { id: 'c', url: '/c.mp3' },
     ]);
     expect(tracks.map((t) => t.id)).toEqual(['c']);
     expect(errors).toHaveLength(2);
     expect(errors[0]).toMatch(/missing id/i);
-    expect(errors[1]).toMatch(/missing path/i);
+    expect(errors[1]).toMatch(/missing url/i);
   });
 
   it('drops duplicate ids and records errors', () => {
     const { tracks, errors } = normalizeSongs([
-      { id: 'dup', path: '/1.mp3' },
-      { id: 'dup', path: '/2.mp3' },
+      { id: 'dup', url: '/1.mp3' },
+      { id: 'dup', url: '/2.mp3' },
     ]);
     expect(tracks).toHaveLength(1);
-    expect(tracks[0]!.path).toBe('/1.mp3');
+    expect(tracks[0]!.url).toBe('/1.mp3');
     expect(errors[0]).toMatch(/id already exists/i);
   });
 
   it('defaults volumeRatio to 100 when volume-ratio is missing', () => {
-    const { tracks } = normalizeSongs([{ id: 'a', path: '/a.mp3' }]);
+    const { tracks } = normalizeSongs([{ id: 'a', url: '/a.mp3' }]);
     expect(tracks[0]!.volumeRatio).toBe(100);
   });
 
   it('keeps valid volume-ratio percentages in [0, 100]', () => {
     const { tracks } = normalizeSongs([
-      { id: 'quiet', path: '/q.mp3', 'volume-ratio': 50 },
-      { id: 'unity', path: '/u.mp3', 'volume-ratio': 100 },
-      { id: 'zero', path: '/z.mp3', 'volume-ratio': 0 },
+      { id: 'quiet', url: '/q.mp3', 'volume-ratio': 50 },
+      { id: 'unity', url: '/u.mp3', 'volume-ratio': 100 },
+      { id: 'zero', url: '/z.mp3', 'volume-ratio': 0 },
     ]);
     expect(tracks.map((t) => t.volumeRatio)).toEqual([50, 100, 0]);
   });
 
   it('clamps volume-ratio above 100 down to 100', () => {
     const { tracks } = normalizeSongs([
-      { id: 'a', path: '/a.mp3', 'volume-ratio': 101 },
-      { id: 'b', path: '/b.mp3', 'volume-ratio': 150 },
-      { id: 'c', path: '/c.mp3', 'volume-ratio': 500 },
+      { id: 'a', url: '/a.mp3', 'volume-ratio': 101 },
+      { id: 'b', url: '/b.mp3', 'volume-ratio': 150 },
+      { id: 'c', url: '/c.mp3', 'volume-ratio': 500 },
     ]);
     expect(tracks.map((t) => t.volumeRatio)).toEqual([100, 100, 100]);
   });
 
   it('defaults volumeRatio to 100 for invalid volume-ratio values', () => {
     const { tracks } = normalizeSongs([
-      { id: 'a', path: '/a.mp3', 'volume-ratio': -1 },
-      { id: 'b', path: '/b.mp3', 'volume-ratio': Number.NaN },
-      { id: 'c', path: '/c.mp3', 'volume-ratio': Number.POSITIVE_INFINITY },
-      { id: 'd', path: '/d.mp3', 'volume-ratio': '80' },
-      { id: 'e', path: '/e.mp3', 'volume-ratio': null },
+      { id: 'a', url: '/a.mp3', 'volume-ratio': -1 },
+      { id: 'b', url: '/b.mp3', 'volume-ratio': Number.NaN },
+      { id: 'c', url: '/c.mp3', 'volume-ratio': Number.POSITIVE_INFINITY },
+      { id: 'd', url: '/d.mp3', 'volume-ratio': '80' },
+      { id: 'e', url: '/e.mp3', 'volume-ratio': null },
     ]);
     expect(tracks.map((t) => t.volumeRatio)).toEqual([100, 100, 100, 100, 100]);
   });
@@ -77,8 +77,8 @@ describe('normalizeSongs', () => {
 
 describe('normalizePlaylist', () => {
   const tracks = [
-    { id: 'a', path: '/a.mp3', volumeRatio: 100 },
-    { id: 'b', path: '/b.mp3', volumeRatio: 100 },
+    { id: 'a', url: '/a.mp3', volumeRatio: 100 },
+    { id: 'b', url: '/b.mp3', volumeRatio: 100 },
   ];
 
   it('resolves playlist entries to known track ids', () => {
@@ -101,9 +101,9 @@ describe('normalizePlaylist', () => {
 
 describe('normalizePlaylists', () => {
   const tracks = [
-    { id: 'a', path: '/a.mp3', volumeRatio: 100 },
-    { id: 'b', path: '/b.mp3', volumeRatio: 100 },
-    { id: 'c', path: '/c.mp3', volumeRatio: 100 },
+    { id: 'a', url: '/a.mp3', volumeRatio: 100 },
+    { id: 'b', url: '/b.mp3', volumeRatio: 100 },
+    { id: 'c', url: '/c.mp3', volumeRatio: 100 },
   ];
 
   it('normalizes multiple playlists from playlists array', () => {
@@ -141,8 +141,8 @@ describe('normalizeConfigs', () => {
   it('reads playlists array from configs', () => {
     const { playlists } = normalizeConfigs({
       songs: [
-        { id: 'sample-1', path: '/sample-1.mp3' },
-        { id: '9277', path: '/9277.mp3' },
+        { id: 'sample-1', url: '/sample-1.mp3' },
+        { id: '9277', url: '/9277.mp3' },
       ],
       playlists: [
         {
@@ -159,7 +159,7 @@ describe('normalizeConfigs', () => {
 
   it('records playlist id errors alongside song errors', () => {
     const { playlists, errors } = normalizeConfigs({
-      songs: [{ id: 'sample-1', path: '/sample-1.mp3' }],
+      songs: [{ id: 'sample-1', url: '/sample-1.mp3' }],
       playlists: [{ title: 'No Id', songs: [{ id: 'sample-1' }] }],
     });
     expect(playlists).toEqual([]);
@@ -168,7 +168,7 @@ describe('normalizeConfigs', () => {
 
   it('ignores legacy singular playlist', () => {
     const { playlists } = normalizeConfigs({
-      songs: [{ id: 'sample-1', path: '/sample-1.mp3' }],
+      songs: [{ id: 'sample-1', url: '/sample-1.mp3' }],
       playlist: {
         title: 'Legacy',
         songs: [{ id: 'sample-1' }],

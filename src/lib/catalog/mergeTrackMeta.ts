@@ -15,12 +15,12 @@ export type DisplayFields = {
   cover?: string;
 };
 
-/** Config fields win; extracted values fill gaps; path filename is last title fallback. */
+/** Config fields win; extracted values fill gaps; url filename is last title fallback. */
 export function mergeTrackDisplay(
-  track: Pick<MusicTrack, 'path' | 'title' | 'artist' | 'album' | 'cover'>,
+  track: Pick<MusicTrack, 'url' | 'title' | 'artist' | 'album' | 'cover'>,
   parsed: ParsedAudioMeta | null | undefined,
 ): DisplayFields {
-  const fromPath = titleFromPath(track.path);
+  const fromPath = titleFromPath(track.url);
   return {
     title: track.title ?? parsed?.title ?? (fromPath || undefined),
     artist: track.artist ?? parsed?.artist,

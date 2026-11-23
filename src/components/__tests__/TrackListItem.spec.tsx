@@ -17,7 +17,7 @@ import { resetPlayHistoryDbForTests } from '@/lib/playback/playHistoryStore';
 function makeTrack(): DisplayTrack {
   return {
     id: 't1',
-    path: '/music/t1.mp3',
+    url: '/music/t1.mp3',
     volumeRatio: 100,
     displayTitle: 'Song One',
     displayArtist: 'Artist One',

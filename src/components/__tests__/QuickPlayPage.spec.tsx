@@ -10,7 +10,7 @@ import { usePlayerStore } from '@/stores/player';
 function track(id: string): DisplayTrack {
   return {
     id,
-    path: `/music/${id}.mp3`,
+    url: `/music/${id}.mp3`,
     volumeRatio: 100,
     displayTitle: id,
     displayArtist: 'Artist',

@@ -100,7 +100,7 @@ function TrackInfoContent({ track }: { track: DisplayTrack }) {
   const coverSource = track.cover ? 'config' : track.displayCover ? 'tags' : null;
 
   function downloadStatus() {
-    if (!isPlayablePath(track.path)) return t('trackInfo.statusStreamOnly');
+    if (!isPlayablePath(track.url)) return t('trackInfo.statusStreamOnly');
     if (downloading) {
       return percent > 0
         ? t('trackInfo.statusDownloadingPercent', { percent })
@@ -199,7 +199,7 @@ function TrackInfoContent({ track }: { track: DisplayTrack }) {
 
       <Section title={t('trackInfo.sectionOther')}>
         <Row label={t('trackInfo.trackId')}>{track.id}</Row>
-        <Row label={t('trackInfo.path')}>{track.path}</Row>
+        <Row label={t('trackInfo.url')}>{track.url}</Row>
         <Row label={t('trackInfo.volume')}>
           {t('trackInfo.volumeValue', { ratio: track.volumeRatio })}
         </Row>

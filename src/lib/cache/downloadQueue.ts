@@ -9,7 +9,7 @@ import {
   type DownloadQueueEntry,
 } from './cacheStore';
 
-export type ManualDownloadTrackRef = { id: string; path: string };
+export type ManualDownloadTrackRef = { id: string; url: string };
 
 export type ManualDownloadHooks = {
   onCached?: (id: string | undefined) => void;
@@ -82,21 +82,21 @@ export async function enqueueManualDownloads(tracks: ManualDownloadTrackRef[]): 
   const gen = generation;
   const candidates: ManualDownloadTrackRef[] = [];
   for (const track of tracks) {
-    if (!isPlayablePath(track.path) || queued.has(track.path)) continue;
-    queued.add(track.path);
+    if (!isPlayablePath(track.url) || queued.has(track.url)) continue;
+    queued.add(track.url);
     candidates.push(track);
   }
   if (!candidates.length) return;
 
-  const cached = await Promise.all(candidates.map((track) => isTrackCached(track.path)));
+  const cached = await Promise.all(candidates.map((track) => isTrackCached(track.url)));
   if (gen !== generation) return;
 
   const added: DownloadQueueEntry[] = [];
   candidates.forEach((track, index) => {
     if (cached[index]) {
-      queued.delete(track.path);
+      queued.delete(track.url);
     } else {
-      added.push({ sourceUrl: track.path, id: track.id, addedAt: nextAddedAt() });
+      added.push({ sourceUrl: track.url, id: track.id, addedAt: nextAddedAt() });
     }
   });
   if (!added.length) return;

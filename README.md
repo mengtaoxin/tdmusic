@@ -4,7 +4,7 @@
 
 A browser music player driven by **your** `configs.json`: list tracks (and optional playlists) in that file, point the app at its URL in Settings, and play. No backend — audio is fetched on play, cached in IndexedDB, and browsable by playlist, artist, album, or search. UI is English / 中文.
 
-**How you use it:** host or edit a `configs.json` with a `songs` array of `{ id, path }` entries and optional `playlists` that reference tracks by `id`, then set the catalog URL in Settings. The repo’s `/sample/configs.json` is only a sample for local demos. Field-by-field help lives in the app under **More → Guidelines for configs.json**.
+**How you use it:** host or edit a `configs.json` with a `songs` array of `{ id, url }` entries and optional `playlists` that reference tracks by `id`, then set the catalog URL in Settings. The repo’s `/sample/configs.json` is only a sample for local demos. Field-by-field help lives in the app under **More → Guidelines for configs.json**.
 
 ## Features
 
@@ -55,7 +55,7 @@ Your library is whatever **your** `configs.json` describes — host it anywhere 
 | --------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | Sample (dev)    | [`public/sample/configs.json`](public/sample/configs.json) → `/sample/configs.json`                                       |
 | Your catalog    | Settings → catalog URL (`tdmusic.configUrl`)                                                                              |
-| `songs`         | Required: each track needs unique `id` + `path` (URL to the audio)                                                        |
+| `songs`         | Required: each track needs unique `id` + `url` (URL to the audio)                                                         |
 | Optional fields | `title`, `artist`, `album`, `cover`, `volume-ratio` (win over extracted ID3; `volume-ratio` defaults to `100`, max `100`) |
 | `playlists`     | Arrays of `{ id, title?, songs: [{ id }] }`; playlist `id` is required and unique, `title` is optional                    |
 
@@ -69,7 +69,7 @@ Example shape:
       "title": "Track 1",
       "artist": "Artist 1",
       "album": "Album 1",
-      "path": "https://example.com/audio/track-1.mp3"
+      "url": "https://example.com/audio/track-1.mp3"
     }
   ],
   "playlists": [

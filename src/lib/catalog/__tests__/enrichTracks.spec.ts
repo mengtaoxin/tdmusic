@@ -14,7 +14,7 @@ describe('enrichOneTrack', () => {
   it('does not download remote audio; extracts metadata with network disabled', async () => {
     const track = {
       id: 't1',
-      path: 'https://example.com/song.mp3',
+      url: 'https://example.com/song.mp3',
     };
 
     const ensureCached = vi.spyOn(musicCache, 'ensureTrackCached').mockResolvedValue(undefined);
@@ -28,7 +28,7 @@ describe('enrichOneTrack', () => {
     const patch = await enrichOneTrack(track);
 
     expect(ensureCached).not.toHaveBeenCalled();
-    expect(ensureMeta).toHaveBeenCalledWith(track.path, { network: false });
+    expect(ensureMeta).toHaveBeenCalledWith(track.url, { network: false });
     expect(patch).toEqual({
       displayTitle: 'Parsed',
       displayArtist: 'Artist',
@@ -38,7 +38,7 @@ describe('enrichOneTrack', () => {
   });
 
   it('passes network:true when requested (e.g. after play)', async () => {
-    const track = { id: 'local', path: '/sample.mp3' };
+    const track = { id: 'local', url: '/sample.mp3' };
     const ensureMeta = vi.spyOn(trackMetadata, 'ensureTrackMetadata').mockResolvedValue({
       title: 'Local',
       artist: 'A',
@@ -47,11 +47,11 @@ describe('enrichOneTrack', () => {
 
     await enrichOneTrack(track, { network: true });
 
-    expect(ensureMeta).toHaveBeenCalledWith(track.path, { network: true });
+    expect(ensureMeta).toHaveBeenCalledWith(track.url, { network: true });
   });
 
   it('does not call ensureTrackCached for site-absolute paths', async () => {
-    const track = { id: 'local', path: '/sample.mp3' };
+    const track = { id: 'local', url: '/sample.mp3' };
     const ensureCached = vi.spyOn(musicCache, 'ensureTrackCached').mockResolvedValue(undefined);
     vi.spyOn(trackMetadata, 'ensureTrackMetadata').mockResolvedValue({
       title: 'Local',
@@ -69,7 +69,7 @@ describe('enrichOneTrack', () => {
 
     const patch = await enrichOneTrack({
       id: 't1',
-      path: 'https://example.com/song.mp3',
+      url: 'https://example.com/song.mp3',
     });
 
     expect(patch).toBeNull();
@@ -80,7 +80,7 @@ describe('enrichOneTrack', () => {
 
     const patch = await enrichOneTrack({
       id: 't1',
-      path: 'https://example.com/song.mp3',
+      url: 'https://example.com/song.mp3',
     });
 
     expect(patch).toBeNull();

@@ -52,7 +52,7 @@ const SAMPLE_LINE_SPECS: SampleLineSpec[] = [
   },
   { depth: 2, tokens: [punct('{')] },
   field(3, 'id', 'smile-in-the-wind', { noteKey: note('id'), tag: 'required' }),
-  field(3, 'path', 'https://…/smile.mp3', { noteKey: note('path'), tag: 'required' }),
+  field(3, 'url', 'https://…/smile.mp3', { noteKey: note('url'), tag: 'required' }),
   field(3, 'title', 'Smile in the Wind', { noteKey: note('title'), tag: 'optional' }),
   field(3, 'artist', 'Doubao', { noteKey: note('artist'), tag: 'optional' }),
   field(3, 'album', 'Album 1', { noteKey: note('album'), tag: 'optional' }),

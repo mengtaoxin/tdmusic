@@ -48,20 +48,20 @@ const defaultParser: MetadataParser = async (blob) => {
 };
 
 async function resolveAudioBlob(
-  path: string,
+  url: string,
   options?: { network?: boolean },
 ): Promise<Blob | null> {
-  if (!isPlayablePath(path)) return null;
+  if (!isPlayablePath(url)) return null;
 
-  const cached = await getCachedFile(path);
+  const cached = await getCachedFile(url);
   if (cached) return cached;
 
   // Remote audio is only read from IndexedDB (downloaded on play).
-  if (isRemotePath(path)) return null;
+  if (isRemotePath(url)) return null;
 
   if (options?.network === false) return null;
   try {
-    const response = await fetch(path);
+    const response = await fetch(url);
     if (!response.ok) return null;
     return response.blob();
   } catch {

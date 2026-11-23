@@ -56,7 +56,7 @@ describe('musicCache facade', () => {
       'fetch',
       vi.fn(() => new Promise<Response>(() => {})),
     );
-    await musicCache.enqueueManualDownloads([{ id: 'q', path: '/queued.mp3' }]);
+    await musicCache.enqueueManualDownloads([{ id: 'q', url: '/queued.mp3' }]);
     expect(musicCache.isTrackQueuedForDownload('/queued.mp3')).toBe(true);
 
     await musicCache.clearAllMusicCaches();

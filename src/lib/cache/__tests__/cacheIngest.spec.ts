@@ -102,7 +102,7 @@ describe('ensureTrackCached', () => {
 
   it('marks a track as downloading until the audio is stored', async () => {
     const sourceUrl = 'https://example.com/slow.mp3';
-    const track = { id: 'slow', path: sourceUrl };
+    const track = { id: 'slow', url: sourceUrl };
     let release!: (value: unknown) => void;
     const gate = new Promise((resolve) => {
       release = resolve;
@@ -135,7 +135,7 @@ describe('ensureTrackCached', () => {
 
   it('clears the downloading marker when the download fails', async () => {
     const sourceUrl = 'https://example.com/boom.mp3';
-    const track = { id: 'boom', path: sourceUrl };
+    const track = { id: 'boom', url: sourceUrl };
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue({
@@ -200,7 +200,7 @@ describe('ensureTrackCached', () => {
     const job = ensureTrackCached(sourceUrl, 'prefetch');
     const settled = expect(job).rejects.toThrow(/abort/i);
     await vi.waitFor(() => {
-      expect(isTrackDownloading({ id: 'prefetch', path: sourceUrl })).toBe(true);
+      expect(isTrackDownloading({ id: 'prefetch', url: sourceUrl })).toBe(true);
     });
 
     abortAudioDownloads('normal');
@@ -208,7 +208,7 @@ describe('ensureTrackCached', () => {
 
     expect(getTrackDownloadFailure(sourceUrl)).toBeNull();
     expect(await isTrackCached(sourceUrl)).toBe(false);
-    expect(isTrackDownloading({ id: 'prefetch', path: sourceUrl })).toBe(false);
+    expect(isTrackDownloading({ id: 'prefetch', url: sourceUrl })).toBe(false);
   });
 
   it('forgets the failure once a retry succeeds', async () => {

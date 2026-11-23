@@ -32,7 +32,7 @@ export default {
       notes: {
         songs: '曲目数组，唯一必填的顶层字段',
         id: '唯一标识，歌单通过它引用曲目',
-        path: '音频地址（完整 URL 或站内路径），播放后缓存到本机',
+        url: '音频地址（完整 URL 或站内路径），播放后缓存到本机',
         title: '不填则读取 ID3 标签，再退回文件名',
         artist: '按歌手归类；不填则读取 ID3',
         album: '按专辑归类；不填则读取 ID3',
@@ -151,7 +151,7 @@ export default {
     cachedAt: '缓存时间',
     tagsReadAt: '标签读取时间',
     trackId: 'ID',
-    path: '文件路径',
+    url: 'URL',
     volume: '音量',
     volumeValue: '{ratio}%',
     playCount: '播放次数（近 30 天）',

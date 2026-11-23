@@ -2,11 +2,11 @@ import { reportFailure } from '@/lib/reportFailure';
 
 /** English failure log when a play-time download fails. */
 export function formatDownloadFailureLog(
-  track: { id: string; path: string },
+  track: { id: string; url: string },
   error: unknown,
 ): string {
   const detail = error instanceof Error ? error.message : String(error);
-  return `Failed to download track "${track.id}" from ${track.path}: ${detail}`;
+  return `Failed to download track "${track.id}" from ${track.url}: ${detail}`;
 }
 
 export type PlaybackMediaError = {
@@ -23,16 +23,16 @@ const MEDIA_ERROR_CODE: Record<number, string> = {
 
 /** English failure log when the bound audio element cannot play the current track. */
 export function formatMediaPlaybackFailureLog(
-  track: { id: string; path: string },
+  track: { id: string; url: string },
   error: PlaybackMediaError | null,
 ): string {
   if (!error) {
-    return `Failed to play track "${track.id}" from ${track.path}: unknown media error`;
+    return `Failed to play track "${track.id}" from ${track.url}: unknown media error`;
   }
   const name = MEDIA_ERROR_CODE[error.code] ?? `MEDIA_ERR_${error.code}`;
   const extra = error.message.trim();
   const detail = extra ? `${name}: ${extra}` : name;
-  return `Failed to play track "${track.id}" from ${track.path}: ${detail}`;
+  return `Failed to play track "${track.id}" from ${track.url}: ${detail}`;
 }
 
 /** Minimal audio surface used by the playback session (DOM or test double). */
@@ -58,7 +58,7 @@ export type PlaybackSessionPlayer = {
   clearSeekTo: () => void;
   pause: () => void;
   skip: () => void;
-  getTrack: (id: string) => { id: string; path: string; volumeRatio: number } | undefined;
+  getTrack: (id: string) => { id: string; url: string; volumeRatio: number } | undefined;
 };
 
 export type PlaybackSessionHooks = {
@@ -115,7 +115,7 @@ export function createPlaybackSession(
     hooks.setVolumeRatio(track.volumeRatio);
 
     try {
-      const url = await hooks.resolvePlayableUrl(track.path, track.id);
+      const url = await hooks.resolvePlayableUrl(track.url, track.id);
       if (!isCurrentLoad(generation, id)) return;
       consecutiveLoadFailures = 0;
       hooks.onTrackResolved?.(id);

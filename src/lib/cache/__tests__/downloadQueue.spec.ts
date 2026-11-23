@@ -61,8 +61,8 @@ describe('downloadQueue', () => {
     setManualDownloadHooks({ onCached });
 
     await enqueueManualDownloads([
-      { id: 'a', path: 'https://example.com/a.mp3' },
-      { id: 'b', path: '/b.mp3' },
+      { id: 'a', url: 'https://example.com/a.mp3' },
+      { id: 'b', url: '/b.mp3' },
     ]);
 
     await vi.waitFor(async () => {
@@ -84,11 +84,11 @@ describe('downloadQueue', () => {
     await putMeta({ sourceUrl: '/cached.mp3', status: 'ready', downloadedAt: 1 });
 
     await enqueueManualDownloads([
-      { id: 'rel', path: 'relative.mp3' },
-      { id: 'cached', path: '/cached.mp3' },
-      { id: 'new', path: '/new.mp3' },
+      { id: 'rel', url: 'relative.mp3' },
+      { id: 'cached', url: '/cached.mp3' },
+      { id: 'new', url: '/new.mp3' },
     ]);
-    await enqueueManualDownloads([{ id: 'new', path: '/new.mp3' }]);
+    await enqueueManualDownloads([{ id: 'new', url: '/new.mp3' }]);
 
     expect(await queuedUrls()).toEqual(['/new.mp3']);
     expect(isTrackQueuedForDownload('/new.mp3')).toBe(true);
@@ -99,10 +99,10 @@ describe('downloadQueue', () => {
     const hangingFetch = vi.fn(() => new Promise<Response>(() => {}));
     vi.stubGlobal('fetch', hangingFetch);
     await enqueueManualDownloads([
-      { id: '1', path: '/1.mp3' },
-      { id: '2', path: '/2.mp3' },
-      { id: '3', path: '/3.mp3' },
-      { id: '4', path: '/4.mp3' },
+      { id: '1', url: '/1.mp3' },
+      { id: '2', url: '/2.mp3' },
+      { id: '3', url: '/3.mp3' },
+      { id: '4', url: '/4.mp3' },
     ]);
     await vi.waitFor(() => expect(hangingFetch).toHaveBeenCalledTimes(3));
     expect(await queuedUrls()).toEqual(['/1.mp3', '/2.mp3', '/3.mp3', '/4.mp3']);
@@ -139,7 +139,7 @@ describe('downloadQueue', () => {
     const onFailed = vi.fn();
     setManualDownloadHooks({ onFailed });
 
-    await enqueueManualDownloads([{ id: 'x', path: '/missing.mp3' }]);
+    await enqueueManualDownloads([{ id: 'x', url: '/missing.mp3' }]);
 
     await vi.waitFor(async () => {
       expect(await queuedUrls()).toEqual([]);
@@ -151,9 +151,7 @@ describe('downloadQueue', () => {
   it('clears the persisted queue and stops starting queued downloads', async () => {
     const fetchMock = vi.fn(() => new Promise<Response>(() => {}));
     vi.stubGlobal('fetch', fetchMock);
-    await enqueueManualDownloads(
-      [1, 2, 3, 4, 5].map((n) => ({ id: String(n), path: `/${n}.mp3` })),
-    );
+    await enqueueManualDownloads([1, 2, 3, 4, 5].map((n) => ({ id: String(n), url: `/${n}.mp3` })));
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
 
     await clearManualDownloads();

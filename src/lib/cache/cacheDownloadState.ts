@@ -1,4 +1,4 @@
-export type CacheDownloadTrackRef = { id: string; path: string };
+export type CacheDownloadTrackRef = { id: string; url: string };
 
 type CacheProgressEvent = {
   phase: 'download' | 'done';
@@ -30,8 +30,8 @@ function notify() {
 }
 
 function findDownload(track: CacheDownloadTrackRef): ActiveDownload | undefined {
-  const byPath = active.get(track.path);
-  if (byPath) return byPath;
+  const byUrl = active.get(track.url);
+  if (byUrl) return byUrl;
   for (const entry of active.values()) {
     if (entry.id != null && entry.id === track.id) return entry;
   }

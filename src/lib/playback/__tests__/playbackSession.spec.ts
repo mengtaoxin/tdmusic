@@ -37,7 +37,7 @@ function makeAudio(): TestAudio {
 describe('playbackSession', () => {
   it('formatDownloadFailureLog includes track id, path, and error detail', () => {
     const message = formatDownloadFailureLog(
-      { id: 'bad', path: 'https://example.com/bad.mp3' },
+      { id: 'bad', url: 'https://example.com/bad.mp3' },
       new Error('downloadFailed:404'),
     );
     expect(message).toContain('bad');
@@ -73,7 +73,7 @@ describe('playbackSession', () => {
         skip,
         getTrack: (id) =>
           id === 't1'
-            ? { id: 't1', path: 'https://example.com/t1.mp3', volumeRatio: 100 }
+            ? { id: 't1', url: 'https://example.com/t1.mp3', volumeRatio: 100 }
             : undefined,
       },
       {
@@ -126,7 +126,7 @@ describe('playbackSession', () => {
           skip();
           currentId = 'b';
         },
-        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3`, volumeRatio: 100 }),
+        getTrack: (id) => ({ id, url: `https://example.com/${id}.mp3`, volumeRatio: 100 }),
       },
       {
         resolvePlayableUrl,
@@ -174,7 +174,7 @@ describe('playbackSession', () => {
         clearSeekTo: () => {},
         pause,
         skip: vi.fn<() => void>(),
-        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3`, volumeRatio: 100 }),
+        getTrack: (id) => ({ id, url: `https://example.com/${id}.mp3`, volumeRatio: 100 }),
       },
       {
         resolvePlayableUrl: async () => 'blob:t1',
@@ -218,7 +218,7 @@ describe('playbackSession', () => {
         clearSeekTo: () => {},
         pause: vi.fn<() => void>(),
         skip: vi.fn<() => void>(),
-        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3`, volumeRatio: 100 }),
+        getTrack: (id) => ({ id, url: `https://example.com/${id}.mp3`, volumeRatio: 100 }),
       },
       {
         resolvePlayableUrl,
@@ -267,7 +267,7 @@ describe('playbackSession', () => {
         },
         pause: vi.fn<() => void>(),
         skip: vi.fn<() => void>(),
-        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3`, volumeRatio: 100 }),
+        getTrack: (id) => ({ id, url: `https://example.com/${id}.mp3`, volumeRatio: 100 }),
       },
       {
         resolvePlayableUrl,
@@ -328,7 +328,7 @@ describe('playbackSession', () => {
         clearSeekTo: () => {},
         pause: vi.fn<() => void>(),
         skip: vi.fn<() => void>(),
-        getTrack: (id) => ({ id, path: `https://example.com/${id}.mp3`, volumeRatio: 100 }),
+        getTrack: (id) => ({ id, url: `https://example.com/${id}.mp3`, volumeRatio: 100 }),
       },
       {
         resolvePlayableUrl,
@@ -378,8 +378,8 @@ describe('playbackSession', () => {
         pause: vi.fn<() => void>(),
         skip: vi.fn<() => void>(),
         getTrack: (id) => {
-          if (id === 'quiet') return { id: 'quiet', path: '/quiet.mp3', volumeRatio: 50 };
-          if (id === 'full') return { id: 'full', path: '/full.mp3', volumeRatio: 100 };
+          if (id === 'quiet') return { id: 'quiet', url: '/quiet.mp3', volumeRatio: 50 };
+          if (id === 'full') return { id: 'full', url: '/full.mp3', volumeRatio: 100 };
           return undefined;
         },
       },

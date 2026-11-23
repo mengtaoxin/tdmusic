@@ -2,7 +2,7 @@ import { ensureTrackCached } from '../cache/musicCache';
 import { isPlayablePath } from '../paths';
 import { upcomingQueueIds, type RepeatMode } from './playerLogic';
 
-export type PrefetchTrackRef = { id: string; path: string };
+export type PrefetchTrackRef = { id: string; url: string };
 
 /** Prefetch upcoming queue tracks into IndexedDB (best-effort). */
 export async function prefetchUpcoming(
@@ -26,9 +26,9 @@ export async function prefetchUpcoming(
   await Promise.all(
     ids.map(async (id) => {
       const track = options.resolveTrack(id);
-      if (!track || !isPlayablePath(track.path)) return;
+      if (!track || !isPlayablePath(track.url)) return;
       try {
-        await ensureTrackCached(track.path, track.id);
+        await ensureTrackCached(track.url, track.id);
         options.onTrackCached?.(id);
       } catch {
         // best-effort prefetch

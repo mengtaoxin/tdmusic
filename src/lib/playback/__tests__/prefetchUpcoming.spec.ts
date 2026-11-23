@@ -7,13 +7,13 @@ describe('prefetchUpcoming', () => {
   it('calls ensureTrackCached for selected upcoming playable tracks', async () => {
     const ensure = vi.spyOn(musicCache, 'ensureTrackCached').mockResolvedValue(undefined);
     const resolveTrack = (id: string) => {
-      const paths: Record<string, string> = {
+      const urls: Record<string, string> = {
         b: 'https://example.com/b.mp3',
         c: '/c.mp3',
         d: 'https://example.com/d.mp3',
       };
-      const path = paths[id];
-      return path ? { id, path } : undefined;
+      const url = urls[id];
+      return url ? { id, url } : undefined;
     };
 
     await prefetchUpcoming(['a', 'b', 'c', 'd'], 0, {
@@ -32,9 +32,9 @@ describe('prefetchUpcoming', () => {
   it('skips missing tracks and non-playable paths', async () => {
     const ensure = vi.spyOn(musicCache, 'ensureTrackCached').mockResolvedValue(undefined);
     const resolveTrack = (id: string) => {
-      if (id === 'b') return { id, path: 'relative.mp3' };
+      if (id === 'b') return { id, url: 'relative.mp3' };
       if (id === 'c') return undefined;
-      if (id === 'd') return { id, path: 'https://example.com/d.mp3' };
+      if (id === 'd') return { id, url: 'https://example.com/d.mp3' };
       return undefined;
     };
 
@@ -56,7 +56,7 @@ describe('prefetchUpcoming', () => {
         count: 3,
         repeatMode: 'off',
         shuffle: false,
-        resolveTrack: (id) => (id === 'b' ? { id, path: 'https://example.com/b.mp3' } : undefined),
+        resolveTrack: (id) => (id === 'b' ? { id, url: 'https://example.com/b.mp3' } : undefined),
       }),
     ).resolves.toBeUndefined();
   });
@@ -67,7 +67,7 @@ describe('prefetchUpcoming', () => {
       count: 3,
       repeatMode: 'one',
       shuffle: false,
-      resolveTrack: (id) => ({ id, path: `https://example.com/${id}.mp3` }),
+      resolveTrack: (id) => ({ id, url: `https://example.com/${id}.mp3` }),
     });
     expect(ensure).not.toHaveBeenCalled();
   });
@@ -80,7 +80,7 @@ describe('prefetchUpcoming', () => {
       count: 3,
       repeatMode: 'off',
       shuffle: false,
-      resolveTrack: (id) => ({ id, path: `https://example.com/${id}.mp3` }),
+      resolveTrack: (id) => ({ id, url: `https://example.com/${id}.mp3` }),
       onTrackCached,
     });
 
@@ -100,8 +100,8 @@ describe('prefetchUpcoming', () => {
       repeatMode: 'off',
       shuffle: false,
       resolveTrack: (id) => {
-        if (id === 'b') return { id, path: 'relative.mp3' };
-        if (id === 'c') return { id, path: 'https://example.com/c.mp3' };
+        if (id === 'b') return { id, url: 'relative.mp3' };
+        if (id === 'c') return { id, url: 'https://example.com/c.mp3' };
         return undefined;
       },
       onTrackCached,

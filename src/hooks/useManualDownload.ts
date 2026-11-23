@@ -11,11 +11,11 @@ import {
 export function useManualDownload(tracks: readonly ManualDownloadTrackRef[]) {
   const remaining = useSyncExternalStore(
     subscribeManualDownloads,
-    () => tracks.filter((track) => isTrackQueuedForDownload(track.path)).length,
+    () => tracks.filter((track) => isTrackQueuedForDownload(track.url)).length,
   );
 
   function downloadAll() {
-    void enqueueManualDownloads(tracks.map(({ id, path }) => ({ id, path })));
+    void enqueueManualDownloads(tracks.map(({ id, url }) => ({ id, url })));
   }
 
   return { remaining, downloadAll };

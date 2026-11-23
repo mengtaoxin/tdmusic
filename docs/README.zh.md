@@ -4,7 +4,7 @@
 
 由**你自己的** `configs.json` 驱动的浏览器端音乐播放器：在文件里列出曲目（及可选播放列表），在设置中填写其 URL 即可播放。无需后端——音轨在播放时拉取，缓存到 IndexedDB，并按播放列表、歌手、专辑或搜索浏览。界面支持中文 / English。
 
-**用法：** 托管或编写一份 `configs.json`，在 `songs` 中提供 `{ id, path }`，可选再写用 `id` 引用曲目的 `playlists`，然后在设置里填写曲库 URL。仓库自带的 `/sample/configs.json` 仅作本地试用示例。字段说明见应用内 **更多 → configs.json 指南**。
+**用法：** 托管或编写一份 `configs.json`，在 `songs` 中提供 `{ id, url }`，可选再写用 `id` 引用曲目的 `playlists`，然后在设置里填写曲库 URL。仓库自带的 `/sample/configs.json` 仅作本地试用示例。字段说明见应用内 **更多 → configs.json 指南**。
 
 ## 功能
 
@@ -55,7 +55,7 @@ npm run test:e2e -- --project chromium -- e2e/app.spec.ts
 | ------------ | --------------------------------------------------------------------------------------- |
 | 示例（开发） | [`public/sample/configs.json`](../public/sample/configs.json) → `/sample/configs.json`  |
 | 你的曲库     | 设置 → 曲库 URL（`tdmusic.configUrl`）                                                  |
-| `songs`      | 必填：每首需唯一 `id` + `path`（音频地址）                                              |
+| `songs`      | 必填：每首需唯一 `id` + `url`（音频地址）                                               |
 | 可选字段     | `title`、`artist`、`album`、`cover`（优先于解析出的 ID3）                               |
 | `playlists`  | `{ id, title?, songs: [{ id }] }`；歌单 `id` 必填且唯一，`title` 可选，用曲目 `id` 引用 |
 
@@ -69,7 +69,7 @@ npm run test:e2e -- --project chromium -- e2e/app.spec.ts
       "title": "Track 1",
       "artist": "Artist 1",
       "album": "Album 1",
-      "path": "https://example.com/audio/track-1.mp3"
+      "url": "https://example.com/audio/track-1.mp3"
     }
   ],
   "playlists": [

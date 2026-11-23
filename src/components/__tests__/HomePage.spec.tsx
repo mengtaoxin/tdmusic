@@ -8,7 +8,7 @@ import { renderWithTestRouter } from '@/__tests__/renderWithProviders';
 const SAMPLE_KEYS = [
   'songs',
   'id',
-  'path',
+  'url',
   'title',
   'artist',
   'album',

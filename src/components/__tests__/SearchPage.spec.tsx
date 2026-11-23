@@ -18,7 +18,7 @@ function track(
 ): DisplayTrack {
   return {
     id,
-    path: `/music/${id}.mp3`,
+    url: `/music/${id}.mp3`,
     volumeRatio: 100,
     displayTitle: extras.displayTitle ?? id,
     displayArtist: artist,

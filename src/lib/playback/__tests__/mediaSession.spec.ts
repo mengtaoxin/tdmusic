@@ -6,7 +6,7 @@ import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
 function makeTrack(overrides: Partial<DisplayTrack> = {}): DisplayTrack {
   return {
     id: 't1',
-    path: '/music/t1.mp3',
+    url: '/music/t1.mp3',
     volumeRatio: 100,
     displayTitle: 'Song One',
     displayArtist: 'Artist One',

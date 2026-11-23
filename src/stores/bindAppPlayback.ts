@@ -19,7 +19,7 @@ const PREFETCH_COUNT = 3;
 function resolveTrackForPrefetch(id: string) {
   const track = useCatalogStore.getState().snapshot.trackById.get(id);
   if (!track) return undefined;
-  return { id: track.id, path: track.path };
+  return { id: track.id, url: track.url };
 }
 
 function prefetchUpcomingFromPlayer() {
@@ -61,7 +61,7 @@ export function createAppPlaybackTransport(getAudio: () => HTMLAudioElement | nu
     getTrack: (id) => {
       const track = useCatalogStore.getState().snapshot.trackById.get(id);
       if (!track) return undefined;
-      return { id: track.id, path: track.path, volumeRatio: track.volumeRatio ?? 100 };
+      return { id: track.id, url: track.url, volumeRatio: track.volumeRatio ?? 100 };
     },
     setVolumeRatio: (percent) => volumeGain.setRatio(percent),
     setPlaying: (playing) => {

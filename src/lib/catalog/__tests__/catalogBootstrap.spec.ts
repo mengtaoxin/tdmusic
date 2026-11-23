@@ -27,7 +27,7 @@ function sampleTracks(): DisplayTrack[] {
   return [
     {
       id: 'a',
-      path: '/a.mp3',
+      url: '/a.mp3',
       volumeRatio: 100,
       displayTitle: 'A',
       displayArtist: 'Unknown artist',
@@ -37,7 +37,7 @@ function sampleTracks(): DisplayTrack[] {
 }
 
 function sampleConfigs() {
-  return { songs: [{ id: 'a', path: '/a.mp3' }] };
+  return { songs: [{ id: 'a', url: '/a.mp3' }] };
 }
 
 describe('catalogBootstrap', () => {
@@ -105,7 +105,7 @@ describe('catalogBootstrap', () => {
     useCatalogStore.getState().setTracks([
       {
         id: 't1',
-        path: sourceUrl,
+        url: sourceUrl,
         title: 'Config',
         displayTitle: 'Extracted Title',
         displayArtist: 'Extracted Artist',
@@ -123,7 +123,7 @@ describe('catalogBootstrap', () => {
     const track = useCatalogStore.getState().snapshot.tracks[0];
     expect(track).toMatchObject({
       id: 't1',
-      path: sourceUrl,
+      url: sourceUrl,
       title: 'Config',
       displayTitle: 'Config',
       displayArtist: 'Unknown artist',

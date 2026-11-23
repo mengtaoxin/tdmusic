@@ -11,7 +11,7 @@ import { usePlayerStore } from '@/stores/player';
 function track(id: string, title: string, artist = 'Doubao'): DisplayTrack {
   return {
     id,
-    path: `/music/${id}.mp3`,
+    url: `/music/${id}.mp3`,
     volumeRatio: 100,
     displayTitle: title,
     displayArtist: artist,

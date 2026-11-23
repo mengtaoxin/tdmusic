@@ -39,7 +39,7 @@ describe('createPlaybackRuntime', () => {
       pause: noop(),
       skip: noop(),
       onEnded: noop(),
-      getTrack: (id) => (id === 't1' ? { id: 't1', path: '/t1.mp3', volumeRatio: 100 } : undefined),
+      getTrack: (id) => (id === 't1' ? { id: 't1', url: '/t1.mp3', volumeRatio: 100 } : undefined),
       setPlaying: vi.fn<(playing: boolean) => void>(),
       clearPendingPlay: noop(),
       flushPersist: noop(),

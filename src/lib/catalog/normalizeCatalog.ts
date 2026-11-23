@@ -1,6 +1,6 @@
 export type RawMusicEntry = {
   id?: unknown;
-  path?: unknown;
+  url?: unknown;
   title?: unknown;
   artist?: unknown;
   album?: unknown;
@@ -10,7 +10,7 @@ export type RawMusicEntry = {
 
 export type MusicTrack = {
   id: string;
-  path: string;
+  url: string;
   title?: string;
   artist?: string;
   album?: string;
@@ -65,15 +65,15 @@ export function normalizeSongs(rawList: unknown): {
   for (const raw of rawList) {
     const entry = (raw ?? {}) as RawMusicEntry;
     const id = asOptionalString(entry.id);
-    const path = asOptionalString(entry.path);
-    const label = id ?? path ?? '(unknown)';
+    const url = asOptionalString(entry.url);
+    const label = id ?? url ?? '(unknown)';
 
     if (!id) {
       errors.push(`${label}: missing id, ignored`);
       continue;
     }
-    if (!path) {
-      errors.push(`${id}: missing path, ignored`);
+    if (!url) {
+      errors.push(`${id}: missing url, ignored`);
       continue;
     }
     if (seen.has(id)) {
@@ -84,7 +84,7 @@ export function normalizeSongs(rawList: unknown): {
     seen.add(id);
     const track: MusicTrack = {
       id,
-      path,
+      url,
       volumeRatio: parseVolumeRatio(entry['volume-ratio']),
     };
     const title = asOptionalString(entry.title);

@@ -32,7 +32,7 @@ export default {
       notes: {
         songs: 'Your tracks — the only required top-level key',
         id: 'Unique key; playlists refer to tracks by it',
-        path: 'Audio URL or site path; cached on this device once played',
+        url: 'Audio URL or site path; cached on this device once played',
         title: 'Falls back to the ID3 tag, then the file name',
         artist: 'Groups tracks by artist; ID3 fills it if left out',
         album: 'Groups tracks by album; ID3 fills it if left out',
@@ -152,7 +152,7 @@ export default {
     cachedAt: 'Cached at',
     tagsReadAt: 'Tags read at',
     trackId: 'ID',
-    path: 'File path',
+    url: 'URL',
     volume: 'Volume',
     volumeValue: '{ratio}%',
     playCount: 'Plays (last 30 days)',

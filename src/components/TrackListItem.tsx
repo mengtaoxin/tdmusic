@@ -61,7 +61,7 @@ export function TrackListItem({
   function openMenu(event: MouseEvent<HTMLElement>) {
     event.stopPropagation();
     setMenuAnchor(event.currentTarget);
-    void isTrackCached(track.path).then(setCached, () => setCached(false));
+    void isTrackCached(track.url).then(setCached, () => setCached(false));
   }
 
   function stopPointerDown(event: PointerEvent) {

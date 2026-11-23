@@ -16,7 +16,7 @@ export function useTrackInfo(track: DisplayTrack) {
   const { downloading, percent } = useTrackDownload(track);
   const { remaining } = useManualDownload([track]);
   const failure = useSyncExternalStore(subscribeCacheDownloads, () =>
-    getTrackDownloadFailure(track.path),
+    getTrackDownloadFailure(track.url),
   );
   const [details, setDetails] = useState<TrackCacheDetails | null>(null);
   const [playStats, setPlayStats] = useState<TrackPlayStats | null>(null);
@@ -24,7 +24,7 @@ export function useTrackInfo(track: DisplayTrack) {
   useEffect(() => {
     if (downloading) return;
     let cancelled = false;
-    void getTrackCacheDetails(track.path).then(
+    void getTrackCacheDetails(track.url).then(
       (next) => {
         if (!cancelled) setDetails(next);
       },
@@ -33,7 +33,7 @@ export function useTrackInfo(track: DisplayTrack) {
     return () => {
       cancelled = true;
     };
-  }, [track.path, downloading]);
+  }, [track.url, downloading]);
 
   useEffect(() => {
     let cancelled = false;

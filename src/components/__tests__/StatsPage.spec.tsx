@@ -14,7 +14,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 function track(id: string, title: string): DisplayTrack {
   return {
     id,
-    path: `/music/${id}.mp3`,
+    url: `/music/${id}.mp3`,
     volumeRatio: 100,
     displayTitle: title,
     displayArtist: 'Artist',

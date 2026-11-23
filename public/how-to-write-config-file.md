@@ -4,10 +4,10 @@ This page explains how to write a configs.json catalog file for tdmusic.
 
 ## songs
 
-An array of tracks. Each entry needs `id` and `path`. Missing either, or a duplicate `id`, drops that entry and shows an error in Songs. Optional fields override extracted ID3 tags when set.
+An array of tracks. Each entry needs `id` and `url`. Missing either, or a duplicate `id`, drops that entry and shows an error in Songs. Optional fields override extracted ID3 tags when set.
 
 - `id` — unique track id (required); prefer letters and hyphens, e.g. `sample-1`
-- `path` — audio URL or site path (required)
+- `url` — audio URL or site path (required)
 - `title` — display title (optional)
 - `artist` — artist name (optional)
 - `album` — album name (optional)
@@ -32,7 +32,7 @@ An array of playlists. Each needs a unique `id`. Missing `id`, or a duplicate `i
       "title": "Sample 1",
       "artist": "Artist 1",
       "album": "Album 1",
-      "path": "/sample-1.mp3",
+      "url": "/sample-1.mp3",
       "volume-ratio": 80
     }
   ],
@@ -48,7 +48,7 @@ An array of playlists. Each needs a unique `id`. Missing `id`, or a duplicate `i
 
 ## Notes
 
-- Title fallback order: config → ID3 → filename from path (decoded basename without extension) → id.
+- Title fallback order: config → ID3 → filename from url (decoded basename without extension) → id.
 - Missing artist/album become Unknown artist / Unknown album; tracks still group under artist → albums → tracks.
 
 ## Ask an AI to generate configs.json

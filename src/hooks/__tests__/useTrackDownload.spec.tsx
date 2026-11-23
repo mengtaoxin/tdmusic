@@ -10,7 +10,7 @@ import type { DisplayTrack } from '@/lib/catalog/catalogIndex';
 
 const track: DisplayTrack = {
   id: 't1',
-  path: '/music/t1.mp3',
+  url: '/music/t1.mp3',
   volumeRatio: 100,
   displayTitle: 'Song',
   displayArtist: 'Artist',
@@ -37,13 +37,13 @@ describe('useTrackDownload', () => {
 
     expect(screen.getByTestId('downloading')).toHaveTextContent('false');
 
-    reportCacheDownload(track.path, track.id, { phase: 'download', loaded: 50, total: 200 });
+    reportCacheDownload(track.url, track.id, { phase: 'download', loaded: 50, total: 200 });
     await waitFor(() => {
       expect(screen.getByTestId('downloading')).toHaveTextContent('true');
       expect(screen.getByTestId('percent')).toHaveTextContent('25');
     });
 
-    reportCacheDownload(track.path, track.id, { phase: 'done', loaded: 200, total: 200 });
+    reportCacheDownload(track.url, track.id, { phase: 'done', loaded: 200, total: 200 });
     await waitFor(() => {
       expect(screen.getByTestId('downloading')).toHaveTextContent('false');
     });

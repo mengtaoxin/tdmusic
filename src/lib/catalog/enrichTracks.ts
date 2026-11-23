@@ -3,7 +3,7 @@ import { mergeTrackDisplay } from './mergeTrackMeta';
 import type { MusicTrack } from './normalizeCatalog';
 import { ensureTrackMetadata, type MetadataParser } from '../cache/trackMetadata';
 
-export type EnrichableTrack = Pick<MusicTrack, 'id' | 'path'> &
+export type EnrichableTrack = Pick<MusicTrack, 'id' | 'url'> &
   Partial<Pick<MusicTrack, 'title' | 'artist' | 'album' | 'cover'>>;
 
 export type DisplayPatch = {
@@ -30,7 +30,7 @@ export async function enrichOneTrack(
 ): Promise<DisplayPatch | null> {
   try {
     const network = options?.network ?? false;
-    const parsed = await ensureTrackMetadata(track.path, {
+    const parsed = await ensureTrackMetadata(track.url, {
       network,
       ...(options?.parser ? { parser: options.parser } : {}),
     });
