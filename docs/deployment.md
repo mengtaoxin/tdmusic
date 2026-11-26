@@ -5,7 +5,7 @@ Production is intended to be published from **GitHub Actions** using the Vercel 
 | Setting        | Value                                                                             |
 | -------------- | --------------------------------------------------------------------------------- |
 | Framework      | Vite (project settings on Vercel)                                                 |
-| Node           | **24.x** (`package.json` engines allow 22.18+ or 24.12+)                          |
+| Node           | **24+** (`package.json` `engines` require Node 24 or newer)                       |
 | Install        | `npm ci`                                                                          |
 | Build          | `npm run build` → `dist/`                                                         |
 | Hosting        | Static files; existing [`vercel.json`](../vercel.json) rewrites and cache headers |
