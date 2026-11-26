@@ -17,7 +17,7 @@ A browser music player driven by **your** `configs.json`: list tracks (and optio
 
 ## Requirements
 
-- Node.js `^22.18.0` or `^24.12.0` (see `package.json` `engines`)
+- Node.js 24 or newer (see `package.json` `engines`)
 
 ## Quick start
 

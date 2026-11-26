@@ -17,7 +17,7 @@
 
 ## 环境要求
 
-- Node.js `^22.18.0` 或 `^24.12.0`（见 `package.json` 的 `engines`）
+- Node.js 24 或更新版本（见 `package.json` 的 `engines`）
 
 ## 快速开始
 
